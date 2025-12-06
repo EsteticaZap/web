@@ -10,6 +10,7 @@ aside.side-menu {
   flex-direction: column;
   padding: 1.5rem 1rem;
   box-sizing: border-box;
+  z-index: 100;
 }
 
 .side-menu .brand {

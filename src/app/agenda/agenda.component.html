@@ -7,79 +7,245 @@
       <span class="subtitle">Gerencie seus agendamentos</span>
     </div>
     <div class="header-right">
-      <div class="view-dropdown">
-        <button class="dropdown-btn">
-          Visão Semanal <i class="fa fa-chevron-down"></i>
-        </button>
-      </div>
+      <p-select 
+        [options]="viewOptions" 
+        [(ngModel)]="selectedView" 
+        optionLabel="label"
+        placeholder="Selecione a visão"
+        class="view-select"
+        (onChange)="onViewChange()">
+      </p-select>
       <button class="btn-new-appointment">
         <i class="fa fa-plus"></i> Novo Agendamento
       </button>
     </div>
   </header>
 
-  <!-- Navigation and Legend -->
-  <div class="week-nav-container">
-    <div class="week-navigation">
-      <button class="nav-btn" (click)="previousWeek()">
-        <i class="fa fa-chevron-left"></i>
-      </button>
-      <div class="week-info">
-        <span class="week-range">{{ weekDateRange }}</span>
-        <span class="week-number">Semana {{ weekNumber }}</span>
+  <!-- VISÃO DIÁRIA -->
+  <div *ngIf="selectedView.value === 'daily'" class="daily-view">
+    <!-- Navigation and Legend -->
+    <div class="day-nav-container">
+      <div class="day-navigation">
+        <button class="nav-btn" (click)="previousDay()">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <div class="day-info">
+          <span class="day-date">{{ currentDayFormatted }}</span>
+          <span class="day-name">{{ currentDayOfWeek }}</span>
+        </div>
+        <button class="nav-btn" (click)="nextDay()">
+          <i class="fa fa-chevron-right"></i>
+        </button>
       </div>
-      <button class="nav-btn" (click)="nextWeek()">
-        <i class="fa fa-chevron-right"></i>
-      </button>
+      <div class="legend-bar">
+        <div class="legend-item">
+          <span class="dot confirmed"></span>
+          Confirmado
+        </div>
+        <div class="legend-item">
+          <span class="dot pending"></span>
+          Pendente
+        </div>
+        <div class="legend-item">
+          <span class="dot declined"></span>
+          Recusado
+        </div>
+      </div>
     </div>
-    <div class="legend-bar">
-      <div class="legend-item">
-        <span class="dot confirmed"></span>
-        Confirmado
+
+    <!-- Daily Content -->
+    <div class="daily-content">
+      <!-- Horários do Dia -->
+      <div class="daily-schedule">
+        <div class="schedule-header">
+          <h2>Horários do Dia</h2>
+        </div>
+        <div class="timeline">
+          <ng-container *ngFor="let appt of getDailyAppointments(); let i = index">
+            <!-- Appointment -->
+            <div class="timeline-item" [ngClass]="getStatusClass(appt.status)">
+              <div class="timeline-time">
+                <span class="time-label">{{ appt.startTime }}</span>
+                <span class="duration">{{ getDuration(appt) }} min</span>
+              </div>
+              <div class="timeline-line">
+                <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
+                <div class="line-vertical"></div>
+              </div>
+              <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                <div class="appt-header">
+                  <div class="appt-avatar">
+                    <img [src]="appt.image" [alt]="appt.client" />
+                  </div>
+                  <div class="appt-details">
+                    <span class="appt-client">{{ appt.client }}</span>
+                    <span class="appt-service">{{ appt.service }}</span>
+                  </div>
+                </div>
+                <div class="appt-footer">
+                  <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
+                  <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
+                  <span class="appt-price">{{ appt.price }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Intervalo para Almoço (após item das 12h ou quando necessário) -->
+            <div *ngIf="shouldShowLunchBreak(appt, i)" class="lunch-break">
+              <i class="fa fa-utensils"></i>
+              <span>Intervalo para Almoço 12:00 - 13:00</span>
+            </div>
+          </ng-container>
+
+          <div *ngIf="getDailyAppointments().length === 0" class="no-appointments">
+            <i class="fa fa-calendar-times"></i>
+            <p>Nenhum agendamento para este dia</p>
+          </div>
+        </div>
       </div>
-      <div class="legend-item">
-        <span class="dot pending"></span>
-        Pendente
-      </div>
-      <div class="legend-item">
-        <span class="dot declined"></span>
-        Recusado
+
+      <!-- Sidebar Direita -->
+      <div class="daily-sidebar">
+        <!-- Resumo do Dia -->
+        <div class="summary-card">
+          <h3>Resumo do Dia</h3>
+          <div class="summary-items">
+            <div class="summary-item confirmed">
+              <div class="summary-icon">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Confirmados</span>
+                <span class="summary-value">{{ dailySummary.confirmed }}</span>
+              </div>
+            </div>
+            <div class="summary-item pending">
+              <div class="summary-icon">
+                <i class="fa fa-clock"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Pendentes</span>
+                <span class="summary-value">{{ dailySummary.pending }}</span>
+              </div>
+            </div>
+            <div class="summary-item declined">
+              <div class="summary-icon">
+                <i class="fa fa-times-circle"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Recusados</span>
+                <span class="summary-value">{{ dailySummary.declined }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="summary-revenue">
+            <span class="revenue-label">Faturamento Previsto</span>
+            <span class="revenue-value">{{ dailySummary.revenue }}</span>
+          </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="quick-actions-card">
+          <h3>Ações Rápidas</h3>
+          <div class="action-buttons">
+            <button class="action-btn new-appointment">
+              <div class="action-icon">
+                <i class="fa fa-plus"></i>
+              </div>
+              <span>Novo Agendamento</span>
+            </button>
+            <button class="action-btn send-reminder">
+              <div class="action-icon">
+                <i class="fa fa-bell"></i>
+              </div>
+              <span>Enviar Lembrete</span>
+            </button>
+            <button class="action-btn block-time">
+              <div class="action-icon">
+                <i class="fa fa-ban"></i>
+              </div>
+              <span>Bloquear Horário</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Calendar Grid -->
-  <div class="calendar-container">
-    <table class="calendar-grid">
-      <thead>
-        <tr>
-          <th class="time-header">Horário</th>
-          <th *ngFor="let day of weekDays; let i = index" class="day-header">
-            <span class="day-name">{{ day.short }}</span>
-            <span class="day-number">{{ getDayDate(i) }}</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let time of timeSlots" class="time-row">
-          <td class="time-cell">{{ time }}</td>
-          <td *ngFor="let day of weekDays; let dayIndex = index" class="day-cell">
-            <div 
-              *ngFor="let appt of getAppointmentsForSlot(time, dayIndex)" 
-              class="appointment-card"
-              [ngClass]="getStatusClass(appt.status)">
-              <div class="appt-avatar">
-                <img [src]="appt.image" [alt]="appt.client" />
+  <!-- VISÃO SEMANAL (existente) -->
+  <div *ngIf="selectedView.value === 'weekly'" class="weekly-view">
+    <!-- Navigation and Legend -->
+    <div class="week-nav-container">
+      <div class="week-navigation">
+        <button class="nav-btn" (click)="previousWeek()">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <div class="week-info">
+          <span class="week-range">{{ weekDateRange }}</span>
+          <span class="week-number">Semana {{ weekNumber }}</span>
+        </div>
+        <button class="nav-btn" (click)="nextWeek()">
+          <i class="fa fa-chevron-right"></i>
+        </button>
+      </div>
+      <div class="legend-bar">
+        <div class="legend-item">
+          <span class="dot confirmed"></span>
+          Confirmado
+        </div>
+        <div class="legend-item">
+          <span class="dot pending"></span>
+          Pendente
+        </div>
+        <div class="legend-item">
+          <span class="dot declined"></span>
+          Recusado
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-container">
+      <table class="calendar-grid">
+        <thead>
+          <tr>
+            <th class="time-header">Horário</th>
+            <th *ngFor="let day of weekDays; let i = index" class="day-header">
+              <span class="day-name">{{ day.short }}</span>
+              <span class="day-number">{{ getDayDate(i) }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let time of timeSlots" class="time-row">
+            <td class="time-cell">{{ time }}</td>
+            <td *ngFor="let day of weekDays; let dayIndex = index" class="day-cell">
+              <div 
+                *ngFor="let appt of getAppointmentsForSlot(time, dayIndex)" 
+                class="appointment-card"
+                [ngClass]="getStatusClass(appt.status)">
+                <div class="appt-avatar">
+                  <img [src]="appt.image" [alt]="appt.client" />
+                </div>
+                <div class="appt-info">
+                  <div class="appt-client">{{ appt.client }}</div>
+                  <div class="appt-service">{{ appt.service }}</div>
+                  <div class="appt-time">{{ appt.startTime }} - {{ appt.endTime }}</div>
+                </div>
               </div>
-              <div class="appt-info">
-                <div class="appt-client">{{ appt.client }}</div>
-                <div class="appt-service">{{ appt.service }}</div>
-                <div class="appt-time">{{ appt.startTime }} - {{ appt.endTime }}</div>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VISÃO MENSAL (placeholder) -->
+  <div *ngIf="selectedView.value === 'monthly'" class="monthly-view">
+    <div class="coming-soon">
+      <i class="fa fa-calendar-alt"></i>
+      <h2>Visão Mensal</h2>
+      <p>Em breve disponível</p>
+    </div>
   </div>
 </div>
