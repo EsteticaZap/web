@@ -1,29 +1,88 @@
 <div class="login-container">
   <div class="login-card">
-    <img src="logo.png" alt="EstéticaZap" class="logo" />
+    <!-- Logo -->
+    <div class="logo-container">
+      <div class="logo-icon">
+        <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+          <!-- Tulip/Lotus flower icon -->
+          <ellipse cx="25" cy="18" rx="8" ry="14" fill="#E57373"/>
+          <ellipse cx="15" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(-25 15 22)"/>
+          <ellipse cx="35" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(25 35 22)"/>
+          <path d="M25 32 L25 45" stroke="#81C784" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="20" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(-30 20 40)"/>
+          <ellipse cx="30" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(30 30 40)"/>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- Título -->
+    <h1 class="title">Bem-vindo de volta</h1>
+    <p class="subtitle">Entre na sua conta EstéticaZap</p>
+
+    <!-- Formulário -->
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <!-- Email -->
       <div class="form-group">
         <label for="email">E-mail</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          [(ngModel)]="email"
-        />
+        <div class="input-wrapper">
+          <i class="fa fa-envelope"></i>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="seu@email.com"
+            required
+            [(ngModel)]="email"
+          />
+        </div>
       </div>
+
+      <!-- Senha -->
       <div class="form-group">
         <label for="password">Senha</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          [(ngModel)]="password"
-        />
+        <div class="input-wrapper">
+          <i class="fa fa-lock"></i>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            required
+            [(ngModel)]="password"
+          />
+        </div>
       </div>
-      <button type="submit">Entrar</button>
+
+      <!-- Lembrar / Esqueceu -->
+      <div class="form-options">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
+          <span>Lembrar de mim</span>
+        </label>
+        <a href="#" class="forgot-link">Esqueceu a senha?</a>
+      </div>
+
+      <!-- Erro -->
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Botão Entrar -->
+      <button type="submit" class="btn-login" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Entrar</span>
+        <span *ngIf="isLoading">Entrando...</span>
+      </button>
     </form>
-    <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+
+    <!-- Link Cadastro -->
+    <p class="signup-link">
+      Não tem uma conta? <a routerLink="/cadastro">Cadastre-se grátis</a>
+    </p>
+
+    <!-- Rodapé -->
+    <p class="security-note">
+      <i class="fa fa-shield-alt"></i>
+      Seus dados estão seguros e protegidos
+    </p>
   </div>
 </div>

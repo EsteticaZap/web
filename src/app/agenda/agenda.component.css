@@ -818,33 +818,184 @@
   color: #fff;
 }
 
-/* Monthly View Placeholder */
-.monthly-view .coming-soon {
+/* ==================== VISÃO MENSAL ==================== */
+
+.monthly-view {
   display: flex;
   flex-direction: column;
+}
+
+/* Month Navigation */
+.month-nav-container {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
   background: #fff;
   border-radius: 0.75rem;
-  padding: 4rem 2rem;
-  text-align: center;
-  color: #999;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.monthly-view .coming-soon i {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+.month-navigation {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.monthly-view .coming-soon h2 {
-  margin: 0 0 0.5rem 0;
+.month-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.month-name {
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #333;
 }
 
-.monthly-view .coming-soon p {
-  margin: 0;
+.month-days {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Monthly Content */
+.monthly-content {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+}
+
+/* Calendar Card */
+.calendar-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  padding: 0.5rem;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  min-height: 80px;
+  padding: 0.5rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 0.5rem;
+  position: relative;
+  background: #fff;
+}
+
+.calendar-day.other-month {
+  background: #fafafa;
+}
+
+.calendar-day.other-month .day-number {
+  color: #ccc;
+}
+
+.calendar-day.today {
+  background: #fff8e1;
+  border-color: #fbbc05;
+}
+
+.day-number {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.day-appointments {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.appt-bar {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.appt-bar.confirmed {
+  background: #38b000;
+}
+
+.appt-bar.pending {
+  background: #fbbc05;
+}
+
+.appt-count {
+  font-size: 0.65rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.today-label {
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0.25rem;
+  right: 0.25rem;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 0.6rem;
+  padding: 0.15rem 0.25rem;
+  border-radius: 0.25rem;
+  text-align: center;
+}
+
+/* Monthly Sidebar */
+.monthly-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Responsive Monthly */
+@media (max-width: 1024px) {
+  .monthly-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .month-nav-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .calendar-day {
+    min-height: 60px;
+    padding: 0.25rem;
+  }
+  
+  .day-number {
+    font-size: 0.75rem;
+  }
+  
+  .appt-bar {
+    height: 4px;
+  }
 }
 
 /* Responsive Daily View */

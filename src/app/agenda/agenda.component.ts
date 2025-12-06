@@ -28,6 +28,22 @@ interface DailySummary {
   revenue: string;
 }
 
+interface CalendarDay {
+  date: Date;
+  day: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  appointments: Appointment[];
+}
+
+interface MonthlySummary {
+  totalAppointments: number;
+  confirmed: number;
+  pending: number;
+  declined: number;
+  revenue: string;
+}
+
 @Component({
   selector: 'app-agenda',
   standalone: true,
@@ -45,7 +61,7 @@ export class AgendaComponent {
     { label: 'Visão Mensal', value: 'monthly' },
     { label: 'Visão Diária', value: 'daily' }
   ];
-  selectedView: ViewOption = this.viewOptions[2]; // Visão Diária como padrão
+  selectedView: ViewOption = this.viewOptions[1]; // Visão Mensal como padrão
   
   // Data atual da semana
   currentWeekStart = new Date(2024, 10, 18); // 18 de novembro de 2024 (segunda-feira)
@@ -349,6 +365,105 @@ export class AgendaComponent {
     
     // Mostrar intervalo de almoço se o atual termina antes das 13h e o próximo começa após 12h
     return currentEndHour <= 12 && nextStartHour >= 13;
+  }
+
+  // ==================== VISÃO MENSAL ====================
+
+  currentMonth = new Date(2024, 10, 1); // Novembro de 2024
+  monthNamesFull = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  calendarWeekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  
+  // Cache para os dias do calendário
+  private _calendarDays: CalendarDay[] = [];
+  private _lastMonthKey = '';
+
+  get currentMonthFormatted(): string {
+    return `${this.monthNamesFull[this.currentMonth.getMonth()]} ${this.currentMonth.getFullYear()}`;
+  }
+
+  get daysInCurrentMonth(): number {
+    return new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0).getDate();
+  }
+
+  get calendarDays(): CalendarDay[] {
+    const monthKey = `${this.currentMonth.getFullYear()}-${this.currentMonth.getMonth()}`;
+    if (this._lastMonthKey === monthKey && this._calendarDays.length > 0) {
+      return this._calendarDays;
+    }
+    this._lastMonthKey = monthKey;
+    this._calendarDays = this.generateCalendarDays();
+    return this._calendarDays;
+  }
+
+  private generateCalendarDays(): CalendarDay[] {
+    const days: CalendarDay[] = [];
+    const year = this.currentMonth.getFullYear();
+    const month = this.currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startingDay = firstDay.getDay();
+    const prevMonth = new Date(year, month, 0);
+    const prevMonthDays = prevMonth.getDate();
+    
+    for (let i = startingDay - 1; i >= 0; i--) {
+      const date = new Date(year, month - 1, prevMonthDays - i);
+      const dayOfWeek = date.getDay();
+      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const appts = this.appointments.filter(a => a.day === dayIndex);
+      days.push({ date, day: prevMonthDays - i, isCurrentMonth: false, isToday: false, appointments: appts });
+    }
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date(2024, 10, 21);
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+      const dayOfWeek = date.getDay();
+      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const appts = this.appointments.filter(a => a.day === dayIndex);
+      days.push({ date, day: i, isCurrentMonth: true, isToday, appointments: appts });
+    }
+    
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(year, month + 1, i);
+      const dayOfWeek = date.getDay();
+      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const appts = this.appointments.filter(a => a.day === dayIndex);
+      days.push({ date, day: i, isCurrentMonth: false, isToday: false, appointments: appts });
+    }
+    
+    return days;
+  }
+
+  monthlySummaryData: MonthlySummary = {
+    totalAppointments: 13,
+    confirmed: 11,
+    pending: 1,
+    declined: 2,
+    revenue: 'R$ 775,00'
+  };
+
+  previousMonth(): void {
+    const newMonth = new Date(this.currentMonth);
+    newMonth.setMonth(newMonth.getMonth() - 1);
+    this.currentMonth = newMonth;
+    this._lastMonthKey = ''; // Force recalculation
+  }
+
+  nextMonth(): void {
+    const newMonth = new Date(this.currentMonth);
+    newMonth.setMonth(newMonth.getMonth() + 1);
+    this.currentMonth = newMonth;
+    this._lastMonthKey = ''; // Force recalculation
+  }
+
+  getConfirmedCount(appointments: Appointment[]): number {
+    return appointments.filter(a => a.status === 'confirmed').length;
+  }
+
+  getPendingCount(appointments: Appointment[]): number {
+    return appointments.filter(a => a.status === 'pending').length;
   }
 
   // ==================== UTILITÁRIOS ====================

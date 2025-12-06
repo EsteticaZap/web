@@ -6,14 +6,28 @@
   <nav>
     <ul>
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-<a routerLink="/home"><i class="fa fa-home"></i> Home</a>
+        <a routerLink="/home"><i class="fa fa-home"></i> Home</a>
       </li>
       <li routerLinkActive="active">
-<a routerLink="/agenda"><i class="fa fa-calendar-alt"></i> Agenda</a>
+        <a routerLink="/agenda"><i class="fa fa-calendar-alt"></i> Agenda</a>
       </li>
       <li routerLinkActive="active">
-<a routerLink="/clientes"><i class="fa fa-users"></i> Clientes</a>
+        <a routerLink="/clientes"><i class="fa fa-users"></i> Clientes</a>
       </li>
     </ul>
   </nav>
+  
+  <!-- Seção de Perfil do Usuário -->
+  <div class="user-profile">
+    <div class="user-avatar">
+      <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Maria Silva" />
+    </div>
+    <div class="user-info">
+      <span class="user-name">Maria Silva</span>
+      <span class="user-badge">Premium</span>
+    </div>
+    <button class="user-menu-btn" aria-label="Menu do usuário">
+      <i class="fa fa-ellipsis-v"></i>
+    </button>
+  </div>
 </aside>

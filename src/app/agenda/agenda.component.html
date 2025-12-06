@@ -240,12 +240,102 @@
     </div>
   </div>
 
-  <!-- VISÃO MENSAL (placeholder) -->
+  <!-- VISÃO MENSAL -->
   <div *ngIf="selectedView.value === 'monthly'" class="monthly-view">
-    <div class="coming-soon">
-      <i class="fa fa-calendar-alt"></i>
-      <h2>Visão Mensal</h2>
-      <p>Em breve disponível</p>
+    <!-- Navigation and Legend -->
+    <div class="month-nav-container">
+      <div class="month-navigation">
+        <button class="nav-btn" (click)="previousMonth()">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        <div class="month-info">
+          <span class="month-name">{{ currentMonthFormatted }}</span>
+          <span class="month-days">{{ daysInCurrentMonth }} dias</span>
+        </div>
+        <button class="nav-btn" (click)="nextMonth()">
+          <i class="fa fa-chevron-right"></i>
+        </button>
+      </div>
+      <div class="legend-bar">
+        <div class="legend-item">
+          <span class="dot confirmed"></span>
+          Confirmado
+        </div>
+        <div class="legend-item">
+          <span class="dot pending"></span>
+          Pendente
+        </div>
+        <div class="legend-item">
+          <span class="dot declined"></span>
+          Recusado
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Content -->
+    <div class="monthly-content">
+      <!-- Calendar -->
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <div *ngFor="let day of calendarWeekDays" class="calendar-weekday">{{ day }}</div>
+        </div>
+        <div class="calendar-body">
+          <div *ngFor="let calDay of calendarDays" 
+               class="calendar-day"
+               [class.other-month]="!calDay.isCurrentMonth"
+               [class.today]="calDay.isToday">
+            <div class="day-number">{{ calDay.day }}</div>
+            <div class="day-appointments" *ngIf="calDay.appointments.length > 0">
+              <div class="appt-bar confirmed" *ngIf="getConfirmedCount(calDay.appointments) > 0"></div>
+              <div class="appt-bar pending" *ngIf="getPendingCount(calDay.appointments) > 0"></div>
+              <span class="appt-count">{{ calDay.appointments.length }} agend.</span>
+            </div>
+            <div class="today-label" *ngIf="calDay.isToday">
+              <span>Hoje - {{ calDay.appointments.length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumo Mensal -->
+      <div class="monthly-sidebar">
+        <div class="summary-card">
+          <h3>Resumo Mensal</h3>
+          <div class="summary-items">
+            <div class="summary-item confirmed">
+              <div class="summary-icon">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Confirmados</span>
+                <span class="summary-value">{{ monthlySummaryData.confirmed }}</span>
+              </div>
+            </div>
+            <div class="summary-item pending">
+              <div class="summary-icon">
+                <i class="fa fa-clock"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Pendentes</span>
+                <span class="summary-value">{{ monthlySummaryData.pending }}</span>
+              </div>
+            </div>
+            <div class="summary-item declined">
+              <div class="summary-icon">
+                <i class="fa fa-times-circle"></i>
+              </div>
+              <div class="summary-info">
+                <span class="summary-label">Recusados</span>
+                <span class="summary-value">{{ monthlySummaryData.declined }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="summary-revenue">
+            <span class="revenue-label">Faturamento Previsto</span>
+            <span class="revenue-value">{{ monthlySummaryData.revenue }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

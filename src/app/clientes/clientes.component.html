@@ -1,10 +1,322 @@
 <app-side-menu></app-side-menu>
-<div class="clientes-container">
-  <h1>Clientes</h1>
-  <!-- Lista de clientes -->
-  <ul>
-    <li *ngFor="let cliente of []">
-      {{ cliente.name }}
-    </li>
-  </ul>
+<div class="clientes-page">
+  <!-- Header -->
+  <header class="clientes-header">
+    <div class="header-left">
+      <h1>Clientes</h1>
+      <span class="subtitle">Gerencie sua base de clientes</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-new-cliente" (click)="openNewClienteModal()">
+        <i class="fa fa-plus"></i> Novo Cliente
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="clientes-content">
+    <!-- Main Content -->
+    <div class="clientes-main">
+      <!-- Search and Filters -->
+      <div class="search-filter-container">
+        <div class="search-box">
+          <i class="fa fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Buscar por nome, telefone ou email..."
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+        <div class="filter-tabs">
+          <button 
+            class="filter-tab"
+            [class.active]="selectedFilter === 'todos'"
+            (click)="setFilter('todos')">
+            Todos ({{ clienteSummary.total }})
+          </button>
+          <button 
+            class="filter-tab"
+            [class.active]="selectedFilter === 'ativos'"
+            (click)="setFilter('ativos')">
+            Ativos ({{ clienteSummary.ativos }})
+          </button>
+          <button 
+            class="filter-tab"
+            [class.active]="selectedFilter === 'inativos'"
+            (click)="setFilter('inativos')">
+            Inativos ({{ clienteSummary.inativos }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Clients List -->
+      <div class="clientes-list-container">
+        <div class="list-header">
+          <span class="col-cliente">Cliente</span>
+          <span class="col-contato">Contato</span>
+          <span class="col-visitas">Visitas</span>
+          <span class="col-gasto">Total Gasto</span>
+          <span class="col-ultima">Última Visita</span>
+          <span class="col-status">Status</span>
+          <span class="col-acoes">Ações</span>
+        </div>
+        
+        <div class="clientes-list">
+          <div 
+            *ngFor="let cliente of filteredClientes" 
+            class="cliente-row"
+            [class.inativo]="cliente.status === 'inativo'">
+            
+            <!-- Cliente Info -->
+            <div class="col-cliente">
+              <div class="cliente-avatar">
+                <img [src]="cliente.avatar" [alt]="cliente.nome" />
+              </div>
+              <div class="cliente-info">
+                <span class="cliente-nome">{{ cliente.nome }}</span>
+                <span class="cliente-servicos" *ngIf="cliente.servicosPreferidos.length > 0">
+                  {{ cliente.servicosPreferidos.slice(0, 2).join(', ') }}
+                  <span *ngIf="cliente.servicosPreferidos.length > 2">+{{ cliente.servicosPreferidos.length - 2 }}</span>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Contato -->
+            <div class="col-contato">
+              <span class="contato-telefone">
+                <i class="fa fa-phone"></i> {{ cliente.telefone }}
+              </span>
+              <span class="contato-email" *ngIf="cliente.email">
+                <i class="fa fa-envelope"></i> {{ cliente.email }}
+              </span>
+            </div>
+            
+            <!-- Visitas -->
+            <div class="col-visitas">
+              <span class="visitas-count">{{ cliente.totalVisitas }}</span>
+            </div>
+            
+            <!-- Total Gasto -->
+            <div class="col-gasto">
+              <span class="gasto-value">{{ formatCurrency(cliente.totalGasto) }}</span>
+            </div>
+            
+            <!-- Última Visita -->
+            <div class="col-ultima">
+              <span class="ultima-data">{{ formatDate(cliente.ultimaVisita) }}</span>
+            </div>
+            
+            <!-- Status -->
+            <div class="col-status">
+              <span class="status-badge" [ngClass]="getStatusClass(cliente.status)">
+                {{ getStatusLabel(cliente.status) }}
+              </span>
+            </div>
+            
+            <!-- Ações -->
+            <div class="col-acoes">
+              <button class="action-btn whatsapp" title="Enviar WhatsApp" (click)="sendWhatsApp(cliente)">
+                <i class="fa fa-brands fa-whatsapp"></i>
+              </button>
+              <button class="action-btn edit" title="Editar" (click)="openEditClienteModal(cliente)">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="action-btn toggle" title="Alternar Status" (click)="toggleClienteStatus(cliente)">
+                <i class="fa" [ngClass]="cliente.status === 'ativo' ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+              </button>
+              <button class="action-btn delete" title="Excluir" (click)="deleteCliente(cliente)">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="filteredClientes.length === 0" class="empty-state">
+            <i class="fa fa-users"></i>
+            <p>Nenhum cliente encontrado</p>
+            <span>Tente ajustar os filtros ou adicione um novo cliente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="clientes-sidebar">
+      <!-- Summary Card -->
+      <div class="summary-card">
+        <h3>Resumo de Clientes</h3>
+        <div class="summary-items">
+          <div class="summary-item total">
+            <div class="summary-icon">
+              <i class="fa fa-users"></i>
+            </div>
+            <div class="summary-info">
+              <span class="summary-label">Total de Clientes</span>
+              <span class="summary-value">{{ clienteSummary.total }}</span>
+            </div>
+          </div>
+          <div class="summary-item ativos">
+            <div class="summary-icon">
+              <i class="fa fa-check-circle"></i>
+            </div>
+            <div class="summary-info">
+              <span class="summary-label">Clientes Ativos</span>
+              <span class="summary-value">{{ clienteSummary.ativos }}</span>
+            </div>
+          </div>
+          <div class="summary-item novos">
+            <div class="summary-icon">
+              <i class="fa fa-user-plus"></i>
+            </div>
+            <div class="summary-info">
+              <span class="summary-label">Novos este mês</span>
+              <span class="summary-value">{{ clienteSummary.novosEsteMes }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Clientes Card -->
+      <div class="top-clientes-card">
+        <h3>Top Clientes</h3>
+        <div class="top-list">
+          <div *ngFor="let cliente of topClientes; let i = index" class="top-item">
+            <span class="top-rank">{{ i + 1 }}º</span>
+            <div class="top-avatar">
+              <img [src]="cliente.avatar" [alt]="cliente.nome" />
+            </div>
+            <div class="top-info">
+              <span class="top-nome">{{ cliente.nome }}</span>
+              <span class="top-valor">{{ formatCurrency(cliente.totalGasto) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aniversariantes Card -->
+      <div class="aniversariantes-card">
+        <h3>
+          <i class="fa fa-birthday-cake"></i>
+          Aniversariantes do Mês
+        </h3>
+        <div class="aniversariantes-list" *ngIf="aniversariantesDoMes.length > 0">
+          <div *ngFor="let cliente of aniversariantesDoMes" class="aniversariante-item">
+            <div class="aniversariante-avatar">
+              <img [src]="cliente.avatar" [alt]="cliente.nome" />
+            </div>
+            <div class="aniversariante-info">
+              <span class="aniversariante-nome">{{ cliente.nome }}</span>
+              <span class="aniversariante-data">{{ formatBirthday(cliente.aniversario) }}</span>
+            </div>
+            <button class="btn-parabens" (click)="sendWhatsApp(cliente)" title="Enviar parabéns">
+              <i class="fa fa-brands fa-whatsapp"></i>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="aniversariantesDoMes.length === 0" class="no-aniversariantes">
+          <p>Nenhum aniversariante este mês</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo/Editar Cliente -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingCliente ? 'Editar Cliente' : 'Novo Cliente' }}</h2>
+      <button class="modal-close" (click)="closeModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Avatar Upload -->
+      <div class="avatar-upload-section">
+        <label>Foto do Cliente</label>
+        <div class="avatar-upload-container">
+          <div class="avatar-preview">
+            <img [src]="formAvatar" alt="Avatar do cliente" />
+          </div>
+          <div class="avatar-actions">
+            <input 
+              type="file" 
+              id="avatarInput" 
+              accept="image/*" 
+              (change)="onImageSelected($event)"
+              style="display: none;"
+            />
+            <button type="button" class="btn-upload" (click)="triggerFileInput()">
+              <i class="fa fa-camera"></i> Alterar Foto
+            </button>
+            <button 
+              type="button" 
+              class="btn-remove-avatar" 
+              (click)="removeAvatar()"
+              *ngIf="formAvatar !== '/girllandpage.png'">
+              <i class="fa fa-trash"></i> Remover
+            </button>
+          </div>
+          <span class="avatar-hint">Formatos: JPG, PNG. Máx: 5MB</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="nome">Nome Completo *</label>
+        <input 
+          type="text" 
+          id="nome" 
+          [(ngModel)]="formNome" 
+          placeholder="Digite o nome do cliente"
+        />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="telefone">Telefone *</label>
+          <input 
+            type="tel" 
+            id="telefone" 
+            [(ngModel)]="formTelefone" 
+            placeholder="(11) 99999-9999"
+          />
+        </div>
+        <div class="form-group">
+          <label for="aniversario">Data de Nascimento</label>
+          <p-datepicker 
+            [(ngModel)]="formAniversario"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            placeholder="Selecione a data"
+            styleClass="datepicker-fullwidth"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input 
+          type="email" 
+          id="email" 
+          [(ngModel)]="formEmail" 
+          placeholder="email@exemplo.com"
+        />
+      </div>
+      <div class="form-group">
+        <label for="observacoes">Observações</label>
+        <textarea 
+          id="observacoes" 
+          [(ngModel)]="formObservacoes" 
+          placeholder="Observações sobre o cliente..."
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+      <button class="btn-save" (click)="saveCliente()">
+        {{ editingCliente ? 'Salvar Alterações' : 'Cadastrar Cliente' }}
+      </button>
+    </div>
+  </div>
 </div>
