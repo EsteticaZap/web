@@ -1,0 +1,89 @@
+<app-side-menu></app-side-menu>
+<div class="home-page">
+  <header class="home-header">
+    <h1>Bem-vinda, {{ userName }}!</h1>
+    <div class="actions">
+      <button class="btn-primary"><i class="fa fa-plus"></i> Novo Agendamento</button>
+      <i class="fa fa-bell notification"></i>
+    </div>
+  </header>
+
+  <section class="next-appointment-card">
+    <div class="info">
+      <div class="avatar"><i class="fa fa-user"></i></div>
+      <div class="details">
+        <div class="label">Próximo Cliente</div>
+        <div class="client">{{ nextAppointment.client }}</div>
+        <div class="when">
+          <span class="when-item"><i class="fa fa-clock"></i> {{ nextAppointment.time }}</span>
+          <span class="when-item"><i class="fa fa-scissors"></i> {{ nextAppointment.service }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="remaining">
+      <div class="label">Tempo restante</div>
+      <div class="time">{{ nextAppointment.remaining }}</div>
+      <button class="btn-secondary">Ver Detalhes</button>
+    </div>
+  </section>
+
+  <section class="stats-cards">
+    <div class="card">
+      <div class="icon-wrapper calendar"><i class="fa fa-calendar-alt"></i></div>
+      <div class="label">Atendimentos Hoje</div>
+      <div class="value">{{ stats.today }}</div>
+      <div class="change positive">+12%</div>
+    </div>
+    <div class="card">
+      <div class="icon-wrapper dollar"><i class="fa fa-dollar-sign"></i></div>
+      <div class="label">Faturamento Semana</div>
+      <div class="value">R$ {{ stats.weekRevenue }}</div>
+      <div class="change positive">+8%</div>
+    </div>
+    <div class="card">
+      <div class="icon-wrapper users"><i class="fa fa-users"></i></div>
+      <div class="label">Clientes Ativos</div>
+      <div class="value">{{ stats.activeClients }}</div>
+      <div class="change positive">+5</div>
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <div class="dashboard-card agenda-card">
+      <header class="agenda-header">
+        <h2>Agenda de Hoje</h2>
+        <a class="link-small">Ver tudo</a>
+      </header>
+      <div class="appointment-list">
+<div *ngFor="let appt of appointments" class="appointment-card {{ appt.status | lowercase }}">
+          <div class="time">{{ appt.time }}</div>
+          <div class="avatar"><img [src]="appt.image" [alt]="appt.name" /></div>
+          <div class="info">
+            <div class="name">{{ appt.name }}</div>
+            <div class="service">{{ appt.service }}</div>
+          </div>
+          <div class="status">{{ appt.status | titlecase }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="dashboard-card chart-card">
+      <header class="chart-header">
+        <h2>Faturamento Semanal</h2>
+        <select class="period-select">
+          <option>Esta Semana</option>
+        </select>
+      </header>
+<canvas #barCanvas class="chart-canvas"></canvas>
+    </div>
+  </section>
+  <section class="dashboard-grid lower-grid">
+    <div class="dashboard-card">
+      <h2>Serviços Mais Realizados</h2>
+<canvas #servicesCanvas class="chart-canvas"></canvas>
+    </div>
+    <div class="dashboard-card">
+      <h2>Métodos de Pagamento</h2>
+<canvas #paymentsCanvas class="chart-canvas"></canvas>
+    </div>
+  </section>
+</div>

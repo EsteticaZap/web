@@ -1,0 +1,67 @@
+aside.side-menu {
+  width: 240px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #ffffff;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+}
+
+.side-menu .brand {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.side-menu .brand img {
+  width: 32px;
+  height: 32px;
+  margin-right: 0.75rem;
+}
+
+.side-menu .brand span {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.side-menu nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-menu nav li {
+  margin-bottom: 1rem;
+}
+
+.side-menu nav li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #555;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.side-menu nav li a i {
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.side-menu nav li.active a,
+.side-menu nav li a:hover {
+  background: #fdf1ef;
+  color: #e8505b;
+}
+
+.side-menu nav li.active a i {
+  color: #e8505b;
+}

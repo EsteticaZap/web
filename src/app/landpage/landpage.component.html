@@ -1,94 +1,108 @@
-<div class="landpage">
-  <header class="site-header">
-    <div class="container-header">
-      <img src="/logo.png" alt="EstéticaZap Logo" class="header-logo">
-      EsteticaZap
+<nav class="navbar">
+  <div class="container">
+    <div class="brand">
+      <img src="logo.png" alt="EstéticaZap logo" class="logo-nav" />
+      <span class="brand-text">EstéticaZap</span>
     </div>
-  </header>
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1>Agende pelo WhatsApp com facilidade</h1>
-          <p class="subtitle">Simplifique seus agendamentos e pagamentos com uma solução prática para profissionais de beleza</p>
-          <button class="cta-button">Experimente grátis</button>
-        </div>
-        <div class="hero-image">
-<img src="/girllandpage.png" alt="Profissional de beleza">
-        </div>
-      </div>
-    </div>
-  </section>
+    <ul class="nav-items">
+      <li><a routerLink="/landpage">Como funciona</a></li>
+      <li><a routerLink="/landpage#planos">Planos</a></li>
+      <li><a routerLink="/landpage#faq">Perguntas frequentes</a></li>
+      <li><a routerLink="/login" class="btn-login">Entrar</a></li>
+    </ul>
+  </div>
+</nav>
 
-  <!-- How It Works Section -->
-  <section class="how-it-works">
-    <div class="container">
-      <h2>Como o EstéticaZap funciona</h2>
-      <div class="features-grid">
-        <div class="feature">
-<div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
-          <h3>Agende consultas</h3>
-          <p>Permita que clientes escolham o horário pelo WhatsApp</p>
-        </div>
-        <div class="feature">
-<div class="feature-icon"><i class="fas fa-credit-card"></i></div>
-          <h3>Receba pagamentos</h3>
-          <p>Aceite pagamentos online após os serviços</p>
-        </div>
-        <div class="feature">
-<div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-          <h3>Gerencie com facilidade</h3>
-          <p>Otimize seus agendamentos, e o fluxo de caixa</p>
-        </div>
-      </div>
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-text">
+      <h1>Agende pelo WhatsApp com facilidade</h1>
+      <p>Simplifique seus agendamentos e pagamentos com uma solução prática para profissionais de beleza.</p>
+      <button class="btn-primary">Experimente grátis</button>
     </div>
-  </section>
+    <div class="hero-image">
+      <img src="girllandpage.png" alt="Profissional de beleza" />
+    </div>
+  </div>
+</section>
 
-  <!-- Pricing Section -->
-  <section class="pricing">
-    <div class="container">
-      <h2>Escolha seu plano</h2>
-      <div class="pricing-grid">
-        <div class="plan">
-          <h3>Grátis</h3>
-          <ul>
-            <li>✓ Agendamentos limitados</li>
-            <li>✓ Gestão de clientes</li>
-          </ul>
-          <button class="cta-button-secondary">Comece com grátis</button>
-        </div>
-        <div class="plan premium">
-          <h3>Premium</h3>
-          <p class="price">R$ 29<span>/mês</span></p>
-          <ul>
-            <li>✓ Pagamentos online</li>
-            <li>✓ Relatórios avançados</li>
-          </ul>
-          <button class="cta-button">Experimente grátis</button>
-        </div>
+<section class="features">
+  <div class="container">
+    <h2>Como o EstéticaZap funciona</h2>
+    <div class="features-cards">
+      <div class="card">
+        <i class="fas fa-calendar-check fa-2x"></i>
+        <h3>Agende consultas</h3>
+        <p>Organize seus horários em poucos cliques.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-money-bill-wave fa-2x"></i>
+        <h3>Receba pagamentos</h3>
+        <p>Registre pagamentos sem planilhas.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-chart-line fa-2x"></i>
+        <h3>Gerencie com facilidade</h3>
+        <p>Veja seus agendamentos e estatísticas em um só lugar.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- FAQ Section -->
-  <section class="faq">
-    <div class="container">
-      <h2>Perguntas frequentes</h2>
-      <div class="faq-list">
-        <div class="faq-item">
-          <h4>Como funciona o agendamento pelo WhatsApp?</h4>
-          <p>Os clientes enviam mensagem pelo WhatsApp e você pode confirmar ou sugerir horários disponíveis de forma rápida e prática.</p>
-        </div>
-        <div class="faq-item">
-          <h4>Posso receber pagamentos online?</h4>
-          <p>Sim! Com o plano Premium, você pode receber pagamentos online de forma segura através da plataforma.</p>
-        </div>
-        <div class="faq-item">
-          <h4>Há período de teste gratuito?</h4>
-          <p>Sim, você pode experimentar o plano Premium gratuitamente por 14 dias sem compromisso.</p>
-        </div>
+<section id="planos" class="pricing">
+  <div class="container">
+    <h2>Escolha seu plano</h2>
+    <div class="pricing-cards">
+      <div class="card card-free">
+        <h3>Grátis</h3>
+        <ul>
+          <li><i class="fas fa-check"></i> Agendamentos ilimitados</li>
+          <li><i class="fas fa-check"></i> Gestão básica de clientes</li>
+        </ul>
+        <button class="btn-secondary">Comece grátis</button>
+      </div>
+      <div class="card card-premium">
+        <span class="badge">Recomendado</span>
+        <h3>Premium</h3>
+        <p class="price">R$ 39<span>/mês</span></p>
+        <ul>
+          <li><i class="fas fa-check"></i> Lembretes automáticos no WhatsApp</li>
+          <li><i class="fas fa-check"></i> Relatórios simples de atendimentos e faturamento</li>
+          <li><i class="fas fa-check"></i> Suporte prioritário</li>
+        </ul>
+        <button class="btn-primary">Experimente grátis</button>
       </div>
     </div>
-  </section>
-</div>
+  </div>
+</section>
+
+<section id="faq" class="faq">
+  <div class="container">
+    <h2>Perguntas frequentes</h2>
+    <div class="faq-list">
+      <ng-container *ngFor="let faq of faqs">
+        <div class="faq-item">
+<button class="question" (click)="toggleFaq(faq)">
+            {{ faq.question }}
+            <i class="fas question-icon" [ngClass]="faq.open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+          </button>
+          <div class="answer" *ngIf="faq.open">
+            {{ faq.answer }}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>© 2025 EstéticaZap. Todos os direitos reservados.</p>
+    <ul class="footer-links">
+      <li><a href="#">Como funciona</a></li>
+      <li><a href="#">Planos</a></li>
+      <li><a href="#">Perguntas frequentes</a></li>
+      <li><a href="#">Entrar</a></li>
+    </ul>
+  </div>
+</footer>

@@ -1,0 +1,17 @@
+.clientes-container {
+  margin-left: 220px;
+  padding: 1rem;
+}
+
+h1 {
+  margin: 0 0 1rem 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
