@@ -15,12 +15,28 @@
       </div>
     </div>
     
-    <!-- Título -->
-    <h1 class="title">Bem-vindo de volta</h1>
-    <p class="subtitle">Entre na sua conta EstéticaZap</p>
+    <!-- Título dinâmico -->
+    <h1 class="title">{{ isRegisterMode ? 'Criar conta' : 'Bem-vindo de volta' }}</h1>
+    <p class="subtitle">{{ isRegisterMode ? 'Crie sua conta EstéticaZap' : 'Entre na sua conta EstéticaZap' }}</p>
 
     <!-- Formulário -->
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <!-- Nome (apenas no modo registro) -->
+      <div class="form-group" *ngIf="isRegisterMode">
+        <label for="displayName">Nome do Salão ou Seu Nome</label>
+        <div class="input-wrapper">
+          <i class="fa fa-store"></i>
+          <input
+            id="displayName"
+            name="displayName"
+            type="text"
+            placeholder="Ex: Salão Beleza Total ou Maria Silva"
+            required
+            [(ngModel)]="displayName"
+          />
+        </div>
+      </div>
+
       <!-- Email -->
       <div class="form-group">
         <label for="email">E-mail</label>
@@ -53,30 +69,58 @@
         </div>
       </div>
 
-      <!-- Lembrar / Esqueceu -->
-      <div class="form-options">
+      <!-- Confirmar Senha (apenas no modo registro) -->
+      <div class="form-group" *ngIf="isRegisterMode">
+        <label for="confirmPassword">Confirmar Senha</label>
+        <div class="input-wrapper">
+          <i class="fa fa-lock"></i>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            required
+            [(ngModel)]="confirmPassword"
+          />
+        </div>
+      </div>
+
+      <!-- Lembrar / Esqueceu (apenas no modo login) -->
+      <div class="form-options" *ngIf="!isRegisterMode">
         <label class="checkbox-label">
           <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" />
           <span>Lembrar de mim</span>
         </label>
-        <a href="#" class="forgot-link">Esqueceu a senha?</a>
+        <a href="javascript:void(0)" class="forgot-link" (click)="forgotPassword()">Esqueceu a senha?</a>
       </div>
 
-      <!-- Erro -->
+      <!-- Mensagem de Erro -->
       <div *ngIf="errorMessage" class="error-message">
+        <i class="fa fa-exclamation-circle"></i>
         {{ errorMessage }}
       </div>
 
-      <!-- Botão Entrar -->
+      <!-- Mensagem de Sucesso -->
+      <div *ngIf="successMessage" class="success-message">
+        <i class="fa fa-check-circle"></i>
+        {{ successMessage }}
+      </div>
+
+      <!-- Botão Principal -->
       <button type="submit" class="btn-login" [disabled]="isLoading">
-        <span *ngIf="!isLoading">Entrar</span>
-        <span *ngIf="isLoading">Entrando...</span>
+        <span *ngIf="!isLoading">{{ isRegisterMode ? 'Criar conta' : 'Entrar' }}</span>
+        <span *ngIf="isLoading">{{ isRegisterMode ? 'Criando...' : 'Entrando...' }}</span>
       </button>
     </form>
-
-    <!-- Link Cadastro -->
+  
+    <!-- Link Cadastro/Login -->
     <p class="signup-link">
-      Não tem uma conta? <a routerLink="/cadastro">Cadastre-se grátis</a>
+      <span *ngIf="!isRegisterMode">
+        Não tem uma conta? <a class="toggle-mode-link" (click)="toggleMode()">Cadastre-se grátis</a>
+      </span>
+      <span *ngIf="isRegisterMode">
+        Já tem uma conta? <a class="toggle-mode-link" (click)="toggleMode()">Faça login</a>
+      </span>
     </p>
 
     <!-- Rodapé -->

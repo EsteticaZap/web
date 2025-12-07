@@ -9,6 +9,13 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 
+// Firebase
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideStorage, getStorage } from '@angular/fire/storage';
+import { environment } from '../environments/environment';
+
 // Registrar locale pt-BR
 registerLocaleData(localePt, 'pt-BR');
 
@@ -19,6 +26,13 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
+    
+    // Firebase providers
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
+    provideFirestore(() => getFirestore()),
+    provideStorage(() => getStorage()),
+    
     providePrimeNG({
       theme: {
         preset: Aura

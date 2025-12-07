@@ -1,0 +1,337 @@
+<!-- Modal Overlay -->
+<div class="modal-overlay" *ngIf="visible" (click)="onOverlayClick($event)">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>Bem-vinda ao EstéticaZap!</h2>
+      <p>Vamos configurar seu salão em poucos passos</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="steps-container">
+      <div class="steps">
+        <div 
+          *ngFor="let step of steps; let i = index" 
+          class="step"
+          [class.active]="currentStep === i"
+          [class.completed]="currentStep > i"
+          (click)="goToStep(i)">
+          <div class="step-icon">
+            <i *ngIf="currentStep <= i" class="fa {{ step.icon }}"></i>
+            <i *ngIf="currentStep > i" class="fa fa-check"></i>
+          </div>
+          <span class="step-title">{{ step.label }}</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress" [style.width.%]="(currentStep / (totalSteps - 1)) * 100"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="fa fa-exclamation-circle"></i>
+        {{ errorMessage }}
+      </div>
+
+      <!-- Step 1: Informações do Salão -->
+      <div *ngIf="currentStep === 0" class="step-content">
+        <div class="step-header">
+          <h3>Sobre seu Salão</h3>
+          <p>Conte-nos um pouco sobre o seu negócio</p>
+        </div>
+
+        <!-- Foto do Salão -->
+        <div class="photo-section">
+          <div class="photo-upload" (click)="photoInput.click()">
+            <div class="photo-preview" [class.has-photo]="previewUrl">
+              <img *ngIf="previewUrl" [src]="previewUrl" alt="Foto do salão" />
+              <div *ngIf="!previewUrl" class="photo-placeholder">
+                <i class="fa fa-camera"></i>
+                <span>Adicionar foto</span>
+              </div>
+            </div>
+            <input 
+              #photoInput
+              type="file" 
+              accept="image/*" 
+              (change)="onFileSelected($event)" 
+              hidden />
+          </div>
+          <button *ngIf="previewUrl" class="btn-remove-photo" (click)="removePhoto(); $event.stopPropagation()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="nomeSalao">Nome do Salão *</label>
+          <input 
+            type="text" 
+            id="nomeSalao" 
+            [(ngModel)]="data.nomeSalao"
+            placeholder="Ex: Salão Beleza Total" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="telefone">Telefone</label>
+            <input 
+              type="tel" 
+              id="telefone" 
+              [(ngModel)]="data.telefone"
+              (input)="formatPhone($event, 'telefone')"
+              placeholder="(00) 0000-0000"
+              maxlength="15" />
+          </div>
+          <div class="form-group">
+            <label for="whatsapp">WhatsApp</label>
+            <input 
+              type="tel" 
+              id="whatsapp" 
+              [(ngModel)]="data.whatsapp"
+              (input)="formatPhone($event, 'whatsapp')"
+              placeholder="(00) 00000-0000"
+              maxlength="15" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descrição (opcional)</label>
+          <textarea 
+            id="descricao" 
+            [(ngModel)]="data.descricao"
+            placeholder="Descreva seu salão, serviços oferecidos..."
+            rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 2: Localização -->
+      <div *ngIf="currentStep === 1" class="step-content">
+        <div class="step-header">
+          <h3>Onde você está?</h3>
+          <p>Informe a localização do seu salão (opcional)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="endereco">Endereço</label>
+          <input 
+            type="text" 
+            id="endereco" 
+            [(ngModel)]="data.endereco"
+            placeholder="Rua, número, bairro" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cidade">Cidade</label>
+            <input 
+              type="text" 
+              id="cidade" 
+              [(ngModel)]="data.cidade"
+              placeholder="Sua cidade" />
+          </div>
+          <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado" [(ngModel)]="data.estado">
+              <option value="">Selecione</option>
+              <option *ngFor="let uf of estados" [value]="uf">{{ uf }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group form-group-small">
+          <label for="cep">CEP</label>
+          <input 
+            type="text" 
+            id="cep" 
+            [(ngModel)]="data.cep"
+            (input)="formatCep($event)"
+            placeholder="00000-000"
+            maxlength="9" />
+        </div>
+
+        <div class="info-box">
+          <i class="fa fa-info-circle"></i>
+          <p>O endereço ajuda seus clientes a encontrarem seu salão mais facilmente.</p>
+        </div>
+      </div>
+
+      <!-- Step 3: Horários -->
+      <div *ngIf="currentStep === 2" class="step-content">
+        <div class="step-header">
+          <h3>Horários de Funcionamento</h3>
+          <p>Defina quando seu salão está aberto</p>
+        </div>
+
+        <div class="horarios-list">
+          <div 
+            *ngFor="let dia of diasSemana" 
+            class="dia-item"
+            [class.ativo]="getHorario(dia.key).ativo">
+            
+            <div class="dia-toggle">
+              <label class="toggle-container">
+                <input 
+                  type="checkbox" 
+                  [checked]="getHorario(dia.key).ativo"
+                  (change)="toggleDia(dia.key)" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="dia-nome">{{ dia.nome }}</span>
+            </div>
+
+            <div class="dia-horarios" *ngIf="getHorario(dia.key).ativo">
+              <div class="horario-row">
+                <input 
+                  type="time" 
+                  [(ngModel)]="getHorario(dia.key).inicio" />
+                <span>às</span>
+                <input 
+                  type="time" 
+                  [(ngModel)]="getHorario(dia.key).fim" />
+              </div>
+              
+              <label class="intervalo-check">
+                <input 
+                  type="checkbox" 
+                  [checked]="getHorario(dia.key).temIntervalo"
+                  (change)="toggleIntervalo(dia.key)" />
+                <span>Intervalo</span>
+              </label>
+
+              <div class="intervalo-row" *ngIf="getHorario(dia.key).temIntervalo">
+                <span class="intervalo-label">Pausa:</span>
+                <input 
+                  type="time" 
+                  [(ngModel)]="getHorario(dia.key).intervaloInicio" />
+                <span>às</span>
+                <input 
+                  type="time" 
+                  [(ngModel)]="getHorario(dia.key).intervaloFim" />
+              </div>
+            </div>
+
+            <div class="dia-fechado" *ngIf="!getHorario(dia.key).ativo">
+              <span>Fechado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Finalizar -->
+      <div *ngIf="currentStep === 3" class="step-content">
+        <div class="step-header">
+          <h3>Tudo pronto!</h3>
+          <p>Revise suas configurações</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-section">
+            <h4><i class="fa fa-store"></i> Salão</h4>
+            <div class="summary-item">
+              <span class="label">Nome:</span>
+              <span class="value">{{ data.nomeSalao }}</span>
+            </div>
+            <div class="summary-item" *ngIf="data.telefone">
+              <span class="label">Telefone:</span>
+              <span class="value">{{ data.telefone }}</span>
+            </div>
+            <div class="summary-item" *ngIf="data.whatsapp">
+              <span class="label">WhatsApp:</span>
+              <span class="value">{{ data.whatsapp }}</span>
+            </div>
+          </div>
+
+          <div class="summary-section" *ngIf="data.endereco || data.cidade">
+            <h4><i class="fa fa-map-marker-alt"></i> Localização</h4>
+            <div class="summary-item" *ngIf="data.endereco">
+              <span class="label">Endereço:</span>
+              <span class="value">{{ data.endereco }}</span>
+            </div>
+            <div class="summary-item" *ngIf="data.cidade">
+              <span class="label">Cidade:</span>
+              <span class="value">{{ data.cidade }}{{ data.estado ? ' - ' + data.estado : '' }}</span>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <h4><i class="fa fa-clock"></i> Funcionamento</h4>
+            <div class="summary-horarios">
+              <div *ngFor="let dia of diasSemana" class="summary-dia">
+                <span class="dia">{{ dia.abreviacao }}</span>
+                <span *ngIf="getHorario(dia.key).ativo" class="horario">
+                  {{ getHorario(dia.key).inicio }} - {{ getHorario(dia.key).fim }}
+                </span>
+                <span *ngIf="!getHorario(dia.key).ativo" class="fechado">Fechado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-extras">
+          <h4>Configurações de Agendamento</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Intervalo entre agendamentos</label>
+              <select [(ngModel)]="data.intervaloAgendamento">
+                <option [value]="15">15 minutos</option>
+                <option [value]="30">30 minutos</option>
+                <option [value]="45">45 minutos</option>
+                <option [value]="60">1 hora</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Antecedência mínima</label>
+              <select [(ngModel)]="data.antecedenciaMinima">
+                <option [value]="1">1 hora</option>
+                <option [value]="2">2 horas</option>
+                <option [value]="4">4 horas</option>
+                <option [value]="24">24 horas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="modal-footer">
+      <button 
+        *ngIf="currentStep > 0" 
+        class="btn btn-secondary" 
+        (click)="prevStep()">
+        <i class="fa fa-arrow-left"></i>
+        Voltar
+      </button>
+      
+      <button 
+        *ngIf="currentStep === 0" 
+        class="btn btn-text" 
+        (click)="skipOnboarding()">
+        Pular configuração
+      </button>
+
+      <div class="spacer"></div>
+
+      <button 
+        *ngIf="currentStep < totalSteps - 1" 
+        class="btn btn-primary" 
+        (click)="nextStep()">
+        Continuar
+        <i class="fa fa-arrow-right"></i>
+      </button>
+
+      <button 
+        *ngIf="currentStep === totalSteps - 1" 
+        class="btn btn-success" 
+        (click)="finalizarOnboarding()"
+        [disabled]="isSaving">
+        <i *ngIf="!isSaving" class="fa fa-check"></i>
+        <i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+        {{ isSaving ? 'Salvando...' : 'Começar a usar!' }}
+      </button>
+    </div>
+  </div>
+</div>

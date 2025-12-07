@@ -14,20 +14,33 @@
       <li routerLinkActive="active">
         <a routerLink="/clientes"><i class="fa fa-users"></i> Clientes</a>
       </li>
+      <li routerLinkActive="active">
+        <a routerLink="/configuracoes"><i class="fa fa-cog"></i> Configurações</a>
+      </li>
     </ul>
   </nav>
   
   <!-- Seção de Perfil do Usuário -->
   <div class="user-profile">
     <div class="user-avatar">
-      <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Maria Silva" />
+      <!-- Mostra foto do usuário se disponível, senão mostra iniciais -->
+      <img *ngIf="userPhotoUrl" [src]="userPhotoUrl" [alt]="userDisplayName" />
+      <span *ngIf="!userPhotoUrl" class="avatar-initials">{{ userInitials }}</span>
     </div>
     <div class="user-info">
-      <span class="user-name">Maria Silva</span>
-      <span class="user-badge">Premium</span>
+      <span class="user-name">{{ userDisplayName }}</span>
+      <span class="user-email">{{ userEmail }}</span>
     </div>
-    <button class="user-menu-btn" aria-label="Menu do usuário">
+    <button class="user-menu-btn" aria-label="Menu do usuário" (click)="toggleUserMenu()">
       <i class="fa fa-ellipsis-v"></i>
     </button>
+    
+    <!-- Menu dropdown do usuário -->
+    <div class="user-dropdown" *ngIf="showUserMenu">
+      <button class="dropdown-item" (click)="logout()">
+        <i class="fa fa-sign-out-alt"></i>
+        Sair
+      </button>
+    </div>
   </div>
 </aside>

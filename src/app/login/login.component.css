@@ -135,8 +135,24 @@
 
 /* Mensagem de Erro */
 .error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: #ffebee;
   color: #c62828;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* Mensagem de Sucesso */
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e8f5e9;
+  color: #2e7d32;
   padding: 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.8rem;
@@ -188,6 +204,13 @@
 }
 
 /* Botões Sociais */
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
 .social-buttons {
   display: flex;
   flex-direction: column;
@@ -240,13 +263,16 @@
   margin-bottom: 1.5rem;
 }
 
-.signup-link a {
+.signup-link a,
+.signup-link .toggle-mode-link {
   color: #38b000;
   text-decoration: none;
   font-weight: 500;
+  cursor: pointer;
 }
 
-.signup-link a:hover {
+.signup-link a:hover,
+.signup-link .toggle-mode-link:hover {
   text-decoration: underline;
 }
 

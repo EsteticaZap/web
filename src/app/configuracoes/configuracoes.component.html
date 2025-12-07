@@ -1,0 +1,328 @@
+<p-toast position="top-right"></p-toast>
+<app-side-menu></app-side-menu>
+<div class="configuracoes-container">
+  <div class="page-header">
+    <h1>Configurações</h1>
+    <p>Gerencie as informações e horários do seu salão</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Carregando configurações...</p>
+  </div>
+
+  <!-- Conteúdo -->
+  <div *ngIf="!isLoading" class="config-content">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'info'"
+        (click)="setActiveTab('info')">
+        <i class="fa fa-store"></i>
+        Informações
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'horarios'"
+        (click)="setActiveTab('horarios')">
+        <i class="fa fa-clock"></i>
+        Horários
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'avancado'"
+        (click)="setActiveTab('avancado')">
+        <i class="fa fa-cog"></i>
+        Avançado
+      </button>
+    </div>
+
+    <!-- Mensagens -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      <i class="fa fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-error">
+      <i class="fa fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Tab: Informações -->
+    <div *ngIf="activeTab === 'info'" class="tab-content">
+      <div class="config-section">
+        <!-- Foto do Salão -->
+        <div class="photo-section">
+          <h3>Foto do Salão</h3>
+          <div class="photo-upload">
+            <div class="photo-preview" [class.has-photo]="previewUrl">
+              <img *ngIf="previewUrl" [src]="previewUrl" alt="Foto do salão" />
+              <div *ngIf="!previewUrl" class="photo-placeholder">
+                <i class="fa fa-camera"></i>
+                <span>Adicionar foto</span>
+              </div>
+            </div>
+            <div class="photo-actions">
+              <label class="btn btn-secondary">
+                <i class="fa fa-upload"></i>
+                Escolher foto
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  (change)="onFileSelected($event)" 
+                  hidden />
+              </label>
+              <button 
+                *ngIf="previewUrl" 
+                class="btn btn-danger" 
+                (click)="removePhoto()">
+                <i class="fa fa-trash"></i>
+                Remover
+              </button>
+            </div>
+            <p class="photo-hint">Tamanho máximo: 5MB. Formatos: JPG, PNG</p>
+          </div>
+        </div>
+
+        <!-- Informações Básicas -->
+        <div class="form-section">
+          <h3>Informações Básicas</h3>
+          
+          <div class="form-group">
+            <label for="nomeSalao">Nome do Salão *</label>
+            <input 
+              type="text" 
+              id="nomeSalao" 
+              [(ngModel)]="config.nomeSalao"
+              placeholder="Ex: Salão Beleza Total" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telefone">Telefone</label>
+              <input 
+                type="tel" 
+                id="telefone" 
+                [(ngModel)]="config.telefone"
+                (input)="formatPhone($event, 'telefone')"
+                placeholder="(00) 0000-0000"
+                maxlength="15" />
+            </div>
+            <div class="form-group">
+              <label for="whatsapp">WhatsApp</label>
+              <input 
+                type="tel" 
+                id="whatsapp" 
+                [(ngModel)]="config.whatsapp"
+                (input)="formatPhone($event, 'whatsapp')"
+                placeholder="(00) 00000-0000"
+                maxlength="15" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="descricao">Descrição do Salão</label>
+            <textarea 
+              id="descricao" 
+              [(ngModel)]="config.descricao"
+              placeholder="Descreva seu salão, serviços oferecidos..."
+              rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- Endereço -->
+        <div class="form-section">
+          <h3>Endereço</h3>
+          
+          <div class="form-group">
+            <label for="endereco">Endereço</label>
+            <input 
+              type="text" 
+              id="endereco" 
+              [(ngModel)]="config.endereco"
+              placeholder="Rua, número, bairro" />
+          </div>
+
+          <div class="form-row form-row-3">
+            <div class="form-group">
+              <label for="cidade">Cidade</label>
+              <input 
+                type="text" 
+                id="cidade" 
+                [(ngModel)]="config.cidade"
+                placeholder="Sua cidade" />
+            </div>
+            <div class="form-group">
+              <label for="estado">Estado</label>
+              <select id="estado" [(ngModel)]="config.estado">
+                <option value="">Selecione</option>
+                <option *ngFor="let uf of estados" [value]="uf">{{ uf }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cep">CEP</label>
+              <input 
+                type="text" 
+                id="cep" 
+                [(ngModel)]="config.cep"
+                (input)="formatCep($event)"
+                placeholder="00000-000"
+                maxlength="9" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Horários -->
+    <div *ngIf="activeTab === 'horarios'" class="tab-content">
+      <div class="config-section">
+        <div class="section-header">
+          <h3>Horários de Funcionamento</h3>
+          <button class="btn btn-secondary btn-sm" (click)="aplicarHorarioPadrao()">
+            <i class="fa fa-sync"></i>
+            Aplicar horário padrão
+          </button>
+        </div>
+        
+        <p class="section-description">
+          Configure os dias e horários em que seu salão está aberto para atendimento.
+        </p>
+
+        <div class="horarios-grid">
+          <div 
+            *ngFor="let dia of diasSemana" 
+            class="dia-card"
+            [class.ativo]="getHorario(dia.key).ativo"
+            [class.inativo]="!getHorario(dia.key).ativo">
+            
+            <div class="dia-header">
+              <label class="toggle-container">
+                <input 
+                  type="checkbox" 
+                  [checked]="getHorario(dia.key).ativo"
+                  (change)="toggleDia(dia.key)" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="dia-nome">{{ dia.nome }}</span>
+            </div>
+
+            <div class="dia-horarios" *ngIf="getHorario(dia.key).ativo">
+              <!-- Horário de funcionamento -->
+              <div class="horarios-row">
+                <div class="horario-input">
+                  <label>Início</label>
+                  <input 
+                    type="time" 
+                    [(ngModel)]="getHorario(dia.key).inicio" />
+                </div>
+                <span class="horario-separator">às</span>
+                <div class="horario-input">
+                  <label>Fim</label>
+                  <input 
+                    type="time" 
+                    [(ngModel)]="getHorario(dia.key).fim" />
+                </div>
+              </div>
+
+              <!-- Toggle de intervalo -->
+              <div class="intervalo-toggle">
+                <label class="checkbox-container">
+                  <input 
+                    type="checkbox" 
+                    [checked]="getHorario(dia.key).temIntervalo"
+                    (change)="toggleIntervalo(dia.key)" />
+                  <span class="checkmark"></span>
+                  <span class="checkbox-label">
+                    <i class="fa fa-utensils"></i>
+                    Intervalo (almoço/pausa)
+                  </span>
+                </label>
+              </div>
+
+              <!-- Horário de intervalo -->
+              <div class="intervalo-horarios" *ngIf="getHorario(dia.key).temIntervalo">
+                <div class="intervalo-label">
+                  <i class="fa fa-coffee"></i>
+                  <span>Pausa das</span>
+                </div>
+                <div class="horario-input">
+                  <input 
+                    type="time" 
+                    [(ngModel)]="getHorario(dia.key).intervaloInicio" />
+                </div>
+                <span class="horario-separator">às</span>
+                <div class="horario-input">
+                  <input 
+                    type="time" 
+                    [(ngModel)]="getHorario(dia.key).intervaloFim" />
+                </div>
+              </div>
+            </div>
+
+            <div class="dia-fechado" *ngIf="!getHorario(dia.key).ativo">
+              <i class="fa fa-moon"></i>
+              <span>Fechado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Avançado -->
+    <div *ngIf="activeTab === 'avancado'" class="tab-content">
+      <div class="config-section">
+        <h3>Configurações de Agendamento</h3>
+        
+        <div class="form-group">
+          <label for="intervalo">Intervalo entre agendamentos</label>
+          <select id="intervalo" [(ngModel)]="config.intervaloAgendamento">
+            <option [value]="15">15 minutos</option>
+            <option [value]="30">30 minutos</option>
+            <option [value]="45">45 minutos</option>
+            <option [value]="60">1 hora</option>
+          </select>
+          <span class="form-hint">Tempo mínimo entre um agendamento e outro</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="antecedenciaMin">Antecedência mínima</label>
+            <select id="antecedenciaMin" [(ngModel)]="config.antecedenciaMinima">
+              <option [value]="1">1 hora</option>
+              <option [value]="2">2 horas</option>
+              <option [value]="4">4 horas</option>
+              <option [value]="12">12 horas</option>
+              <option [value]="24">24 horas</option>
+            </select>
+            <span class="form-hint">Tempo mínimo antes do horário para agendar</span>
+          </div>
+          <div class="form-group">
+            <label for="antecedenciaMax">Antecedência máxima</label>
+            <select id="antecedenciaMax" [(ngModel)]="config.antecedenciaMaxima">
+              <option [value]="7">7 dias</option>
+              <option [value]="15">15 dias</option>
+              <option [value]="30">30 dias</option>
+              <option [value]="60">60 dias</option>
+              <option [value]="90">90 dias</option>
+            </select>
+            <span class="form-hint">Quantos dias no futuro pode agendar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botão Salvar -->
+    <div class="actions">
+      <button 
+        class="btn btn-primary btn-lg" 
+        (click)="salvarConfiguracoes()"
+        [disabled]="isSaving">
+        <i *ngIf="!isSaving" class="fa fa-save"></i>
+        <i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+        {{ isSaving ? 'Salvando...' : 'Salvar Configurações' }}
+      </button>
+    </div>
+  </div>
+</div>
