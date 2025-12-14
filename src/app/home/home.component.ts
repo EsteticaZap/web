@@ -137,7 +137,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
               {
                 label: 'Faturamento',
                 data: [300, 450, 350, 500, 600, 700, 400],
-                backgroundColor: '#38b000'
+                backgroundColor: '#e91e63'
               }
             ]
           },
@@ -164,7 +164,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
               {
                 label: 'Serviços',
                 data: [25, 30, 35, 40, 45],
-                backgroundColor: ['#ff6b6b', '#38b000', '#ff6b6b', '#38b000', '#ff6b6b']
+                backgroundColor: ['#ff6b6b', '#e91e63', '#ff6b6b', '#e91e63', '#ff6b6b']
               }
             ]
           },
@@ -191,7 +191,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
             datasets: [
               {
                 data: [55, 30, 15],
-                backgroundColor: ['#38b000', '#ff6b6b', '#868e96']
+                backgroundColor: ['#e91e63', '#ff6b6b', '#868e96']
               }
             ]
           },

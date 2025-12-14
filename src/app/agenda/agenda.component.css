@@ -28,7 +28,7 @@
 
 .header-left .subtitle {
   font-size: 0.875rem;
-  color: #38b000;
+  color: #e91e63;
   display: block;
   margin-top: 0.25rem;
 }
@@ -51,11 +51,11 @@
 }
 
 :host ::ng-deep .view-select .p-select:hover {
-  border-color: #38b000;
+  border-color: #e91e63;
 }
 
 :host ::ng-deep .view-select .p-select.p-focus {
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 2px rgba(56, 176, 0, 0.2);
 }
 
@@ -67,7 +67,7 @@
 
 :host ::ng-deep .p-select-option.p-select-option-selected {
   background: #e8f5e9;
-  color: #38b000;
+  color: #e91e63;
 }
 
 :host ::ng-deep .p-select-option:hover {
@@ -76,7 +76,7 @@
 
 /* New appointment button */
 .btn-new-appointment {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
   border: none;
   padding: 0.6rem 1rem;
@@ -126,7 +126,7 @@
 }
 
 .nav-btn:hover {
-  color: #38b000;
+  color: #e91e63;
 }
 
 .week-info {
@@ -167,7 +167,7 @@
 }
 
 .legend-item .dot.confirmed {
-  background: #38b000;
+  background: #e91e63;
 }
 
 .legend-item .dot.pending {
@@ -258,7 +258,7 @@
   border-radius: 0.5rem;
   padding: 0.5rem;
   margin-bottom: 0.25rem;
-  border-left: 3px solid #38b000;
+  border-left: 3px solid #e91e63;
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
@@ -273,7 +273,7 @@
 
 .appointment-card.status-confirmed {
   background: #e8f5e9;
-  border-left-color: #38b000;
+  border-left-color: #e91e63;
 }
 
 .appointment-card.status-pending {
@@ -495,14 +495,14 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #38b000;
+  background: #e91e63;
   border: 2px solid #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   z-index: 1;
 }
 
 .line-dot.status-confirmed {
-  background: #38b000;
+  background: #e91e63;
 }
 
 .line-dot.status-pending {
@@ -525,12 +525,12 @@
   background: #e8f5e9;
   border-radius: 0.75rem;
   padding: 1rem;
-  border-left: 4px solid #38b000;
+  border-left: 4px solid #e91e63;
 }
 
 .timeline-content.status-confirmed {
   background: #e8f5e9;
-  border-left-color: #38b000;
+  border-left-color: #e91e63;
 }
 
 .timeline-content.status-pending {
@@ -603,7 +603,7 @@
 }
 
 .appt-status.status-confirmed {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
 }
 
@@ -638,7 +638,7 @@
 }
 
 .lunch-break i {
-  color: #38b000;
+  color: #e91e63;
 }
 
 /* No Appointments */
@@ -706,7 +706,7 @@
 
 .summary-item.confirmed .summary-icon {
   background: #e8f5e9;
-  color: #38b000;
+  color: #e91e63;
 }
 
 .summary-item.pending .summary-icon {
@@ -751,7 +751,7 @@
 .revenue-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #38b000;
+  color: #e91e63;
 }
 
 /* Quick Actions Card */
@@ -804,7 +804,7 @@
 }
 
 .action-btn.new-appointment .action-icon {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
 }
 
@@ -938,7 +938,7 @@
 }
 
 .appt-bar.confirmed {
-  background: #38b000;
+  background: #e91e63;
 }
 
 .appt-bar.pending {

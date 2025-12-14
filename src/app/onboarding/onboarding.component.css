@@ -49,7 +49,7 @@
 
 /* Modal Header */
 .modal-header {
-  background: linear-gradient(135deg, #38b000 0%, #2d8f00 100%);
+  background: linear-gradient(135deg, #e91e63 0%, #2d8f00 100%);
   color: white;
   padding: 1.5rem 2rem;
   text-align: center;
@@ -104,14 +104,14 @@
 }
 
 .step.active .step-icon {
-  background: #38b000;
+  background: #e91e63;
   color: white;
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(56, 176, 0, 0.3);
 }
 
 .step.completed .step-icon {
-  background: #38b000;
+  background: #e91e63;
   color: white;
 }
 
@@ -124,7 +124,7 @@
 
 .step.active .step-title,
 .step.completed .step-title {
-  color: #38b000;
+  color: #e91e63;
   font-weight: 500;
 }
 
@@ -137,7 +137,7 @@
 
 .progress {
   height: 100%;
-  background: linear-gradient(90deg, #38b000, #45d000);
+  background: linear-gradient(90deg, #e91e63, #45d000);
   transition: width 0.5s ease;
   border-radius: 2px;
 }
@@ -225,13 +225,13 @@
 }
 
 .photo-preview:hover {
-  border-color: #38b000;
+  border-color: #e91e63;
   background: #f0fff0;
 }
 
 .photo-preview.has-photo {
   border-style: solid;
-  border-color: #38b000;
+  border-color: #e91e63;
 }
 
 .photo-preview img {
@@ -303,7 +303,7 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
@@ -335,7 +335,7 @@
 }
 
 .info-box i {
-  color: #38b000;
+  color: #e91e63;
   font-size: 1rem;
   flex-shrink: 0;
   margin-top: 2px;
@@ -365,7 +365,7 @@
 
 .dia-item.ativo {
   background: #f0fff0;
-  border-color: #38b000;
+  border-color: #e91e63;
 }
 
 .dia-toggle {
@@ -413,7 +413,7 @@
 }
 
 .toggle-container input:checked + .toggle-slider {
-  background-color: #38b000;
+  background-color: #e91e63;
 }
 
 .toggle-container input:checked + .toggle-slider:before {
@@ -502,7 +502,7 @@
 }
 
 .summary-section h4 i {
-  color: #38b000;
+  color: #e91e63;
 }
 
 .summary-item {
@@ -544,7 +544,7 @@
 
 .summary-dia .horario {
   font-size: 0.65rem;
-  color: #38b000;
+  color: #e91e63;
 }
 
 .summary-dia .fechado {
@@ -596,7 +596,7 @@
 }
 
 .btn-primary {
-  background: #38b000;
+  background: #e91e63;
   color: white;
 }
 
@@ -614,7 +614,7 @@
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #38b000 0%, #2d8f00 100%);
+  background: linear-gradient(135deg, #e91e63 0%, #2d8f00 100%);
   color: white;
 }
 
@@ -681,7 +681,7 @@
 }
 
 .servico-item:hover {
-  border-color: #38b000;
+  border-color: #e91e63;
   background: #f0fff0;
 }
 
@@ -705,7 +705,7 @@
 }
 
 .servico-valor {
-  color: #38b000;
+  color: #e91e63;
   font-weight: 600;
 }
 
@@ -740,7 +740,7 @@
 }
 
 .btn-icon:hover {
-  background: #38b000;
+  background: #e91e63;
   color: white;
 }
 
@@ -759,7 +759,7 @@
   padding: 1rem;
   background: #f0fff0;
   border-radius: 12px;
-  border: 1px solid #38b000;
+  border: 1px solid #e91e63;
 }
 
 .servico-form h4 {
@@ -781,7 +781,7 @@
 
 .servico-form .form-group input[type="number"]:focus {
   outline: none;
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 

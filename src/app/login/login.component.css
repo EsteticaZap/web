@@ -49,7 +49,7 @@
 
 .subtitle {
   font-size: 0.875rem;
-  color: #38b000;
+  color: #e91e63;
   margin: 0 0 2rem 0;
 }
 
@@ -92,7 +92,7 @@
 
 .input-wrapper input:focus {
   outline: none;
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
@@ -120,12 +120,12 @@
 .checkbox-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #38b000;
+  accent-color: #e91e63;
 }
 
 .forgot-link {
   font-size: 0.8rem;
-  color: #38b000;
+  color: #e91e63;
   text-decoration: none;
 }
 
@@ -163,7 +163,7 @@
 .btn-login {
   width: 100%;
   padding: 0.875rem;
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
   border: none;
   border-radius: 0.5rem;
@@ -265,7 +265,7 @@
 
 .signup-link a,
 .signup-link .toggle-mode-link {
-  color: #38b000;
+  color: #e91e63;
   text-decoration: none;
   font-weight: 500;
   cursor: pointer;
@@ -288,7 +288,7 @@
 }
 
 .security-note i {
-  color: #38b000;
+  color: #e91e63;
 }
 
 /* Responsivo */

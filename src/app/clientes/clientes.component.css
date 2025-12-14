@@ -28,7 +28,7 @@
 
 .header-left .subtitle {
   font-size: 0.875rem;
-  color: #38b000;
+  color: #e91e63;
   display: block;
   margin-top: 0.25rem;
 }
@@ -41,7 +41,7 @@
 
 /* New client button */
 .btn-new-cliente {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
   border: none;
   padding: 0.6rem 1rem;
@@ -136,13 +136,13 @@
 }
 
 .filter-tab:hover {
-  border-color: #38b000;
-  color: #38b000;
+  border-color: #e91e63;
+  color: #e91e63;
 }
 
 .filter-tab.active {
-  background: #38b000;
-  border-color: #38b000;
+  background: #e91e63;
+  border-color: #e91e63;
   color: #fff;
 }
 
@@ -261,7 +261,7 @@
 
 .contato-telefone i,
 .contato-email i {
-  color: #38b000;
+  color: #e91e63;
   font-size: 0.7rem;
   width: 12px;
 }
@@ -285,7 +285,7 @@
 .gasto-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #38b000;
+  color: #e91e63;
 }
 
 /* Última Visita Column */
@@ -314,7 +314,7 @@
 
 .status-badge.status-ativo {
   background: #e8f5e9;
-  color: #38b000;
+  color: #e91e63;
 }
 
 .status-badge.status-inativo {
@@ -353,7 +353,7 @@
 }
 
 .action-btn.edit:hover {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
 }
 
@@ -441,7 +441,7 @@
 
 .summary-item.ativos .summary-icon {
   background: #e8f5e9;
-  color: #38b000;
+  color: #e91e63;
 }
 
 .summary-item.novos .summary-icon {
@@ -498,7 +498,7 @@
 .top-rank {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #38b000;
+  color: #e91e63;
   width: 24px;
 }
 
@@ -534,7 +534,7 @@
 
 .top-valor {
   font-size: 0.75rem;
-  color: #38b000;
+  color: #e91e63;
   font-weight: 600;
 }
 
@@ -755,7 +755,7 @@
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
   font-size: 0.8rem;
   font-weight: 500;
@@ -832,7 +832,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
@@ -869,7 +869,7 @@
 
 :host ::ng-deep .datepicker-fullwidth .p-datepicker-input:focus {
   outline: none;
-  border-color: #38b000;
+  border-color: #e91e63;
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
@@ -895,7 +895,7 @@
 }
 
 :host ::ng-deep .p-datepicker table td > span.p-highlight {
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
 }
 
@@ -913,8 +913,8 @@
 }
 
 :host ::ng-deep .p-button.p-datepicker-trigger {
-  background: #38b000;
-  border-color: #38b000;
+  background: #e91e63;
+  border-color: #e91e63;
 }
 
 :host ::ng-deep .p-button.p-datepicker-trigger:hover {
@@ -951,7 +951,7 @@
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 0.5rem;
-  background: #38b000;
+  background: #e91e63;
   color: #fff;
   font-size: 0.875rem;
   font-weight: 500;
