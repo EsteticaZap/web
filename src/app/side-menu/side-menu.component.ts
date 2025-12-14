@@ -27,20 +27,37 @@ export class SideMenuComponent {
   }
 
   get userDisplayName(): string {
-    const user = this.authService.currentUser();
-    if (user?.displayName) {
-      return user.displayName;
+    const userData = this.authService.userData();
+    const currentUser = this.authService.currentUser();
+    
+    // Priorizar displayName do userData (Firestore)
+    if (userData?.displayName) {
+      return userData.displayName;
     }
+    
+    // Fallback para currentUser (Firebase Auth)
+    if (currentUser?.displayName) {
+      return currentUser.displayName;
+    }
+    
     // Se não tem displayName, pega a parte antes do @ do email
-    if (user?.email) {
-      return user.email.split('@')[0];
+    if (currentUser?.email) {
+      return currentUser.email.split('@')[0];
     }
     return 'Usuário';
   }
 
   get userPhotoUrl(): string {
-    const user = this.authService.currentUser();
-    return user?.photoURL || '';
+    const userData = this.authService.userData();
+    const currentUser = this.authService.currentUser();
+    
+    // Priorizar foto do userData (base64 do Firestore)
+    if ((userData as any)?.fotoSalao) {
+      return (userData as any).fotoSalao;
+    }
+    
+    // Fallback para foto do currentUser (Firebase Auth)
+    return currentUser?.photoURL || '';
   }
 
   get userInitials(): string {

@@ -220,8 +220,115 @@
         </div>
       </div>
 
-      <!-- Step 4: Finalizar -->
+      <!-- Step 4: Serviços -->
       <div *ngIf="currentStep === 3" class="step-content">
+        <div class="step-header">
+          <h3>Serviços Oferecidos</h3>
+          <p>Adicione os serviços que você oferece no seu salão</p>
+        </div>
+
+        <!-- Lista de Serviços -->
+        <div class="servicos-container">
+          <div *ngIf="servicos.length === 0 && !mostrarFormServico" class="empty-servicos">
+            <i class="fa fa-scissors"></i>
+            <p>Nenhum serviço cadastrado ainda</p>
+            <button class="btn btn-primary" (click)="abrirFormServico()">
+              <i class="fa fa-plus"></i>
+              Adicionar Serviço
+            </button>
+          </div>
+
+          <!-- Lista de serviços cadastrados -->
+          <div *ngIf="servicos.length > 0" class="servicos-list">
+            <div *ngFor="let servico of servicos; let i = index" class="servico-item">
+              <div class="servico-info">
+                <span class="servico-nome">{{ servico.nome }}</span>
+                <div class="servico-detalhes">
+                  <span class="servico-valor">{{ formatarValor(servico.valor) }}</span>
+                  <span class="servico-duracao">
+                    <i class="fa fa-clock"></i>
+                    {{ formatarDuracao(servico.duracao) }}
+                  </span>
+                </div>
+              </div>
+              <div class="servico-actions">
+                <button class="btn-icon" (click)="editarServico(servico, i)" title="Editar">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-danger" (click)="removerServico(i)" title="Remover">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary btn-add-servico" (click)="abrirFormServico()">
+              <i class="fa fa-plus"></i>
+              Adicionar outro serviço
+            </button>
+          </div>
+
+          <!-- Formulário de Serviço -->
+          <div *ngIf="mostrarFormServico" class="servico-form">
+            <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
+            
+            <div class="form-group">
+              <label for="nomeServico">Nome do Serviço *</label>
+              <input 
+                type="text" 
+                id="nomeServico" 
+                [(ngModel)]="novoServico.nome"
+                placeholder="Ex: Corte de Cabelo, Manicure, etc." />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="valorServico">Valor (R$) *</label>
+                <input 
+                  type="number" 
+                  id="valorServico" 
+                  [(ngModel)]="novoServico.valor"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01" />
+              </div>
+              <div class="form-group">
+                <label for="duracaoServico">Duração</label>
+                <select id="duracaoServico" [(ngModel)]="novoServico.duracao">
+                  <option *ngFor="let opcao of opcoesDuracao" [value]="opcao.valor">
+                    {{ opcao.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="descricaoServico">Descrição (opcional)</label>
+              <textarea 
+                id="descricaoServico" 
+                [(ngModel)]="novoServico.descricao"
+                placeholder="Descreva o serviço..."
+                rows="2"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" (click)="cancelarFormServico()">
+                Cancelar
+              </button>
+              <button class="btn btn-primary" (click)="salvarServico()">
+                {{ editandoServico ? 'Salvar Alterações' : 'Adicionar Serviço' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <i class="fa fa-info-circle"></i>
+          <p>Você pode adicionar mais serviços depois nas configurações.</p>
+        </div>
+      </div>
+
+      <!-- Step 5: Finalizar -->
+      <div *ngIf="currentStep === 4" class="step-content">
         <div class="step-header">
           <h3>Tudo pronto!</h3>
           <p>Revise suas configurações</p>

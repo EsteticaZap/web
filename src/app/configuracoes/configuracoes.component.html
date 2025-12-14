@@ -32,6 +32,13 @@
       </button>
       <button 
         class="tab-btn" 
+        [class.active]="activeTab === 'servicos'"
+        (click)="setActiveTab('servicos')">
+        <i class="fa fa-scissors"></i>
+        Serviços
+      </button>
+      <button 
+        class="tab-btn" 
         [class.active]="activeTab === 'avancado'"
         (click)="setActiveTab('avancado')">
         <i class="fa fa-cog"></i>
@@ -270,6 +277,70 @@
       </div>
     </div>
 
+    <!-- Tab: Serviços -->
+    <div *ngIf="activeTab === 'servicos'" class="tab-content">
+      <div class="config-section">
+        <div class="section-header">
+          <h3>Serviços Oferecidos</h3>
+          <button class="btn btn-primary btn-sm" (click)="abrirFormServico()" *ngIf="!mostrarFormServico">
+            <i class="fa fa-plus"></i>
+            Adicionar Serviço
+          </button>
+        </div>
+        
+        <p class="section-description">
+          Cadastre os serviços que você oferece no seu salão, com valores e duração.
+        </p>
+
+        <!-- Loading Serviços -->
+        <div *ngIf="isLoadingServicos" class="loading-servicos">
+          <i class="fa fa-spinner fa-spin"></i>
+          <span>Carregando serviços...</span>
+        </div>
+
+        <!-- Lista de Serviços -->
+        <div *ngIf="!isLoadingServicos" class="servicos-container">
+          <div *ngIf="servicos.length === 0" class="empty-servicos">
+            <i class="fa fa-scissors"></i>
+            <p>Nenhum serviço cadastrado ainda</p>
+            <button class="btn btn-primary" (click)="abrirFormServico()">
+              <i class="fa fa-plus"></i>
+              Adicionar Primeiro Serviço
+            </button>
+          </div>
+
+          <div *ngIf="servicos.length > 0" class="servicos-list">
+            <div *ngFor="let servico of servicos" class="servico-item" [class.inativo]="!servico.ativo">
+              <div class="servico-info">
+                <span class="servico-nome">{{ servico.nome }}</span>
+                <div class="servico-detalhes">
+                  <span class="servico-valor">{{ formatarValor(servico.valor) }}</span>
+                  <span class="servico-duracao">
+                    <i class="fa fa-clock"></i>
+                    {{ formatarDuracao(servico.duracao) }}
+                  </span>
+                  <span *ngIf="!servico.ativo" class="servico-status-inativo">
+                    <i class="fa fa-eye-slash"></i>
+                    Inativo
+                  </span>
+                </div>
+                <span *ngIf="servico.descricao" class="servico-descricao">{{ servico.descricao }}</span>
+              </div>
+              <div class="servico-actions">
+                <button class="btn-icon" (click)="editarServico(servico)" title="Editar">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-danger" (click)="removerServico(servico)" title="Remover">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Tab: Avançado -->
     <div *ngIf="activeTab === 'avancado'" class="tab-content">
       <div class="config-section">
@@ -322,6 +393,78 @@
         <i *ngIf="!isSaving" class="fa fa-save"></i>
         <i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
         {{ isSaving ? 'Salvando...' : 'Salvar Configurações' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Serviço -->
+<div *ngIf="mostrarFormServico" class="modal-overlay" (click)="cancelarFormServico()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
+      <button class="modal-close" (click)="cancelarFormServico()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="nomeServico">Nome do Serviço *</label>
+        <input 
+          type="text" 
+          id="nomeServico" 
+          [(ngModel)]="novoServico.nome"
+          placeholder="Ex: Corte de Cabelo, Manicure, etc." />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="valorServico">Valor (R$) *</label>
+          <input 
+            type="number" 
+            id="valorServico" 
+            [(ngModel)]="novoServico.valor"
+            placeholder="0.00"
+            min="0"
+            step="0.01" />
+        </div>
+        <div class="form-group">
+          <label for="duracaoServico">Duração</label>
+          <select id="duracaoServico" [(ngModel)]="novoServico.duracao">
+            <option *ngFor="let opcao of opcoesDuracao" [value]="opcao.valor">
+              {{ opcao.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="descricaoServico">Descrição (opcional)</label>
+        <textarea 
+          id="descricaoServico" 
+          [(ngModel)]="novoServico.descricao"
+          placeholder="Descreva o serviço..."
+          rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-container">
+          <input type="checkbox" [(ngModel)]="novoServico.ativo" />
+          <span class="checkmark"></span>
+          <span class="checkbox-label">Serviço ativo (visível para agendamento)</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelarFormServico()">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="salvarServico()" [disabled]="isSavingServico">
+        <i *ngIf="!isSavingServico" class="fa fa-save"></i>
+        <i *ngIf="isSavingServico" class="fa fa-spinner fa-spin"></i>
+        {{ editandoServico ? 'Salvar Alterações' : 'Adicionar Serviço' }}
       </button>
     </div>
   </div>

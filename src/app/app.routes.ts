@@ -6,6 +6,7 @@ import { AgendaComponent } from './agenda/agenda.component';
 import { ClientesComponent } from './clientes/clientes.component';
 import { ConfiguracoesComponent } from './configuracoes/configuracoes.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { AgendarPublicoComponent } from './agendar-publico/agendar-publico.component';
 import { authGuard, noAuthGuard, onboardingGuard } from './guards/auth.guard';
 
 // Rotas públicas - acessíveis sem autenticação
@@ -16,6 +17,7 @@ export const publicRoutes: Routes = [
     canActivate: [noAuthGuard] // Redireciona para home se já estiver logado
   },
   { path: 'landpage', component: LandpageComponent },
+  { path: 'agendar/:salonId', component: AgendarPublicoComponent },
   { path: '', redirectTo: '/landpage', pathMatch: 'full' }
 ];
 

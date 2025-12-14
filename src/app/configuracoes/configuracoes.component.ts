@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserData } from '../services/auth.service';
-import { Firestore, doc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { Servico } from '../onboarding/onboarding.component';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -121,6 +122,32 @@ export class ConfiguracoesComponent implements OnInit {
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
+  // Serviços
+  servicos: Servico[] = [];
+  novoServico: Servico = {
+    nome: '',
+    valor: 0,
+    duracao: 30,
+    descricao: '',
+    ativo: true
+  };
+  editandoServico: Servico | null = null;
+  mostrarFormServico = false;
+  isLoadingServicos = false;
+  isSavingServico = false;
+
+  // Opções de duração em minutos
+  opcoesDuracao = [
+    { valor: 15, label: '15 min' },
+    { valor: 30, label: '30 min' },
+    { valor: 45, label: '45 min' },
+    { valor: 60, label: '1 hora' },
+    { valor: 90, label: '1h 30min' },
+    { valor: 120, label: '2 horas' },
+    { valor: 150, label: '2h 30min' },
+    { valor: 180, label: '3 horas' }
+  ];
+
   constructor() {
     // Effect para reagir quando os dados do usuário estiverem disponíveis
     effect(() => {
@@ -187,12 +214,20 @@ export class ConfiguracoesComponent implements OnInit {
       }
     }
 
+    // Carregar serviços
+    this.carregarServicos();
+
     this.isLoading = false;
   }
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
     this.clearMessages();
+    
+    // Carregar serviços quando acessar a aba
+    if (tab === 'servicos' && this.servicos.length === 0) {
+      this.carregarServicos();
+    }
   }
 
   clearMessages(): void {
@@ -358,5 +393,184 @@ export class ConfiguracoesComponent implements OnInit {
     let value = input.value.replace(/\D/g, '');
     value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
     this.config.cep = value;
+  }
+
+  // ========== Métodos de Serviços ==========
+
+  async carregarServicos(): Promise<void> {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    this.isLoadingServicos = true;
+    try {
+      const servicosRef = collection(this.firestore, 'servicos');
+      const q = query(servicosRef, where('userId', '==', currentUser.uid));
+      const snapshot = await getDocs(q);
+      
+      this.servicos = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Servico));
+    } catch (error) {
+      console.error('Erro ao carregar serviços:', error);
+    } finally {
+      this.isLoadingServicos = false;
+    }
+  }
+
+  abrirFormServico(): void {
+    this.novoServico = {
+      nome: '',
+      valor: 0,
+      duracao: 30,
+      descricao: '',
+      ativo: true
+    };
+    this.editandoServico = null;
+    this.mostrarFormServico = true;
+  }
+
+  editarServico(servico: Servico): void {
+    this.novoServico = { ...servico };
+    this.editandoServico = servico;
+    this.mostrarFormServico = true;
+  }
+
+  cancelarFormServico(): void {
+    this.mostrarFormServico = false;
+    this.editandoServico = null;
+    this.novoServico = {
+      nome: '',
+      valor: 0,
+      duracao: 30,
+      descricao: '',
+      ativo: true
+    };
+  }
+
+  async salvarServico(): Promise<void> {
+    if (!this.novoServico.nome.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe o nome do serviço.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (this.novoServico.valor <= 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe um valor válido para o serviço.',
+        life: 3000
+      });
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    this.isSavingServico = true;
+
+    try {
+      if (this.editandoServico && this.editandoServico.id) {
+        // Atualizar serviço existente
+        const servicoRef = doc(this.firestore, 'servicos', this.editandoServico.id);
+        await updateDoc(servicoRef, {
+          nome: this.novoServico.nome,
+          valor: this.novoServico.valor,
+          duracao: this.novoServico.duracao,
+          descricao: this.novoServico.descricao || '',
+          ativo: this.novoServico.ativo,
+          updatedAt: serverTimestamp()
+        });
+
+        // Atualizar na lista local
+        const index = this.servicos.findIndex(s => s.id === this.editandoServico!.id);
+        if (index !== -1) {
+          this.servicos[index] = { ...this.novoServico, id: this.editandoServico.id };
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Serviço atualizado com sucesso!',
+          life: 3000
+        });
+      } else {
+        // Criar novo serviço
+        const servicosRef = collection(this.firestore, 'servicos');
+        const docRef = await addDoc(servicosRef, {
+          ...this.novoServico,
+          userId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        // Adicionar na lista local
+        this.servicos.push({ ...this.novoServico, id: docRef.id });
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Serviço adicionado com sucesso!',
+          life: 3000
+        });
+      }
+
+      this.cancelarFormServico();
+    } catch (error) {
+      console.error('Erro ao salvar serviço:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao salvar serviço. Tente novamente.',
+        life: 5000
+      });
+    } finally {
+      this.isSavingServico = false;
+    }
+  }
+
+  async removerServico(servico: Servico): Promise<void> {
+    if (!servico.id) return;
+
+    try {
+      await deleteDoc(doc(this.firestore, 'servicos', servico.id));
+      this.servicos = this.servicos.filter(s => s.id !== servico.id);
+      
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Serviço removido com sucesso!',
+        life: 3000
+      });
+    } catch (error) {
+      console.error('Erro ao remover serviço:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao remover serviço. Tente novamente.',
+        life: 5000
+      });
+    }
+  }
+
+  formatarValor(valor: number): string {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatarDuracao(minutos: number): string {
+    if (minutos < 60) {
+      return `${minutos} min`;
+    }
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    if (mins === 0) {
+      return `${horas}h`;
+    }
+    return `${horas}h ${mins}min`;
   }
 }

@@ -1,0 +1,300 @@
+<!-- Loading -->
+<div *ngIf="isLoading" class="loading-container">
+  <div class="spinner"></div>
+  <p>Carregando informações...</p>
+</div>
+
+<!-- Erro -->
+<div *ngIf="errorMessage && !isLoading" class="error-container">
+  <i class="fa fa-exclamation-circle"></i>
+  <h2>Ops!</h2>
+  <p>{{ errorMessage }}</p>
+</div>
+
+<!-- Conteúdo Principal -->
+<div *ngIf="!isLoading && !errorMessage && salao && currentStep <= 3" class="booking-container">
+  <!-- Header do Salão -->
+  <div class="salon-header">
+    <div class="salon-photo" *ngIf="salao.fotoSalao">
+      <img [src]="salao.fotoSalao" [alt]="salao.displayName" />
+    </div>
+    <div class="salon-info">
+      <h1>{{ salao.configuracoes?.nomeSalao || salao.displayName }}</h1>
+      <p *ngIf="salao.configuracoes?.descricao" class="salon-description">
+        <i class="fa fa-star"></i>
+        {{ salao.configuracoes?.descricao }}
+      </p>
+      <p *ngIf="salao.configuracoes?.endereco" class="salon-address">
+        <i class="fa fa-map-marker-alt"></i>
+        {{ salao.configuracoes?.endereco }}, {{ salao.configuracoes?.cidade }} - {{ salao.configuracoes?.estado }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Indicador de Progresso -->
+  <div class="progress-indicator">
+    <div class="progress-step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+      <div class="step-circle">
+        <i class="fa fa-spa" *ngIf="currentStep < 2"></i>
+        <i class="fa fa-check" *ngIf="currentStep >= 2"></i>
+      </div>
+      <span class="step-label">Serviços</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentStep > 1"></div>
+    <div class="progress-step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+      <div class="step-circle">
+        <i class="fa fa-calendar-alt" *ngIf="currentStep < 3"></i>
+        <i class="fa fa-check" *ngIf="currentStep >= 3"></i>
+      </div>
+      <span class="step-label">Data e Horário</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentStep > 2"></div>
+    <div class="progress-step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+      <div class="step-circle">
+        <i class="fa fa-user"></i>
+      </div>
+      <span class="step-label">Seus Dados</span>
+    </div>
+  </div>
+
+  <!-- Conteúdo das Etapas -->
+  <div class="wizard-content">
+    <!-- ETAPA 1: Escolher Serviços -->
+    <div *ngIf="currentStep === 1" class="step-content step-services">
+      <h2><i class="fa fa-spa"></i> Escolha os Serviços</h2>
+      <p class="step-description">Selecione um ou mais serviços que deseja realizar</p>
+
+      <div class="services-grid">
+        <div 
+          *ngFor="let servico of servicos" 
+          class="service-card"
+          [class.selected]="isServicoSelecionado(servico)"
+          (click)="toggleServico(servico)">
+          <div class="service-icon">
+            <i class="fa fa-check" *ngIf="isServicoSelecionado(servico)"></i>
+          </div>
+          <h3>{{ servico.nome }}</h3>
+          <div class="service-details">
+            <span class="service-price">{{ formatarValor(servico.valor) }}</span>
+            <span class="service-duration">
+              <i class="fa fa-clock"></i>
+              {{ formatarDuracao(servico.duracao) }}
+            </span>
+          </div>
+          <p *ngIf="servico.descricao" class="service-description">{{ servico.descricao }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="servicosSelecionados.length === 0" class="empty-selection">
+        <i class="fa fa-hand-pointer"></i>
+        <p>Selecione pelo menos um serviço para continuar</p>
+      </div>
+    </div>
+
+    <!-- ETAPA 2: Escolher Data e Horário (Unificadas) -->
+    <div *ngIf="currentStep === 2" class="step-content step-date-time">
+      <h2><i class="fa fa-calendar-alt"></i> Escolha a Data e Horário</h2>
+      <p class="step-description">Selecione o melhor dia e horário para você</p>
+
+      <div class="date-time-unified">
+        <!-- Calendário -->
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="btn-nav" (click)="previousMonth()">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+            <span class="current-month">{{ currentMonthFormatted }}</span>
+            <button class="btn-nav" (click)="nextMonth()">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="calendar-grid">
+            <div *ngFor="let day of weekDayNames" class="calendar-weekday">{{ day }}</div>
+            <div 
+              *ngFor="let day of calendarDays" 
+              class="calendar-day"
+              [class.other-month]="!day.isCurrentMonth"
+              [class.disabled]="day.isDisabled"
+              [class.selected]="day.isSelected"
+              (click)="selecionarData(day)">
+              {{ day.day }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Horários -->
+        <div class="time-container">
+          <h3><i class="fa fa-clock"></i> Horários Disponíveis</h3>
+          
+          <div *ngIf="!dataSelecionada" class="empty-selection">
+            <i class="fa fa-hand-pointer"></i>
+            <p>Selecione uma data ao lado para ver os horários</p>
+          </div>
+
+          <div *ngIf="dataSelecionada && horariosDisponiveis.length > 0" class="time-slots">
+            <button 
+              *ngFor="let horario of horariosDisponiveis" 
+              class="time-slot"
+              [class.selected]="horarioSelecionado === horario"
+              (click)="selecionarHorario(horario)">
+              {{ horario }}
+            </button>
+          </div>
+
+          <div *ngIf="dataSelecionada && horariosDisponiveis.length === 0" class="empty-selection">
+            <i class="fa fa-calendar-times"></i>
+            <p>Não há horários disponíveis para este dia.</p>
+            <p style="font-size: 0.875rem; color: #999; margin-top: 0.5rem;">Selecione outra data</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ETAPA 3: Dados do Cliente -->
+    <div *ngIf="currentStep === 3" class="step-content step-client">
+      <h2><i class="fa fa-user"></i> Seus Dados</h2>
+      <p class="step-description">Informe seus dados para confirmar o agendamento</p>
+
+      <div class="client-form">
+        <div class="form-group">
+          <label for="clienteNome">Nome Completo *</label>
+          <input 
+            type="text" 
+            id="clienteNome" 
+            [(ngModel)]="clienteNome"
+            placeholder="Digite seu nome completo" />
+        </div>
+
+        <div class="form-group">
+          <label for="clienteTelefone">WhatsApp / Telefone *</label>
+          <input 
+            type="tel" 
+            id="clienteTelefone" 
+            [(ngModel)]="clienteTelefone"
+            (input)="formatPhone($event)"
+            placeholder="(00) 00000-0000"
+            maxlength="15" />
+        </div>
+
+        <!-- Resumo do Agendamento -->
+        <div class="booking-summary">
+          <h3><i class="fa fa-clipboard-list"></i> Resumo do Agendamento</h3>
+          
+          <div class="summary-item">
+            <span class="summary-label">
+              <i class="fa fa-spa"></i>
+              Serviços:
+            </span>
+            <span class="summary-value">
+              <div *ngFor="let servico of servicosSelecionados" class="summary-service">
+                {{ servico.nome }}
+              </div>
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">
+              <i class="fa fa-calendar"></i>
+              Data:
+            </span>
+            <span class="summary-value">
+              {{ dataSelecionada | date: 'dd/MM/yyyy' }}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">
+              <i class="fa fa-clock"></i>
+              Horário:
+            </span>
+            <span class="summary-value">
+              {{ horarioSelecionado }}
+            </span>
+          </div>
+
+          <div class="summary-item">
+            <span class="summary-label">
+              <i class="fa fa-hourglass-half"></i>
+              Duração:
+            </span>
+            <span class="summary-value">
+              {{ formatarDuracao(duracaoTotal) }}
+            </span>
+          </div>
+
+          <div class="summary-item summary-total">
+            <span class="summary-label">
+              <i class="fa fa-money-bill-wave"></i>
+              Total:
+            </span>
+            <span class="summary-value">
+              {{ formatarValor(valorTotal) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo de Seleção (visível em todas as etapas) -->
+    <div *ngIf="servicosSelecionados.length > 0" class="selection-summary">
+      <div class="summary-row">
+        <span><i class="fa fa-spa"></i> {{ servicosSelecionados.length }} serviço(s)</span>
+        <span><i class="fa fa-clock"></i> {{ formatarDuracao(duracaoTotal) }}</span>
+        <span><i class="fa fa-money-bill-wave"></i> {{ formatarValor(valorTotal) }}</span>
+      </div>
+    </div>
+
+    <!-- Navegação -->
+    <div class="wizard-navigation">
+      <button 
+        *ngIf="currentStep > 1" 
+        class="btn btn-secondary"
+        (click)="prevStep()">
+        <i class="fa fa-arrow-left"></i>
+        Voltar
+      </button>
+      
+      <button 
+        *ngIf="currentStep < 3" 
+        class="btn btn-primary"
+        [disabled]="!canGoNext()"
+        (click)="nextStep()">
+        Próximo
+        <i class="fa fa-arrow-right"></i>
+      </button>
+
+      <button 
+        *ngIf="currentStep === 3" 
+        class="btn btn-primary btn-lg"
+        [disabled]="!canGoNext() || isSaving"
+        (click)="finalizarAgendamento()">
+        <i *ngIf="!isSaving" class="fa fa-check-circle"></i>
+        <i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+        {{ isSaving ? 'Agendando...' : 'Confirmar Agendamento' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tela de Sucesso -->
+<div *ngIf="currentStep === 4 && successMessage" class="success-container">
+  <div class="success-icon">
+    <i class="fa fa-check-circle"></i>
+  </div>
+  <h2>Agendamento Realizado!</h2>
+  <p>{{ successMessage }}</p>
+  
+  <div class="success-details">
+    <p><strong>{{ salao?.configuracoes?.nomeSalao }}</strong> entrará em contato em breve para confirmar.</p>
+    <p class="contact-info">
+      <i class="fa fa-whatsapp"></i>
+      WhatsApp: {{ salao?.configuracoes?.whatsapp }}
+    </p>
+  </div>
+
+  <button class="btn btn-primary" (click)="novoAgendamento()">
+    <i class="fa fa-plus"></i>
+    Fazer Novo Agendamento
+  </button>
+</div>

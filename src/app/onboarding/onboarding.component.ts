@@ -2,7 +2,7 @@ import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFOR
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
-import { Firestore, doc, updateDoc, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -11,6 +11,18 @@ interface HorarioTrabalho {
   temIntervalo: boolean;
   intervaloInicio: string;
   intervaloFim: string;
+}
+
+export interface Servico {
+  id?: string;
+  nome: string;
+  valor: number;
+  duracao: number; // em minutos
+  descricao?: string;
+  ativo: boolean;
+  userId?: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 interface OnboardingData {
@@ -54,13 +66,37 @@ export class OnboardingComponent implements OnInit {
   @Output() onComplete = new EventEmitter<void>();
 
   currentStep = 0;
-  totalSteps = 4;
+  totalSteps = 5;
   isLoading = false;
   isSaving = false;
   errorMessage = '';
 
   selectedFile: File | null = null;
   previewUrl: string = '';
+
+  // Serviços
+  servicos: Servico[] = [];
+  novoServico: Servico = {
+    nome: '',
+    valor: 0,
+    duracao: 30,
+    descricao: '',
+    ativo: true
+  };
+  editandoServico: Servico | null = null;
+  mostrarFormServico = false;
+
+  // Opções de duração em minutos
+  opcoesDuracao = [
+    { valor: 15, label: '15 min' },
+    { valor: 30, label: '30 min' },
+    { valor: 45, label: '45 min' },
+    { valor: 60, label: '1 hora' },
+    { valor: 90, label: '1h 30min' },
+    { valor: 120, label: '2 horas' },
+    { valor: 150, label: '2h 30min' },
+    { valor: 180, label: '3 horas' }
+  ];
 
   data: OnboardingData = {
     nomeSalao: '',
@@ -106,6 +142,7 @@ export class OnboardingComponent implements OnInit {
     { label: 'Seu Salão', icon: 'fa-store' },
     { label: 'Localização', icon: 'fa-map-marker-alt' },
     { label: 'Horários', icon: 'fa-clock' },
+    { label: 'Serviços', icon: 'fa-scissors' },
     { label: 'Finalizar', icon: 'fa-check' }
   ];
 
@@ -258,6 +295,11 @@ export class OnboardingComponent implements OnInit {
         updatedAt: serverTimestamp()
       });
 
+      // Salvar serviços na coleção separada
+      if (this.servicos.length > 0) {
+        await this.salvarServicosNoFirestore();
+      }
+
       // Recarregar dados do usuário para atualizar o cache
       await this.authService.refreshUserData();
 
@@ -304,5 +346,101 @@ export class OnboardingComponent implements OnInit {
   onOverlayClick(event: Event): void {
     // Não fechar ao clicar no overlay
     event.stopPropagation();
+  }
+
+  // ========== Métodos de Serviços ==========
+
+  abrirFormServico(): void {
+    this.novoServico = {
+      nome: '',
+      valor: 0,
+      duracao: 30,
+      descricao: '',
+      ativo: true
+    };
+    this.editandoServico = null;
+    this.mostrarFormServico = true;
+  }
+
+  editarServico(servico: Servico, index: number): void {
+    this.novoServico = { ...servico };
+    this.editandoServico = servico;
+    this.mostrarFormServico = true;
+  }
+
+  cancelarFormServico(): void {
+    this.mostrarFormServico = false;
+    this.editandoServico = null;
+    this.novoServico = {
+      nome: '',
+      valor: 0,
+      duracao: 30,
+      descricao: '',
+      ativo: true
+    };
+  }
+
+  salvarServico(): void {
+    if (!this.novoServico.nome.trim()) {
+      this.errorMessage = 'Informe o nome do serviço.';
+      return;
+    }
+
+    if (this.novoServico.valor <= 0) {
+      this.errorMessage = 'Informe um valor válido para o serviço.';
+      return;
+    }
+
+    this.errorMessage = '';
+
+    if (this.editandoServico) {
+      // Editar serviço existente
+      const index = this.servicos.findIndex(s => s === this.editandoServico);
+      if (index !== -1) {
+        this.servicos[index] = { ...this.novoServico };
+      }
+    } else {
+      // Adicionar novo serviço
+      this.servicos.push({ ...this.novoServico });
+    }
+
+    this.cancelarFormServico();
+  }
+
+  removerServico(index: number): void {
+    this.servicos.splice(index, 1);
+  }
+
+  formatarValor(valor: number): string {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatarDuracao(minutos: number): string {
+    if (minutos < 60) {
+      return `${minutos} min`;
+    }
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    if (mins === 0) {
+      return `${horas}h`;
+    }
+    return `${horas}h ${mins}min`;
+  }
+
+  async salvarServicosNoFirestore(): Promise<void> {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    const servicosRef = collection(this.firestore, 'servicos');
+
+    // Salvar cada serviço
+    for (const servico of this.servicos) {
+      await addDoc(servicosRef, {
+        ...servico,
+        userId: currentUser.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
   }
 }

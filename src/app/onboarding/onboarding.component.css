@@ -638,6 +638,160 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+/* ========== Serviços ========== */
+.servicos-container {
+  min-height: 200px;
+}
+
+.empty-servicos {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+}
+
+.empty-servicos i {
+  font-size: 2.5rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.empty-servicos p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.servicos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.servico-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.servico-item:hover {
+  border-color: #38b000;
+  background: #f0fff0;
+}
+
+.servico-info {
+  flex: 1;
+}
+
+.servico-nome {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.servico-detalhes {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.servico-valor {
+  color: #38b000;
+  font-weight: 600;
+}
+
+.servico-duracao {
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.servico-duracao i {
+  font-size: 0.75rem;
+}
+
+.servico-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #e0e0e0;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: #38b000;
+  color: white;
+}
+
+.btn-icon.btn-danger:hover {
+  background: #e53935;
+}
+
+.btn-add-servico {
+  margin-top: 0.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Formulário de Serviço */
+.servico-form {
+  padding: 1rem;
+  background: #f0fff0;
+  border-radius: 12px;
+  border: 1px solid #38b000;
+}
+
+.servico-form h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.servico-form .form-group input[type="number"] {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.servico-form .form-group input[type="number"]:focus {
+  outline: none;
+  border-color: #38b000;
+  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .modal-container {
