@@ -1,12 +1,28 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { SelectModule } from 'primeng/select';
+import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { AuthService } from '../services/auth.service';
 
 interface ViewOption {
   label: string;
   value: string;
+}
+
+interface Agendamento {
+  salonId: string;
+  clienteNome: string;
+  clienteTelefone: string;
+  servicos: { id: string; nome: string; valor: number; duracao: number }[];
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  status: 'pendente' | 'confirmado' | 'cancelado';
+  valorTotal: number;
+  duracaoTotal: number;
+  createdAt: any;
 }
 
 interface Appointment {
@@ -15,7 +31,7 @@ interface Appointment {
   service: string;
   startTime: string;
   endTime: string;
-  day: number; // 0-6 (seg-dom)
+  date: Date; // Data real do agendamento
   status: 'confirmed' | 'pending' | 'declined';
   image: string;
   price: string;
@@ -51,9 +67,14 @@ interface MonthlySummary {
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css']
 })
-export class AgendaComponent {
+export class AgendaComponent implements OnInit {
+  private firestore = inject(Firestore);
+  private authService = inject(AuthService);
+  
   isBrowser: boolean;
   currentView = 'weekly';
+  isLoading = true;
+  allAgendamentos: Agendamento[] = [];
   
   // Opções de visualização
   viewOptions: ViewOption[] = [
@@ -88,154 +109,127 @@ export class AgendaComponent {
   monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
   // Agendamentos
-  appointments: Appointment[] = [
-    { 
-      id: '1',
-      client: 'Juliana Santos', 
-      service: 'Manicure e Pedicure',
-      startTime: '08:00',
-      endTime: '09:30',
-      day: 3, // Quinta
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 45,00'
-    },
-    { 
-      id: '2',
-      client: 'Roberto Silva', 
-      service: 'Corte Masculino',
-      startTime: '10:00',
-      endTime: '10:30',
-      day: 0, // Segunda
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 35,00'
-    },
-    { 
-      id: '3',
-      client: 'Beatriz Lima', 
-      service: 'Hidratação Capilar',
-      startTime: '10:30',
-      endTime: '12:00',
-      day: 3, // Quinta
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 80,00'
-    },
-    { 
-      id: '4',
-      client: 'Fernanda Costa', 
-      service: 'Progressiva em Gel',
-      startTime: '14:00',
-      endTime: '15:30',
-      day: 0, // Segunda
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 120,00'
-    },
-    { 
-      id: '5',
-      client: 'Mariana Silva', 
-      service: 'Corte e Coloração',
-      startTime: '14:30',
-      endTime: '17:00',
-      day: 3, // Quinta
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 150,00'
-    },
-    { 
-      id: '6',
-      client: 'Carlos Mendes', 
-      service: 'Corte Masculino',
-      startTime: '17:30',
-      endTime: '18:30',
-      day: 3, // Quinta
-      status: 'pending',
-      image: '/girllandpage.png',
-      price: 'R$ 35,00'
-    },
-    { 
-      id: '7',
-      client: 'Patricia Oliveira', 
-      service: 'Escova Progressiva',
-      startTime: '19:00',
-      endTime: '20:30',
-      day: 3, // Quinta
-      status: 'declined',
-      image: '/girllandpage.png',
-      price: 'R$ 100,00'
-    },
-    { 
-      id: '8',
-      client: 'Camila Rocha', 
-      service: 'Coloração',
-      startTime: '16:00',
-      endTime: '17:00',
-      day: 1, // Terça
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 90,00'
-    },
-    { 
-      id: '9',
-      client: 'Carla Mendes', 
-      service: 'Design de Sobrancelhas',
-      startTime: '08:00',
-      endTime: '09:00',
-      day: 4, // Sexta
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 40,00'
-    },
-    { 
-      id: '10',
-      client: 'Ana Paula Costa', 
-      service: 'Corte e Escova',
-      startTime: '10:00',
-      endTime: '11:30',
-      day: 4, // Sexta
-      status: 'declined',
-      image: '/girllandpage.png',
-      price: 'R$ 70,00'
-    },
-    { 
-      id: '11',
-      client: 'Rafael Santos', 
-      service: 'Corte Masculino',
-      startTime: '16:00',
-      endTime: '16:30',
-      day: 4, // Sexta
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 35,00'
-    },
-    { 
-      id: '12',
-      client: 'Pedro Oliveira', 
-      service: 'Barba e Bigode',
-      startTime: '12:30',
-      endTime: '13:00',
-      day: 5, // Sábado
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 25,00'
-    },
-    { 
-      id: '13',
-      client: 'Lucas Pereira', 
-      service: 'Corte Social',
-      startTime: '14:00',
-      endTime: '14:30',
-      day: 6, // Domingo
-      status: 'confirmed',
-      image: '/girllandpage.png',
-      price: 'R$ 40,00'
-    }
-  ];
+  appointments: Appointment[] = [];
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  async ngOnInit(): Promise<void> {
+    if (this.isBrowser) {
+      // Inicializar a data atual
+      this.currentDay = new Date();
+      this.currentWeekStart = this.getMonday(new Date());
+      this.currentMonth = new Date();
+      
+      await this.carregarAgendamentos();
+    }
+  }
+
+  /**
+   * Obter a segunda-feira da semana atual
+   */
+  private getMonday(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  }
+
+  /**
+   * Carregar agendamentos do Firestore
+   */
+  async carregarAgendamentos(): Promise<void> {
+    try {
+      this.isLoading = true;
+      const currentUser = this.authService.currentUser();
+      
+      if (!currentUser) {
+        console.error('Usuário não autenticado');
+        this.isLoading = false;
+        return;
+      }
+
+      console.log('Carregando agendamentos para o usuário:', currentUser.uid);
+
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      // Removido orderBy para evitar necessidade de índice composto
+      // A ordenação será feita localmente
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', currentUser.uid)
+      );
+      
+      const snapshot = await getDocs(q);
+      console.log(`Encontrados ${snapshot.docs.length} agendamentos no Firebase`);
+      
+      this.allAgendamentos = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Agendamento & { id: string }));
+
+      // Ordenar localmente por data
+      this.allAgendamentos.sort((a, b) => {
+        const dateA = new Date(a.data);
+        const dateB = new Date(b.data);
+        return dateA.getTime() - dateB.getTime();
+      });
+
+      console.log('Agendamentos ordenados:', this.allAgendamentos.length);
+
+      // Converter para o formato Appointment
+      this.appointments = this.allAgendamentos.map(agend => this.convertToAppointment(agend));
+      
+      console.log('Appointments convertidos:', this.appointments.length);
+      
+      // Forçar atualização do calendário
+      this._lastMonthKey = '';
+      
+      this.isLoading = false;
+    } catch (error) {
+      console.error('Erro ao carregar agendamentos:', error);
+      console.error('Detalhes do erro:', JSON.stringify(error, null, 2));
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Converter Agendamento do Firestore para Appointment
+   */
+  private convertToAppointment(agend: Agendamento & { id?: string }): Appointment {
+    // Converter status
+    let status: 'confirmed' | 'pending' | 'declined';
+    if (agend.status === 'confirmado') {
+      status = 'confirmed';
+    } else if (agend.status === 'pendente') {
+      status = 'pending';
+    } else {
+      status = 'declined';
+    }
+
+    // Converter data string (YYYY-MM-DD) para Date
+    const [year, month, day] = agend.data.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    // Pegar primeiro serviço ou concatenar múltiplos
+    const service = agend.servicos.length === 1
+      ? agend.servicos[0].nome
+      : agend.servicos.map(s => s.nome).join(', ');
+
+    // Formatar preço
+    const price = `R$ ${agend.valorTotal.toFixed(2).replace('.', ',')}`;
+
+    return {
+      id: agend.id || '',
+      client: agend.clienteNome,
+      service: service,
+      startTime: agend.horaInicio,
+      endTime: agend.horaFim,
+      date: date,
+      status: status,
+      image: '/girllandpage.png',
+      price: price
+    };
   }
 
   // ==================== VISÃO SEMANAL ====================
@@ -277,8 +271,13 @@ export class AgendaComponent {
   getAppointmentsForSlot(timeSlot: string, dayIndex: number): Appointment[] {
     const slotHour = parseInt(timeSlot.split(':')[0]);
     
+    // Calcular a data do dia específico da semana
+    const targetDate = new Date(this.currentWeekStart);
+    targetDate.setDate(targetDate.getDate() + dayIndex);
+    
     return this.appointments.filter(appt => {
-      if (appt.day !== dayIndex) return false;
+      // Verificar se é o mesmo dia
+      if (appt.date.toDateString() !== targetDate.toDateString()) return false;
       
       const apptStartHour = parseInt(appt.startTime.split(':')[0]);
       
@@ -335,12 +334,8 @@ export class AgendaComponent {
   }
 
   getDailyAppointments(): Appointment[] {
-    const dayOfWeek = this.currentDay.getDay();
-    // Converter domingo (0) para índice 6, segunda (1) para 0, etc.
-    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    
     return this.appointments
-      .filter(appt => appt.day === dayIndex)
+      .filter(appt => appt.date.toDateString() === this.currentDay.toDateString())
       .sort((a, b) => {
         const timeA = parseInt(a.startTime.replace(':', ''));
         const timeB = parseInt(b.startTime.replace(':', ''));
@@ -404,45 +399,64 @@ export class AgendaComponent {
     const prevMonth = new Date(year, month, 0);
     const prevMonthDays = prevMonth.getDate();
     
+    // Dias do mês anterior
     for (let i = startingDay - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, prevMonthDays - i);
-      const dayOfWeek = date.getDay();
-      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const appts = this.appointments.filter(a => a.day === dayIndex);
+      const appts = this.appointments.filter(a => a.date.toDateString() === date.toDateString());
       days.push({ date, day: prevMonthDays - i, isCurrentMonth: false, isToday: false, appointments: appts });
     }
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date(2024, 10, 21);
+    const today = new Date();
     
+    // Dias do mês atual
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, month, i);
-      const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
-      const dayOfWeek = date.getDay();
-      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const appts = this.appointments.filter(a => a.day === dayIndex);
+      const isToday = date.toDateString() === today.toDateString();
+      const appts = this.appointments.filter(a => a.date.toDateString() === date.toDateString());
       days.push({ date, day: i, isCurrentMonth: true, isToday, appointments: appts });
     }
     
+    // Dias do próximo mês
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       const date = new Date(year, month + 1, i);
-      const dayOfWeek = date.getDay();
-      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const appts = this.appointments.filter(a => a.day === dayIndex);
+      const appts = this.appointments.filter(a => a.date.toDateString() === date.toDateString());
       days.push({ date, day: i, isCurrentMonth: false, isToday: false, appointments: appts });
     }
     
     return days;
   }
 
-  monthlySummaryData: MonthlySummary = {
-    totalAppointments: 13,
-    confirmed: 11,
-    pending: 1,
-    declined: 2,
-    revenue: 'R$ 775,00'
-  };
+  get monthlySummaryData(): MonthlySummary {
+    // Filtrar agendamentos do mês atual
+    const year = this.currentMonth.getFullYear();
+    const month = this.currentMonth.getMonth();
+    
+    const monthlyAppts = this.appointments.filter(appt => {
+      return appt.date.getFullYear() === year && appt.date.getMonth() === month;
+    });
+
+    const confirmed = monthlyAppts.filter(a => a.status === 'confirmed').length;
+    const pending = monthlyAppts.filter(a => a.status === 'pending').length;
+    const declined = monthlyAppts.filter(a => a.status === 'declined').length;
+    
+    // Calcular faturamento (apenas confirmados e pendentes)
+    const revenue = monthlyAppts
+      .filter(a => a.status === 'confirmed' || a.status === 'pending')
+      .reduce((sum, appt) => {
+        const priceValue = parseFloat(appt.price.replace('R$ ', '').replace('.', '').replace(',', '.'));
+        return sum + priceValue;
+      }, 0);
+
+    return {
+      totalAppointments: monthlyAppts.length,
+      confirmed,
+      pending,
+      declined,
+      revenue: `R$ ${revenue.toFixed(2).replace('.', ',')}`
+    };
+  }
 
   previousMonth(): void {
     const newMonth = new Date(this.currentMonth);

@@ -14,7 +14,7 @@
     </div>
   </header>
 
-  <section class="next-appointment-card">
+  <section class="next-appointment-card" *ngIf="nextAppointment">
     <div class="info">
       <div class="avatar"><i class="fa fa-user"></i></div>
       <div class="details">
@@ -30,6 +30,19 @@
       <div class="label">Tempo restante</div>
       <div class="time">{{ nextAppointment.remaining }}</div>
       <button class="btn-secondary">Ver Detalhes</button>
+    </div>
+  </section>
+
+  <section class="next-appointment-card empty" *ngIf="!nextAppointment && !isLoadingData">
+    <div class="info">
+      <div class="avatar"><i class="fa fa-calendar-check"></i></div>
+      <div class="details">
+        <div class="label">Sem agendamentos</div>
+        <div class="client">Nenhum agendamento próximo hoje</div>
+        <div class="when">
+          <span class="when-item"><i class="fa fa-info-circle"></i> Aproveite para organizar seu dia!</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -61,7 +74,14 @@
         <a class="link-small">Ver tudo</a>
       </header>
       <div class="appointment-list">
-<div *ngFor="let appt of appointments" class="appointment-card {{ appt.status | lowercase }}">
+        <div *ngIf="isLoadingData" class="loading-message">
+          <i class="fa fa-spinner fa-spin"></i> Carregando agendamentos...
+        </div>
+        <div *ngIf="!isLoadingData && appointments.length === 0" class="empty-message">
+          <i class="fa fa-calendar-times"></i>
+          <p>Nenhum agendamento para hoje</p>
+        </div>
+        <div *ngFor="let appt of appointments" class="appointment-card {{ appt.status | lowercase }}">
           <div class="time">{{ appt.time }}</div>
           <div class="avatar"><img [src]="appt.image" [alt]="appt.name" /></div>
           <div class="info">

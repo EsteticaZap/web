@@ -4,10 +4,27 @@ import { RouterModule } from '@angular/router';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { OnboardingComponent } from '../onboarding/onboarding.component';
 import { AuthService } from '../services/auth.service';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { ClienteService } from '../services/cliente.service';
+import { Firestore, doc, getDoc, collection, query, where, getDocs, orderBy } from '@angular/fire/firestore';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
+
+interface Agendamento {
+  id?: string;
+  salonId: string;
+  clienteId: string;
+  clienteNome: string;
+  clienteTelefone: string;
+  servicos: { id: string; nome: string; valor: number; duracao: number }[];
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+  status: 'pendente' | 'confirmado' | 'cancelado';
+  valorTotal: number;
+  duracaoTotal: number;
+  createdAt: any;
+}
 
 @Component({
   selector: 'app-home',
@@ -24,29 +41,38 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private isBrowser: boolean;
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
+  private clienteService = inject(ClienteService);
 
   // Modal de onboarding
   showOnboarding = false;
   onboardingChecked = false;
+  isLoadingData = true;
 
-  userName = 'Maria';
-  nextAppointment = {
-    client: 'Ana Paula Costa',
-    time: '14:30',
-    service: 'Corte e Escova',
-    remaining: '45min'
-  };
+  userName = 'Usuário';
+  nextAppointment: {
+    client: string;
+    time: string;
+    service: string;
+    remaining: string;
+  } | null = null;
+  
   stats = {
-    today: 8,
-    weekRevenue: 2840,
-    activeClients: 127
+    today: 0,
+    weekRevenue: 0,
+    activeClients: 0
   };
-  appointments = [
-    { time: '10:00', name: 'Juliana Santos', service: 'Manicure e Pedicure', status: 'Confirmado', image: '/girllandpage.png' },
-    { time: '11:30', name: 'Carla Mendes', service: 'Design de Sobrancelhas', status: 'Confirmado', image: '/girllandpage.png' },
-    { time: '14:30', name: 'Ana Paula Costa', service: 'Corte e Escova', status: 'Próximo', image: '/girllandpage.png' },
-    { time: '16:00', name: 'Beatriz Lima', service: 'Hidratação Capilar', status: 'Pendente', image: '/girllandpage.png' }
-  ];
+  
+  appointments: Array<{
+    time: string;
+    name: string;
+    service: string;
+    status: string;
+    image: string;
+  }> = [];
+
+  // Dados para gráficos
+  weeklyRevenue: number[] = [0, 0, 0, 0, 0, 0, 0];
+  topServices: { label: string; count: number }[] = [];
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -63,6 +89,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
   async ngOnInit(): Promise<void> {
     // Verificar onboarding quando o componente inicializa
     await this.checkOnboarding();
+    
+    // Carregar dados do Firebase
+    if (this.isBrowser) {
+      await this.carregarDados();
+    }
   }
 
   private async checkOnboarding(): Promise<void> {
@@ -113,30 +144,245 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.showOnboarding = false;
     // Recarregar dados do usuário
     this.checkOnboarding();
+    // Carregar dados após onboarding
+    this.carregarDados();
+  }
+
+  /**
+   * Carregar todos os dados do Firebase
+   */
+  async carregarDados(): Promise<void> {
+    try {
+      this.isLoadingData = true;
+      const currentUser = this.authService.currentUser();
+      
+      if (!currentUser) {
+        console.error('Usuário não autenticado');
+        this.isLoadingData = false;
+        return;
+      }
+
+      // Carregar dados em paralelo
+      await Promise.all([
+        this.carregarAgendamentosHoje(currentUser.uid),
+        this.carregarEstatisticas(currentUser.uid),
+        this.carregarFaturamentoSemanal(currentUser.uid),
+        this.carregarServicosPopulares(currentUser.uid)
+      ]);
+
+      this.isLoadingData = false;
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      this.isLoadingData = false;
+    }
+  }
+
+  /**
+   * Carregar agendamentos de hoje
+   */
+  async carregarAgendamentosHoje(salonId: string): Promise<void> {
+    try {
+      const hoje = new Date();
+      const dataHoje = hoje.toISOString().split('T')[0];
+      
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', salonId),
+        where('data', '==', dataHoje),
+        where('status', 'in', ['pendente', 'confirmado'])
+      );
+      
+      const snapshot = await getDocs(q);
+      const agendamentosHoje: Agendamento[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Agendamento));
+
+      // Ordenar por hora
+      agendamentosHoje.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+
+      // Converter para formato da UI
+      this.appointments = agendamentosHoje.map(agend => {
+        const servicosNomes = agend.servicos.map(s => s.nome).join(', ');
+        let status = 'Pendente';
+        if (agend.status === 'confirmado') status = 'Confirmado';
+        
+        return {
+          time: agend.horaInicio,
+          name: agend.clienteNome,
+          service: servicosNomes,
+          status: status,
+          image: '/girllandpage.png'
+        };
+      });
+
+      // Encontrar próximo agendamento
+      const horaAtual = hoje.toTimeString().split(' ')[0].substring(0, 5);
+      const proximoAgend = agendamentosHoje.find(a => a.horaInicio > horaAtual);
+      
+      if (proximoAgend) {
+        const servicosNomes = proximoAgend.servicos.map(s => s.nome).join(', ');
+        this.nextAppointment = {
+          client: proximoAgend.clienteNome,
+          time: proximoAgend.horaInicio,
+          service: servicosNomes,
+          remaining: this.calcularTempoRestante(proximoAgend.horaInicio)
+        };
+      } else {
+        this.nextAppointment = null;
+      }
+
+    } catch (error) {
+      console.error('Erro ao carregar agendamentos de hoje:', error);
+    }
+  }
+
+  /**
+   * Calcular tempo restante até o agendamento
+   */
+  private calcularTempoRestante(horaInicio: string): string {
+    const agora = new Date();
+    const [hora, minuto] = horaInicio.split(':').map(Number);
+    const agendamento = new Date(agora);
+    agendamento.setHours(hora, minuto, 0, 0);
+    
+    const diff = agendamento.getTime() - agora.getTime();
+    const minutos = Math.floor(diff / 60000);
+    
+    if (minutos < 0) return 'Em andamento';
+    if (minutos < 60) return `${minutos}min`;
+    
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return mins > 0 ? `${horas}h ${mins}min` : `${horas}h`;
+  }
+
+  /**
+   * Carregar estatísticas
+   */
+  async carregarEstatisticas(salonId: string): Promise<void> {
+    try {
+      const hoje = new Date();
+      const dataHoje = hoje.toISOString().split('T')[0];
+      
+      // Agendamentos de hoje
+      const agendamentosHojeRef = collection(this.firestore, 'agendamentos');
+      const qHoje = query(
+        agendamentosHojeRef,
+        where('salonId', '==', salonId),
+        where('data', '==', dataHoje)
+      );
+      const snapshotHoje = await getDocs(qHoje);
+      this.stats.today = snapshotHoje.size;
+
+      // Clientes ativos
+      const clientesAtivos = await this.clienteService.listarClientesPorSalao(salonId);
+      this.stats.activeClients = clientesAtivos.filter(c => c.status === 'ativo').length;
+
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
+  }
+
+  /**
+   * Carregar faturamento semanal
+   */
+  async carregarFaturamentoSemanal(salonId: string): Promise<void> {
+    try {
+      const hoje = new Date();
+      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const revenue: number[] = [0, 0, 0, 0, 0, 0, 0];
+      let totalSemana = 0;
+
+      // Calcular últimos 7 dias
+      for (let i = 0; i < 7; i++) {
+        const data = new Date(hoje);
+        data.setDate(data.getDate() - i);
+        const dataStr = data.toISOString().split('T')[0];
+        
+        const agendamentosRef = collection(this.firestore, 'agendamentos');
+        const q = query(
+          agendamentosRef,
+          where('salonId', '==', salonId),
+          where('data', '==', dataStr),
+          where('status', 'in', ['confirmado', 'pendente'])
+        );
+        
+        const snapshot = await getDocs(q);
+        const valorDia = snapshot.docs.reduce((sum, doc) => {
+          const agend = doc.data() as Agendamento;
+          return sum + (agend.valorTotal || 0);
+        }, 0);
+        
+        const diaSemana = data.getDay();
+        revenue[diaSemana] = valorDia;
+        totalSemana += valorDia;
+      }
+
+      this.weeklyRevenue = revenue;
+      this.stats.weekRevenue = totalSemana;
+
+    } catch (error) {
+      console.error('Erro ao carregar faturamento semanal:', error);
+    }
+  }
+
+  /**
+   * Carregar serviços mais populares
+   */
+  async carregarServicosPopulares(salonId: string): Promise<void> {
+    try {
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', salonId)
+      );
+      
+      const snapshot = await getDocs(q);
+      const servicosCount = new Map<string, number>();
+      
+      snapshot.docs.forEach(doc => {
+        const agend = doc.data() as Agendamento;
+        agend.servicos?.forEach(servico => {
+          const count = servicosCount.get(servico.nome) || 0;
+          servicosCount.set(servico.nome, count + 1);
+        });
+      });
+
+      // Ordenar e pegar top 5
+      this.topServices = Array.from(servicosCount.entries())
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    } catch (error) {
+      console.error('Erro ao carregar serviços populares:', error);
+    }
   }
 
   ngAfterViewInit(): void {
     if (!this.isBrowser) return;
 
-    // Delay para garantir que o DOM está pronto
+    // Delay para garantir que o DOM e dados estejam prontos
     setTimeout(() => {
       this.initCharts();
-    }, 100);
+    }, 500);
   }
 
   private initCharts(): void {
-    // Faturamento semanal
+    // Faturamento semanal com dados reais
     if (this.barCanvas?.nativeElement) {
       const ctx = this.barCanvas.nativeElement.getContext('2d');
       if (ctx) {
         new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+            labels: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
             datasets: [
               {
-                label: 'Faturamento',
-                data: [300, 450, 350, 500, 600, 700, 400],
+                label: 'Faturamento (R$)',
+                data: this.weeklyRevenue,
                 backgroundColor: '#e91e63'
               }
             ]
@@ -146,25 +392,39 @@ export class HomeComponent implements OnInit, AfterViewInit {
             maintainAspectRatio: false,
             scales: {
               y: { beginAtZero: true }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const value = context.parsed.y || 0;
+                    return `R$ ${value.toFixed(2)}`;
+                  }
+                }
+              }
             }
           }
         });
       }
     }
 
-    // Serviços Mais Realizados (horizontal bar)
+    // Serviços Mais Realizados com dados reais
     if (this.servicesCanvas?.nativeElement) {
       const servicesCtx = this.servicesCanvas.nativeElement.getContext('2d');
       if (servicesCtx) {
+        const labels = this.topServices.map(s => s.label);
+        const data = this.topServices.map(s => s.count);
+        const colors = ['#e91e63', '#ff6b6b', '#e91e63', '#ff6b6b', '#e91e63'];
+        
         new Chart(servicesCtx, {
           type: 'bar',
           data: {
-            labels: ['Hidratação', 'Sobrancelha', 'Escova', 'Manicure', 'Corte'],
+            labels: labels.length > 0 ? labels : ['Sem dados'],
             datasets: [
               {
-                label: 'Serviços',
-                data: [25, 30, 35, 40, 45],
-                backgroundColor: ['#ff6b6b', '#e91e63', '#ff6b6b', '#e91e63', '#ff6b6b']
+                label: 'Quantidade',
+                data: data.length > 0 ? data : [0],
+                backgroundColor: colors
               }
             ]
           },
@@ -180,7 +440,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     }
 
-    // Métodos de Pagamento (doughnut chart)
+    // Métodos de Pagamento (mantendo mockado por enquanto - aguardando implementação de pagamentos)
     if (this.paymentsCanvas?.nativeElement) {
       const paymentsCtx = this.paymentsCanvas.nativeElement.getContext('2d');
       if (paymentsCtx) {
@@ -197,7 +457,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
           },
           options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
+            }
           }
         });
       }

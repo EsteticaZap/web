@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Firestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Servico } from '../onboarding/onboarding.component';
+import { ClienteService } from '../services/cliente.service';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -45,6 +46,7 @@ interface SalaoData {
 
 interface Agendamento {
   salonId: string;
+  clienteId: string;          // ID do cliente vinculado
   clienteNome: string;
   clienteTelefone: string;
   servicos: { id: string; nome: string; valor: number; duracao: number }[];
@@ -68,6 +70,7 @@ export class AgendarPublicoComponent implements OnInit {
   private firestore = inject(Firestore);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private clienteService = inject(ClienteService);
 
   salonId: string = '';
   salao: SalaoData | null = null;
@@ -394,16 +397,49 @@ export class AgendarPublicoComponent implements OnInit {
     this.errorMessage = '';
 
     try {
-      // Calcular horário de fim
+      // ETAPA 1: Verificar se cliente já existe pelo telefone
+      console.log('Verificando se cliente existe com telefone:', this.clienteTelefone);
+      let clienteId: string;
+      let clienteExistente = await this.clienteService.buscarClientePorTelefone(
+        this.salonId, 
+        this.clienteTelefone
+      );
+
+      if (clienteExistente && clienteExistente.id) {
+        // Cliente já existe - usar o ID existente
+        clienteId = clienteExistente.id;
+        console.log('Cliente já existe. ID:', clienteId);
+      } else {
+        // Cliente não existe - criar novo cliente
+        console.log('Cliente não encontrado. Criando novo cliente...');
+        clienteId = await this.clienteService.criarCliente({
+          salonId: this.salonId,
+          nome: this.clienteNome,
+          telefone: this.clienteTelefone,
+          dataCadastro: new Date(),
+          ultimaVisita: null,
+          totalVisitas: 0,
+          totalGasto: 0,
+          servicosRealizados: [],
+          datasAgendamentos: [],
+          status: 'ativo'
+        });
+        console.log('Novo cliente criado com ID:', clienteId);
+      }
+
+      // ETAPA 2: Calcular horário de fim
       const [hora, min] = this.horarioSelecionado.split(':').map(Number);
       const totalMinutos = hora * 60 + min + this.duracaoTotal;
       const horaFim = Math.floor(totalMinutos / 60);
       const minFim = totalMinutos % 60;
       const horaFimStr = `${String(horaFim).padStart(2, '0')}:${String(minFim).padStart(2, '0')}`;
 
-      // Criar agendamento
+      const dataAgendamento = this.dataSelecionada.toISOString().split('T')[0];
+
+      // ETAPA 3: Criar agendamento vinculado ao cliente
       const agendamento: Agendamento = {
         salonId: this.salonId,
+        clienteId: clienteId,  // Vincular ao cliente
         clienteNome: this.clienteNome,
         clienteTelefone: this.clienteTelefone,
         servicos: this.servicosSelecionados.map(s => ({
@@ -412,7 +448,7 @@ export class AgendarPublicoComponent implements OnInit {
           valor: s.valor,
           duracao: s.duracao
         })),
-        data: this.dataSelecionada.toISOString().split('T')[0],
+        data: dataAgendamento,
         horaInicio: this.horarioSelecionado,
         horaFim: horaFimStr,
         status: 'pendente',
@@ -423,6 +459,20 @@ export class AgendarPublicoComponent implements OnInit {
 
       const agendamentosRef = collection(this.firestore, 'agendamentos');
       await addDoc(agendamentosRef, agendamento);
+      console.log('Agendamento criado com sucesso');
+
+      // ETAPA 4: Registrar agendamento no histórico do cliente
+      await this.clienteService.registrarAgendamento(
+        clienteId,
+        this.servicosSelecionados.map(s => ({
+          id: s.id!,
+          nome: s.nome,
+          valor: s.valor
+        })),
+        dataAgendamento,
+        this.valorTotal
+      );
+      console.log('Histórico do cliente atualizado');
 
       this.successMessage = 'Agendamento realizado com sucesso! Em breve você receberá uma confirmação.';
       this.currentStep = 4; // Tela de sucesso

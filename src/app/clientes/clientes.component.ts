@@ -1,22 +1,26 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { DatePickerModule } from 'primeng/datepicker';
+import { ClienteService, Cliente as ClienteFirestore } from '../services/cliente.service';
+import { AuthService } from '../services/auth.service';
+import { Timestamp } from '@angular/fire/firestore';
 
 interface Cliente {
   id: string;
   nome: string;
   telefone: string;
-  email: string;
-  avatar: string;
+  email?: string;
+  avatar?: string;
   dataCadastro: Date;
   ultimaVisita: Date | null;
   totalVisitas: number;
   totalGasto: number;
   servicosPreferidos: string[];
+  datasAgendamentos: string[];
   status: 'ativo' | 'inativo';
-  observacoes: string;
+  observacoes?: string;
   aniversario: Date | null;
 }
 
@@ -34,12 +38,16 @@ interface ClienteSummary {
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css']
 })
-export class ClientesComponent {
+export class ClientesComponent implements OnInit {
+  private clienteService = inject(ClienteService);
+  private authService = inject(AuthService);
+  
   isBrowser: boolean;
   searchTerm = '';
   selectedFilter = 'todos';
   showModal = false;
   editingCliente: Cliente | null = null;
+  isLoading = true;
   
   // Form fields
   formNome = '';
@@ -49,161 +57,148 @@ export class ClientesComponent {
   formObservacoes = '';
   formAvatar = '/girllandpage.png';
 
-  clientes: Cliente[] = [
-    {
-      id: '1',
-      nome: 'Juliana Santos',
-      telefone: '(11) 99999-1234',
-      email: 'juliana.santos@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 2, 15),
-      ultimaVisita: new Date(2024, 10, 18),
-      totalVisitas: 12,
-      totalGasto: 1250.00,
-      servicosPreferidos: ['Manicure', 'Pedicure', 'Hidratação'],
-      status: 'ativo',
-      observacoes: 'Prefere horários pela manhã',
-      aniversario: new Date(1992, 5, 20)
-    },
-    {
-      id: '2',
-      nome: 'Roberto Silva',
-      telefone: '(11) 98888-5678',
-      email: 'roberto.silva@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 4, 10),
-      ultimaVisita: new Date(2024, 10, 15),
-      totalVisitas: 8,
-      totalGasto: 560.00,
-      servicosPreferidos: ['Corte Masculino', 'Barba'],
-      status: 'ativo',
-      observacoes: '',
-      aniversario: new Date(1988, 8, 12)
-    },
-    {
-      id: '3',
-      nome: 'Beatriz Lima',
-      telefone: '(11) 97777-9012',
-      email: 'beatriz.lima@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 0, 5),
-      ultimaVisita: new Date(2024, 10, 21),
-      totalVisitas: 24,
-      totalGasto: 3200.00,
-      servicosPreferidos: ['Hidratação Capilar', 'Coloração', 'Escova'],
-      status: 'ativo',
-      observacoes: 'Cliente VIP - sempre oferecer café',
-      aniversario: new Date(1985, 11, 3)
-    },
-    {
-      id: '4',
-      nome: 'Fernanda Costa',
-      telefone: '(11) 96666-3456',
-      email: 'fernanda.costa@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 6, 20),
-      ultimaVisita: new Date(2024, 10, 10),
-      totalVisitas: 5,
-      totalGasto: 890.00,
-      servicosPreferidos: ['Progressiva', 'Corte'],
-      status: 'ativo',
-      observacoes: 'Alergia a alguns produtos químicos - verificar antes',
-      aniversario: new Date(1995, 2, 28)
-    },
-    {
-      id: '5',
-      nome: 'Mariana Silva',
-      telefone: '(11) 95555-7890',
-      email: 'mariana.silva@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 1, 12),
-      ultimaVisita: new Date(2024, 10, 19),
-      totalVisitas: 15,
-      totalGasto: 2100.00,
-      servicosPreferidos: ['Corte', 'Coloração', 'Mechas'],
-      status: 'ativo',
-      observacoes: '',
-      aniversario: new Date(1990, 7, 15)
-    },
-    {
-      id: '6',
-      nome: 'Carlos Mendes',
-      telefone: '(11) 94444-1234',
-      email: 'carlos.mendes@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 8, 1),
-      ultimaVisita: new Date(2024, 9, 5),
-      totalVisitas: 3,
-      totalGasto: 175.00,
-      servicosPreferidos: ['Corte Masculino'],
-      status: 'inativo',
-      observacoes: 'Não compareceu nas últimas 2 vezes',
-      aniversario: null
-    },
-    {
-      id: '7',
-      nome: 'Patricia Oliveira',
-      telefone: '(11) 93333-5678',
-      email: 'patricia.oliveira@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 3, 8),
-      ultimaVisita: new Date(2024, 10, 20),
-      totalVisitas: 10,
-      totalGasto: 1450.00,
-      servicosPreferidos: ['Escova Progressiva', 'Manicure'],
-      status: 'ativo',
-      observacoes: '',
-      aniversario: new Date(1987, 0, 22)
-    },
-    {
-      id: '8',
-      nome: 'Camila Rocha',
-      telefone: '(11) 92222-9012',
-      email: 'camila.rocha@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 5, 15),
-      ultimaVisita: new Date(2024, 10, 12),
-      totalVisitas: 7,
-      totalGasto: 980.00,
-      servicosPreferidos: ['Coloração', 'Corte'],
-      status: 'ativo',
-      observacoes: 'Prefere atendimento com a Ana',
-      aniversario: new Date(1993, 4, 10)
-    },
-    {
-      id: '9',
-      nome: 'Carla Mendes',
-      telefone: '(11) 91111-3456',
-      email: 'carla.mendes@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 7, 25),
-      ultimaVisita: new Date(2024, 10, 8),
-      totalVisitas: 4,
-      totalGasto: 320.00,
-      servicosPreferidos: ['Design de Sobrancelhas', 'Manicure'],
-      status: 'ativo',
-      observacoes: '',
-      aniversario: new Date(1998, 9, 5)
-    },
-    {
-      id: '10',
-      nome: 'Ana Paula Costa',
-      telefone: '(11) 90000-7890',
-      email: 'ana.paula@email.com',
-      avatar: '/girllandpage.png',
-      dataCadastro: new Date(2024, 9, 3),
-      ultimaVisita: null,
-      totalVisitas: 0,
-      totalGasto: 0,
-      servicosPreferidos: [],
-      status: 'inativo',
-      observacoes: 'Cadastro realizado mas nunca agendou',
-      aniversario: new Date(1991, 6, 18)
-    }
-  ];
+  clientes: Cliente[] = [];
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  async ngOnInit(): Promise<void> {
+    if (this.isBrowser) {
+      await this.carregarClientes();
+    }
+  }
+
+  /**
+   * Carregar clientes do Firestore
+   */
+  async carregarClientes(): Promise<void> {
+    try {
+      this.isLoading = true;
+      const currentUser = this.authService.currentUser();
+      
+      if (!currentUser) {
+        console.error('Usuário não autenticado');
+        this.isLoading = false;
+        return;
+      }
+
+      const clientesFirestore = await this.clienteService.listarClientesPorSalao(currentUser.uid);
+      
+      // Filtrar clientes válidos e converter para o formato do componente
+      this.clientes = clientesFirestore
+        .filter(c => {
+          // Verificar se tem nome válido
+          const temNome = c.nome && c.nome.trim() !== '';
+          if (!temNome) {
+            console.warn('Cliente sem nome encontrado, será ignorado:', c.id);
+          }
+          return temNome;
+        })
+        .map(c => this.converterCliente(c));
+      
+      console.log(`${this.clientes.length} clientes válidos carregados do Firestore`);
+      this.isLoading = false;
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Deletar cliente corrompido/sem dados
+   */
+  async deletarClienteCorreompido(clienteId: string): Promise<void> {
+    try {
+      // Por enquanto apenas inativa - depois pode implementar delete real
+      await this.clienteService.atualizarCliente(clienteId, { status: 'inativo' });
+      await this.carregarClientes();
+    } catch (error) {
+      console.error('Erro ao deletar cliente corrompido:', error);
+    }
+  }
+
+  /**
+   * Converter cliente do Firestore para formato do componente
+   */
+  private converterCliente(clienteFirestore: ClienteFirestore): Cliente {
+    console.log('Convertendo cliente do Firestore:', clienteFirestore);
+    
+    // Converter Timestamp para Date
+    let dataCadastro: Date;
+    if (clienteFirestore.dataCadastro instanceof Timestamp) {
+      dataCadastro = clienteFirestore.dataCadastro.toDate();
+    } else if (clienteFirestore.dataCadastro) {
+      dataCadastro = new Date(clienteFirestore.dataCadastro);
+    } else {
+      dataCadastro = new Date();
+    }
+    
+    let ultimaVisita: Date | null = null;
+    if (clienteFirestore.ultimaVisita) {
+      if (clienteFirestore.ultimaVisita instanceof Timestamp) {
+        ultimaVisita = clienteFirestore.ultimaVisita.toDate();
+      } else {
+        ultimaVisita = new Date(clienteFirestore.ultimaVisita);
+      }
+    }
+
+    // Extrair serviços preferidos (os mais realizados)
+    const servicosMap = new Map<string, number>();
+    if (clienteFirestore.servicosRealizados && Array.isArray(clienteFirestore.servicosRealizados)) {
+      clienteFirestore.servicosRealizados.forEach(s => {
+        if (s && s.servicoNome) {
+          servicosMap.set(s.servicoNome, (servicosMap.get(s.servicoNome) || 0) + 1);
+        }
+      });
+    }
+    
+    const servicosPreferidos = Array.from(servicosMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([nome]) => nome);
+
+    // Formatar telefone de forma segura
+    const telefone = clienteFirestore.telefone 
+      ? this.formatarTelefone(String(clienteFirestore.telefone))
+      : '';
+
+    const cliente: Cliente = {
+      id: clienteFirestore.id || '',
+      nome: clienteFirestore.nome || 'Sem nome',
+      telefone: telefone,
+      email: clienteFirestore.email || '',
+      avatar: clienteFirestore.avatar || '/girllandpage.png',
+      dataCadastro: dataCadastro,
+      ultimaVisita: ultimaVisita,
+      totalVisitas: clienteFirestore.totalVisitas || 0,
+      totalGasto: clienteFirestore.totalGasto || 0,
+      servicosPreferidos: servicosPreferidos,
+      datasAgendamentos: clienteFirestore.datasAgendamentos || [],
+      status: clienteFirestore.status || 'ativo',
+      observacoes: clienteFirestore.observacoes || '',
+      aniversario: clienteFirestore.aniversario || null
+    };
+
+    console.log('Cliente convertido:', cliente);
+    return cliente;
+  }
+
+  /**
+   * Formatar telefone para exibição
+   */
+  private formatarTelefone(telefone: string): string {
+    // Remove caracteres não numéricos
+    const nums = telefone.replace(/\D/g, '');
+    
+    // Formata (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+    if (nums.length === 11) {
+      return `(${nums.substring(0, 2)}) ${nums.substring(2, 7)}-${nums.substring(7)}`;
+    } else if (nums.length === 10) {
+      return `(${nums.substring(0, 2)}) ${nums.substring(2, 6)}-${nums.substring(6)}`;
+    }
+    
+    return telefone;
   }
 
   get filteredClientes(): Cliente[] {
@@ -222,7 +217,7 @@ export class ClientesComponent {
       filtered = filtered.filter(c => 
         c.nome.toLowerCase().includes(term) ||
         c.telefone.includes(term) ||
-        c.email.toLowerCase().includes(term)
+        (c.email && c.email.toLowerCase().includes(term))
       );
     }
 
@@ -293,10 +288,10 @@ export class ClientesComponent {
     this.editingCliente = cliente;
     this.formNome = cliente.nome;
     this.formTelefone = cliente.telefone;
-    this.formEmail = cliente.email;
+    this.formEmail = cliente.email || '';
     this.formAniversario = cliente.aniversario ? new Date(cliente.aniversario) : null;
-    this.formObservacoes = cliente.observacoes;
-    this.formAvatar = cliente.avatar;
+    this.formObservacoes = cliente.observacoes || '';
+    this.formAvatar = cliente.avatar || '/girllandpage.png';
     this.showModal = true;
   }
 
@@ -354,58 +349,85 @@ export class ClientesComponent {
     this.formAvatar = '/girllandpage.png';
   }
 
-  saveCliente(): void {
+  async saveCliente(): Promise<void> {
     if (!this.formNome.trim() || !this.formTelefone.trim()) {
       return;
     }
 
-    if (this.editingCliente) {
-      // Atualizar cliente existente
-      const index = this.clientes.findIndex(c => c.id === this.editingCliente!.id);
-      if (index !== -1) {
-        this.clientes[index] = {
-          ...this.clientes[index],
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      alert('Usuário não autenticado');
+      return;
+    }
+
+    try {
+      if (this.editingCliente) {
+        // Atualizar cliente existente
+        await this.clienteService.atualizarCliente(this.editingCliente.id, {
           nome: this.formNome,
           telefone: this.formTelefone,
           email: this.formEmail,
           avatar: this.formAvatar,
-          aniversario: this.formAniversario ? new Date(this.formAniversario) : null,
+          aniversario: this.formAniversario,
           observacoes: this.formObservacoes
-        };
+        });
+        
+        console.log('Cliente atualizado com sucesso');
+      } else {
+        // Criar novo cliente
+        await this.clienteService.criarCliente({
+          salonId: currentUser.uid,
+          nome: this.formNome,
+          telefone: this.formTelefone,
+          email: this.formEmail,
+          avatar: this.formAvatar,
+          dataCadastro: new Date(),
+          ultimaVisita: null,
+          totalVisitas: 0,
+          totalGasto: 0,
+          servicosRealizados: [],
+          datasAgendamentos: [],
+          status: 'ativo',
+          observacoes: this.formObservacoes,
+          aniversario: this.formAniversario
+        });
+        
+        console.log('Cliente criado com sucesso');
       }
-    } else {
-      // Criar novo cliente
-      const newCliente: Cliente = {
-        id: (this.clientes.length + 1).toString(),
-        nome: this.formNome,
-        telefone: this.formTelefone,
-        email: this.formEmail,
-        avatar: this.formAvatar,
-        dataCadastro: new Date(),
-        ultimaVisita: null,
-        totalVisitas: 0,
-        totalGasto: 0,
-        servicosPreferidos: [],
-        status: 'ativo',
-        observacoes: this.formObservacoes,
-        aniversario: this.formAniversario ? new Date(this.formAniversario) : null
-      };
-      this.clientes.push(newCliente);
-    }
 
-    this.closeModal();
+      // Recarregar lista de clientes
+      await this.carregarClientes();
+      this.closeModal();
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      alert('Erro ao salvar cliente. Tente novamente.');
+    }
   }
 
-  toggleClienteStatus(cliente: Cliente): void {
-    const index = this.clientes.findIndex(c => c.id === cliente.id);
-    if (index !== -1) {
-      this.clientes[index].status = cliente.status === 'ativo' ? 'inativo' : 'ativo';
+  async toggleClienteStatus(cliente: Cliente): Promise<void> {
+    try {
+      const novoStatus = cliente.status === 'ativo' ? 'inativo' : 'ativo';
+      await this.clienteService.atualizarCliente(cliente.id, {
+        status: novoStatus
+      });
+      
+      // Atualizar localmente
+      const index = this.clientes.findIndex(c => c.id === cliente.id);
+      if (index !== -1) {
+        this.clientes[index].status = novoStatus;
+      }
+      
+      console.log('Status do cliente atualizado');
+    } catch (error) {
+      console.error('Erro ao atualizar status do cliente:', error);
+      alert('Erro ao atualizar status. Tente novamente.');
     }
   }
 
   deleteCliente(cliente: Cliente): void {
     if (confirm(`Tem certeza que deseja excluir o cliente ${cliente.nome}?`)) {
-      this.clientes = this.clientes.filter(c => c.id !== cliente.id);
+      // Por segurança, vamos apenas inativar o cliente ao invés de deletar
+      this.toggleClienteStatus(cliente);
     }
   }
 
