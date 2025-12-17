@@ -259,7 +259,26 @@ await this.authService.refreshUserData();
 ## Production Build
 
 The production build has bundle size limits configured in `angular.json`:
-- Initial bundle: 500kB warning, 1MB error
-- Component styles: 4kB warning, 8kB error
+- Initial bundle: 1MB warning, 2MB error
+- Component styles: 13kB warning, 20kB error
 
-Output directory: `dist/estetica-zap/`
+Output directory: `dist/estetica-zap/browser/` (SSR build outputs to browser and server directories)
+
+### Important Build Notes
+
+**SSR Build Output:**
+The Angular application uses Server-Side Rendering (SSR) which generates:
+- `dist/estetica-zap/browser/` - Client-side files including `index.csr.html` (not `index.html`)
+- `dist/estetica-zap/server/` - Server-side rendering files
+
+**Azure Static Web Apps Deployment:**
+The application is configured for Azure Static Web Apps deployment. The workflow (`.github/workflows/azure-static-web-apps-proud-pebble-03297e610.yml`) includes:
+1. Manual build step before Azure deployment
+2. Automatic copy of `index.csr.html` to `index.html` (required by Azure SWA)
+3. Copy of `staticwebapp.config.json` to build output for routing configuration
+4. `skip_app_build: true` flag to use pre-built files
+
+**Static Web App Configuration (`staticwebapp.config.json`):**
+- Configures fallback routing to `index.csr.html` for SPA navigation
+- Handles 404s by serving the Angular app (returns 200 with app content)
+- Defines MIME types and caching headers

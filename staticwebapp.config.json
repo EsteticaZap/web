@@ -1,0 +1,29 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.csr.html",
+    "exclude": ["/assets/*", "/*.js", "/*.css", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.svg", "/*.ico"]
+  },
+  "routes": [
+    {
+      "route": "/*",
+      "allowedRoles": ["anonymous"]
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.csr.html",
+      "statusCode": 200
+    }
+  },
+  "platform": {
+    "apiRuntime": "node:18"
+  },
+  "globalHeaders": {
+    "cache-control": "no-cache, no-store, must-revalidate"
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".js": "text/javascript",
+    ".css": "text/css"
+  }
+}
