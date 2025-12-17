@@ -49,7 +49,7 @@
 
 /* Modal Header */
 .modal-header {
-  background: linear-gradient(135deg, #e91e63 0%, #2d8f00 100%);
+  background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
   color: white;
   padding: 1.5rem 2rem;
   text-align: center;
@@ -601,7 +601,7 @@
 }
 
 .btn-primary:hover {
-  background: #2d8f00;
+  background: #9c27b0;
 }
 
 .btn-secondary {
@@ -614,12 +614,12 @@
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #e91e63 0%, #2d8f00 100%);
+  background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
   color: white;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #2d8f00 0%, #247300 100%);
+  background: linear-gradient(135deg, #9c27b0 0%, #247300 100%);
 }
 
 .btn-success:disabled {
