@@ -1,23 +1,21 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { LandpageComponent } from './landpage/landpage.component';
-import { HomeComponent } from './home/home.component';
-import { AgendaComponent } from './agenda/agenda.component';
-import { ClientesComponent } from './clientes/clientes.component';
-import { ConfiguracoesComponent } from './configuracoes/configuracoes.component';
-import { OnboardingComponent } from './onboarding/onboarding.component';
-import { AgendarPublicoComponent } from './agendar-publico/agendar-publico.component';
 import { authGuard, noAuthGuard, onboardingGuard } from './guards/auth.guard';
 
 // Rotas públicas - acessíveis sem autenticação
 export const publicRoutes: Routes = [
-  { 
-    path: 'login', 
-    component: LoginComponent,
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent),
     canActivate: [noAuthGuard] // Redireciona para home se já estiver logado
   },
-  { path: 'landpage', component: LandpageComponent },
-  { path: 'agendar/:salonId', component: AgendarPublicoComponent },
+  {
+    path: 'landpage',
+    loadComponent: () => import('./landpage/landpage.component').then(m => m.LandpageComponent)
+  },
+  {
+    path: 'agendar/:salonId',
+    loadComponent: () => import('./agendar-publico/agendar-publico.component').then(m => m.AgendarPublicoComponent)
+  },
   { path: '', redirectTo: '/landpage', pathMatch: 'full' }
 ];
 
@@ -25,31 +23,31 @@ export const publicRoutes: Routes = [
 export const onboardingRoutes: Routes = [
   {
     path: 'onboarding',
-    component: OnboardingComponent,
+    loadComponent: () => import('./onboarding/onboarding.component').then(m => m.OnboardingComponent),
     canActivate: [onboardingGuard]
   }
 ];
 
 // Rotas privadas - requerem autenticação e onboarding completo
 export const privateRoutes: Routes = [
-  { 
-    path: 'home', 
-    component: HomeComponent,
+  {
+    path: 'home',
+    loadComponent: () => import('./home/home.component').then(m => m.HomeComponent),
     canActivate: [authGuard]
   },
-  { 
-    path: 'agenda', 
-    component: AgendaComponent,
+  {
+    path: 'agenda',
+    loadComponent: () => import('./agenda/agenda.component').then(m => m.AgendaComponent),
     canActivate: [authGuard]
   },
-  { 
-    path: 'clientes', 
-    component: ClientesComponent,
+  {
+    path: 'clientes',
+    loadComponent: () => import('./clientes/clientes.component').then(m => m.ClientesComponent),
     canActivate: [authGuard]
   },
-  { 
-    path: 'configuracoes', 
-    component: ConfiguracoesComponent,
+  {
+    path: 'configuracoes',
+    loadComponent: () => import('./configuracoes/configuracoes.component').then(m => m.ConfiguracoesComponent),
     canActivate: [authGuard]
   },
 ];
