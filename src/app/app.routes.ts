@@ -50,6 +50,11 @@ export const privateRoutes: Routes = [
     loadComponent: () => import('./configuracoes/configuracoes.component').then(m => m.ConfiguracoesComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'planos',
+    loadComponent: () => import('./planos/planos.component').then(m => m.PlanosComponent),
+    canActivate: [authGuard]
+  },
 ];
 
 export const routes: Routes = [
