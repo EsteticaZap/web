@@ -171,7 +171,21 @@ export class AgendarPublicoComponent implements OnInit {
   }
 
   get duracaoTotal(): number {
-    return this.servicosSelecionados.reduce((sum, s) => sum + s.duracao, 0);
+    return this.servicosSelecionados.reduce((sum, s) => {
+      let duracao = typeof s.duracao === 'string' ? parseInt(s.duracao, 10) : s.duracao;
+
+      if (isNaN(duracao)) {
+        duracao = 0;
+      }
+
+      if (duracao >= 100 && duracao < 1000) {
+        const horas = Math.floor(duracao / 100);
+        const minutos = duracao % 100;
+        duracao = (horas * 60) + minutos;
+      }
+
+      return sum + duracao;
+    }, 0);
   }
 
   formatarValor(valor: number): string {
@@ -332,8 +346,7 @@ export class AgendarPublicoComponent implements OnInit {
         const agendIni = agendIniHora * 60 + agendIniMin;
         const agendFim = agendFimHora * 60 + agendFimMin;
 
-        // Verificar se há sobreposição
-        return currentTime < agendFim && (currentTime + this.duracaoTotal) > agendIni;
+       return currentTime < agendFim && (currentTime + this.duracaoTotal) > agendIni;
       });
 
       if (!temConflito) {
