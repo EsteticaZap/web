@@ -196,3 +196,99 @@ aside.side-menu {
 .user-profile {
   position: relative;
 }
+
+/* ==================== MOBILE RESPONSIVO ==================== */
+
+/* Botão Hambúrguer - visível apenas em mobile como parte do header */
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 140;
+  background: #ffffff;
+  border: none;
+  height: 60px;
+  border-bottom: 1px solid #e8e8e8;
+  cursor: pointer;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.hamburger-btn i {
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.hamburger-btn:hover {
+  background: #fafafa;
+}
+
+.hamburger-btn:active i {
+  transform: scale(0.95);
+}
+
+/* Overlay escuro - visível apenas em mobile quando menu aberto */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.menu-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Media query para tablets e mobile */
+@media (max-width: 768px) {
+  /* Mostrar botão hambúrguer como header */
+  .hamburger-btn {
+    display: flex;
+  }
+
+  /* Mostrar overlay quando necessário */
+  .menu-overlay {
+    display: block;
+  }
+
+  /* Side menu em mobile */
+  aside.side-menu {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 150;
+    top: 0;
+  }
+
+  /* Menu aberto */
+  aside.side-menu.open {
+    transform: translateX(0);
+  }
+}
+
+/* Media query para smartphones pequenos */
+@media (max-width: 480px) {
+  aside.side-menu {
+    width: 280px;
+  }
+
+  .hamburger-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hamburger-btn i {
+    font-size: 1.1rem;
+  }
+}

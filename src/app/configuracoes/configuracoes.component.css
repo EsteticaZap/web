@@ -935,6 +935,7 @@
   .configuracoes-container {
     margin-left: 0;
     padding: 1rem;
+    padding-top: calc(60px + 1rem); /* Altura do header mobile + espaçamento */
   }
 
   .tabs {

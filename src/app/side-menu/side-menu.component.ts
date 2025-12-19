@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -13,6 +13,24 @@ import { AuthService } from '../services/auth.service';
 export class SideMenuComponent {
   authService = inject(AuthService);
   showUserMenu = false;
+  isMenuOpen = false;
+
+  // Variáveis para controlar o swipe
+  private touchStartX = 0;
+  private touchEndX = 0;
+  private isDragging = false;
+
+  @Output() menuToggle = new EventEmitter<boolean>();
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+    this.menuToggle.emit(this.isMenuOpen);
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen = false;
+    this.menuToggle.emit(false);
+  }
 
   toggleUserMenu(): void {
     this.showUserMenu = !this.showUserMenu;
@@ -20,6 +38,49 @@ export class SideMenuComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  // Detectar início do toque
+  onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.touches[0].clientX;
+    this.isDragging = true;
+  }
+
+  // Detectar movimento do toque
+  onTouchMove(event: TouchEvent): void {
+    if (!this.isDragging) return;
+    this.touchEndX = event.touches[0].clientX;
+  }
+
+  // Detectar fim do toque
+  onTouchEnd(): void {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+
+    const swipeDistance = this.touchEndX - this.touchStartX;
+    const threshold = 50; // Distância mínima para considerar um swipe
+
+    // Swipe da esquerda para direita (abrir menu)
+    if (swipeDistance > threshold && this.touchStartX < 50 && !this.isMenuOpen) {
+      this.toggleMenu();
+    }
+    // Swipe da direita para esquerda (fechar menu)
+    else if (swipeDistance < -threshold && this.isMenuOpen) {
+      this.closeMenu();
+    }
+  }
+
+  // Fechar menu ao clicar fora dele (no overlay)
+  onOverlayClick(): void {
+    this.closeMenu();
+  }
+
+  // Fechar menu ao redimensionar para desktop
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (window.innerWidth > 768 && this.isMenuOpen) {
+      this.closeMenu();
+    }
   }
 
   get userEmail(): string {

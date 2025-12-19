@@ -1,28 +1,45 @@
-<aside class="side-menu">
+<!-- Botão Hambúrguer (visível apenas em mobile) -->
+<button class="hamburger-btn" (click)="toggleMenu()" aria-label="Abrir menu">
+  <i class="fa fa-bars"></i>
+</button>
+
+<!-- Overlay escuro (visível apenas quando menu estiver aberto em mobile) -->
+<div class="menu-overlay"
+     [class.active]="isMenuOpen"
+     (click)="onOverlayClick()"></div>
+
+<!-- Side Menu -->
+<aside class="side-menu"
+       [class.open]="isMenuOpen"
+       (touchstart)="onTouchStart($event)"
+       (touchmove)="onTouchMove($event)"
+       (touchend)="onTouchEnd()">
+
   <div class="brand">
     <img src="/logo.png" alt="EstéticaZap logo" />
     <span>EstéticaZap</span>
   </div>
+
   <nav>
     <ul>
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <a routerLink="/home"><i class="fa fa-home"></i> Home</a>
+        <a routerLink="/home" (click)="closeMenu()"><i class="fa fa-home"></i> Home</a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/agenda"><i class="fa fa-calendar-alt"></i> Agenda</a>
+        <a routerLink="/agenda" (click)="closeMenu()"><i class="fa fa-calendar-alt"></i> Agenda</a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/clientes"><i class="fa fa-users"></i> Clientes</a>
+        <a routerLink="/clientes" (click)="closeMenu()"><i class="fa fa-users"></i> Clientes</a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/planos"><i class="fa fa-crown"></i> Planos</a>
+        <a routerLink="/planos" (click)="closeMenu()"><i class="fa fa-crown"></i> Planos</a>
       </li>
       <li routerLinkActive="active">
-        <a routerLink="/configuracoes"><i class="fa fa-cog"></i> Configurações</a>
+        <a routerLink="/configuracoes" (click)="closeMenu()"><i class="fa fa-cog"></i> Configurações</a>
       </li>
     </ul>
   </nav>
-  
+
   <!-- Seção de Perfil do Usuário -->
   <div class="user-profile">
     <div class="user-avatar">
@@ -37,7 +54,7 @@
     <button class="user-menu-btn" aria-label="Menu do usuário" (click)="toggleUserMenu()">
       <i class="fa fa-ellipsis-v"></i>
     </button>
-    
+
     <!-- Menu dropdown do usuário -->
     <div class="user-dropdown" *ngIf="showUserMenu">
       <button class="dropdown-item" (click)="logout()">

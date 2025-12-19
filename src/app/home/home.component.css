@@ -553,3 +553,88 @@
 .agenda-section .confirmed .status { background: #d4edda; color: #155724; }
 .agenda-section .próximo .status { background: #f8d7da; color: #721c24; }
 .agenda-section .pendente .status { background: #fff3cd; color: #856404; }
+
+/* ==================== MOBILE RESPONSIVO ==================== */
+
+@media (max-width: 768px) {
+  /* Remover margin-left e adicionar padding-top para compensar o header mobile */
+  .home-page {
+    margin-left: 0;
+    padding-top: calc(60px + 1rem); /* Altura do header + espaçamento */
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Ajustar header */
+  .home-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .home-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Ajustar card de próximo agendamento */
+  .next-appointment-card {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .next-appointment-card .remaining {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  /* Ajustar grid de stats cards */
+  .stats-cards {
+    flex-direction: column;
+  }
+
+  /* Ajustar dashboard grid */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid.lower-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Ajustar btn-primary para mobile */
+  .btn-primary {
+    font-size: 0.875rem;
+    padding: 0.625rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-page {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .home-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .next-appointment-card {
+    padding: 1.25rem;
+    border-radius: 1.5rem;
+  }
+
+  .btn-primary {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+  }
+
+  .notification {
+    font-size: 1.25rem;
+  }
+}
