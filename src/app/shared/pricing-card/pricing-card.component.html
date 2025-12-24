@@ -1,0 +1,72 @@
+<div class="plano-card"
+     [class.plano-destaque]="plano.destaque"
+     [class.plano-atual]="isPlanoAtual && mode === 'app'">
+
+  <!-- Badge "Plano Atual" (apenas no modo app) -->
+  <div class="badge-plano-atual" *ngIf="isPlanoAtual && mode === 'app'">
+    <i class="pi pi-check-circle"></i>
+    <span>Seu Plano Atual</span>
+  </div>
+
+  <!-- Badge "Mais Popular" -->
+  <div class="badge-popular" *ngIf="plano.destaque && !(isPlanoAtual && mode === 'app')">
+    <i class="pi pi-star-fill"></i>
+    <span>Mais Popular</span>
+  </div>
+
+  <!-- Header do Card -->
+  <div class="plano-header">
+    <h2 class="plano-nome">{{ plano.nome }}</h2>
+    <div class="plano-preco">
+      <span class="preco-valor">
+        <span class="moeda" *ngIf="plano.preco > 0">R$</span>
+        <span class="valor">{{ plano.preco === 0 ? 'Grátis' : plano.preco.toFixed(2) }}</span>
+      </span>
+      <span class="preco-periodo" *ngIf="plano.preco > 0">{{ plano.periodo }}</span>
+      <span class="preco-periodo" *ngIf="plano.preco === 0">para sempre</span>
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="plano-divider"></div>
+
+  <!-- Lista de Vantagens -->
+  <div class="plano-vantagens">
+    <h3 class="vantagens-titulo">O que está incluído:</h3>
+    <ul class="vantagens-lista">
+      <li *ngFor="let vantagem of plano.vantagens" class="vantagem-item">
+        <i class="pi pi-check-circle"></i>
+        <span>{{ vantagem }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Lista de Limitações (apenas para Free) -->
+  <div class="plano-limitacoes" *ngIf="plano.limitacoes && plano.limitacoes.length > 0 && mode === 'app'">
+    <h3 class="limitacoes-titulo">Limitações:</h3>
+    <ul class="limitacoes-lista">
+      <li *ngFor="let limitacao of plano.limitacoes" class="limitacao-item">
+        <i class="pi pi-times"></i>
+        <span>{{ limitacao }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Botão de Ação -->
+  <div class="plano-footer">
+    <button
+      class="btn-selecionar"
+      [class.btn-atual]="isPlanoAtual"
+      [class.btn-upgrade]="plano.destaque && !isPlanoAtual"
+      [disabled]="isPlanoAtual && mode === 'app'"
+      (click)="onSelectPlan()">
+      <i class="pi" [ngClass]="buttonIcon"></i>
+      <span>{{ buttonText }}</span>
+    </button>
+
+    <!-- Nota de trial (apenas no modo landpage e plano pago) -->
+    <p class="trial-note" *ngIf="mode === 'landpage' && plano.preco > 0">
+      Sem cartão de crédito necessário
+    </p>
+  </div>
+</div>

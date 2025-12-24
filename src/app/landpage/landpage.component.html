@@ -1,49 +1,112 @@
 <nav class="navbar">
   <div class="container">
     <div class="brand">
-      <img src="logo.png" alt="EstéticaZap logo" class="logo-nav" />
+      <div class="logo-icon">
+        <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="25" cy="18" rx="8" ry="14" fill="#E57373"/>
+          <ellipse cx="15" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(-25 15 22)"/>
+          <ellipse cx="35" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(25 35 22)"/>
+          <path d="M25 32 L25 45" stroke="#81C784" stroke-width="3" stroke-linecap="round"/>
+          <ellipse cx="20" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(-30 20 40)"/>
+          <ellipse cx="30" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(30 30 40)"/>
+        </svg>
+      </div>
       <span class="brand-text">EstéticaZap</span>
     </div>
     <ul class="nav-items">
-      <li><a routerLink="/landpage">Como funciona</a></li>
-      <li><a routerLink="/landpage#planos">Planos</a></li>
-      <li><a routerLink="/landpage#faq">Perguntas frequentes</a></li>
+      <li><a href="#features">Como funciona</a></li>
+      <li><a href="#planos">Planos</a></li>
+      <li><a href="#faq">FAQ</a></li>
       <li><a routerLink="/login" class="btn-login">Entrar</a></li>
     </ul>
   </div>
 </nav>
 
 <section class="hero">
+  <div class="decorative-circle circle-1"></div>
+  <div class="decorative-circle circle-2"></div>
+  <div class="decorative-circle circle-3"></div>
+
   <div class="container hero-content">
     <div class="hero-text">
-      <h1>Agende pelo WhatsApp com facilidade</h1>
-      <p>Simplifique seus agendamentos e pagamentos com uma solução prática para profissionais de beleza.</p>
-      <button class="btn-primary">Experimente grátis</button>
+      <div class="badge-new">✨ Sua beleza, nossa tecnologia</div>
+      <h1>Transforme seu salão com agendamentos inteligentes</h1>
+      <p>A solução completa para profissionais de beleza que querem mais tempo para o que realmente importa: seus clientes.</p>
+      <div class="hero-buttons">
+        <button routerLink="/login" class="btn-primary">
+          <i class="pi pi-sparkles"></i>
+          Começar grátis agora
+        </button>
+        <button class="btn-secondary">
+          <i class="pi pi-play-circle"></i>
+          Ver demonstração
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Profissionais ativas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">10k+</span>
+          <span class="stat-label">Agendamentos/mês</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">4.9★</span>
+          <span class="stat-label">Avaliação média</span>
+        </div>
+      </div>
     </div>
     <div class="hero-image">
+      <div class="image-decoration"></div>
       <img src="girllandpage.png" alt="Profissional de beleza" />
     </div>
   </div>
 </section>
 
-<section class="features">
+<section id="features" class="features">
   <div class="container">
-    <h2>Como o EstéticaZap funciona</h2>
+    <div class="section-header">
+      <span class="section-badge">Recursos</span>
+      <h2>Tudo que você precisa em um só lugar</h2>
+      <p class="section-subtitle">Ferramentas pensadas para facilitar sua rotina e encantar suas clientes</p>
+    </div>
     <div class="features-cards">
-      <div class="card">
-        <i class="fas fa-calendar-check fa-2x"></i>
-        <h3>Agende consultas</h3>
-        <p>Organize seus horários em poucos cliques.</p>
+      <div class="card feature-card">
+        <div class="card-icon pink">
+          <i class="pi pi-calendar"></i>
+        </div>
+        <h3>Agenda Inteligente</h3>
+        <p>Organize seus horários de forma visual e intuitiva. Nunca mais perca um agendamento!</p>
+        <ul class="feature-list">
+          <li><i class="pi pi-check"></i> Visualização diária e semanal</li>
+          <li><i class="pi pi-check"></i> Bloqueio de horários</li>
+          <li><i class="pi pi-check"></i> Notificações automáticas</li>
+        </ul>
       </div>
-      <div class="card">
-        <i class="fas fa-money-bill-wave fa-2x"></i>
-        <h3>Receba pagamentos</h3>
-        <p>Registre pagamentos sem planilhas.</p>
+      <div class="card feature-card">
+        <div class="card-icon purple">
+          <i class="pi pi-users"></i>
+        </div>
+        <h3>Gestão de Clientes</h3>
+        <p>Tenha todo o histórico de suas clientes na palma da mão. Crie relacionamentos duradouros!</p>
+        <ul class="feature-list">
+          <li><i class="pi pi-check"></i> Perfil completo de cada cliente</li>
+          <li><i class="pi pi-check"></i> Histórico de serviços</li>
+          <li><i class="pi pi-check"></i> Aniversários e datas especiais</li>
+        </ul>
       </div>
-      <div class="card">
-        <i class="fas fa-chart-line fa-2x"></i>
-        <h3>Gerencie com facilidade</h3>
-        <p>Veja seus agendamentos e estatísticas em um só lugar.</p>
+      <div class="card feature-card">
+        <div class="card-icon rose">
+          <i class="pi pi-chart-line"></i>
+        </div>
+        <h3>Relatórios e Insights</h3>
+        <p>Acompanhe seu crescimento com relatórios claros e objetivos. Tome decisões inteligentes!</p>
+        <ul class="feature-list">
+          <li><i class="pi pi-check"></i> Faturamento detalhado</li>
+          <li><i class="pi pi-check"></i> Serviços mais populares</li>
+          <li><i class="pi pi-check"></i> Horários de pico</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -51,40 +114,36 @@
 
 <section id="planos" class="pricing">
   <div class="container">
-    <h2>Escolha seu plano</h2>
+    <div class="section-header">
+      <span class="section-badge">Planos</span>
+      <h2>Escolha o plano perfeito para você</h2>
+      <p class="section-subtitle">Comece grátis e evolua conforme seu negócio cresce</p>
+    </div>
     <div class="pricing-cards">
-      <div class="card card-free">
-        <h3>Grátis</h3>
-        <ul>
-          <li><i class="fas fa-check"></i> Agendamentos ilimitados</li>
-          <li><i class="fas fa-check"></i> Gestão básica de clientes</li>
-        </ul>
-        <button class="btn-secondary">Comece grátis</button>
-      </div>
-      <div class="card card-premium">
-        <span class="badge">Recomendado</span>
-        <h3>Premium</h3>
-        <p class="price">R$ 39<span>/mês</span></p>
-        <ul>
-          <li><i class="fas fa-check"></i> Lembretes automáticos no WhatsApp</li>
-          <li><i class="fas fa-check"></i> Relatórios simples de atendimentos e faturamento</li>
-          <li><i class="fas fa-check"></i> Suporte prioritário</li>
-        </ul>
-        <button class="btn-primary">Experimente grátis</button>
-      </div>
+      <app-pricing-card
+        *ngFor="let plano of planos"
+        [plano]="plano"
+        [isPlanoAtual]="false"
+        [mode]="'landpage'"
+        (selectPlan)="onSelectPlan($event)">
+      </app-pricing-card>
     </div>
   </div>
 </section>
 
 <section id="faq" class="faq">
   <div class="container">
-    <h2>Perguntas frequentes</h2>
+    <div class="section-header">
+      <span class="section-badge">FAQ</span>
+      <h2>Perguntas frequentes</h2>
+      <p class="section-subtitle">Tire suas dúvidas sobre o EstéticaZap</p>
+    </div>
     <div class="faq-list">
       <ng-container *ngFor="let faq of faqs">
-        <div class="faq-item">
-<button class="question" (click)="toggleFaq(faq)">
-            {{ faq.question }}
-            <i class="fas question-icon" [ngClass]="faq.open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+        <div class="faq-item" [class.active]="faq.open">
+          <button class="question" (click)="toggleFaq(faq)">
+            <span>{{ faq.question }}</span>
+            <i class="pi" [ngClass]="faq.open ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
           </button>
           <div class="answer" *ngIf="faq.open">
             {{ faq.answer }}
@@ -95,14 +154,70 @@
   </div>
 </section>
 
+<section class="cta">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Pronta para transformar seu salão?</h2>
+      <p>Junte-se a centenas de profissionais que já estão usando o EstéticaZap</p>
+      <button routerLink="/login" class="btn-primary large">
+        <i class="pi pi-sparkles"></i>
+        Começar agora - É grátis
+      </button>
+      <p class="cta-note">✨ Sem cartão de crédito • Sem instalação • Sem complicação</p>
+    </div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="container">
-    <p>© 2025 EstéticaZap. Todos os direitos reservados.</p>
-    <ul class="footer-links">
-      <li><a href="#">Como funciona</a></li>
-      <li><a href="#">Planos</a></li>
-      <li><a href="#">Perguntas frequentes</a></li>
-      <li><a href="#">Entrar</a></li>
-    </ul>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="25" cy="18" rx="8" ry="14" fill="#E57373"/>
+            <ellipse cx="15" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(-25 15 22)"/>
+            <ellipse cx="35" cy="22" rx="7" ry="12" fill="#EF9A9A" transform="rotate(25 35 22)"/>
+            <path d="M25 32 L25 45" stroke="#81C784" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="20" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(-30 20 40)"/>
+            <ellipse cx="30" cy="40" rx="5" ry="3" fill="#A5D6A7" transform="rotate(30 30 40)"/>
+          </svg>
+        </div>
+        <p class="brand-name">EstéticaZap</p>
+        <p class="footer-description">Transformando a gestão de salões de beleza com tecnologia e simplicidade.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-column">
+          <h4>Produto</h4>
+          <ul>
+            <li><a href="#features">Recursos</a></li>
+            <li><a href="#planos">Planos</a></li>
+            <li><a routerLink="/login">Começar grátis</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Suporte</h4>
+          <ul>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#">Central de ajuda</a></li>
+            <li><a href="#">Contato</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacidade</a></li>
+            <li><a href="#">Termos de uso</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 EstéticaZap. Todos os direitos reservados.</p>
+      <div class="social-links">
+        <a href="#"><i class="pi pi-instagram"></i></a>
+        <a href="#"><i class="pi pi-facebook"></i></a>
+        <a href="#"><i class="pi pi-whatsapp"></i></a>
+      </div>
+    </div>
   </div>
 </footer>

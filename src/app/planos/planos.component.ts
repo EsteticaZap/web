@@ -1,13 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
+import { PricingCardComponent } from '../shared/pricing-card/pricing-card.component';
 import { AssinaturaService, PlanoDetalhes, Assinatura } from '../services/assinatura.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-planos',
   standalone: true,
-  imports: [CommonModule, SideMenuComponent],
+  imports: [CommonModule, SideMenuComponent, PricingCardComponent],
   templateUrl: './planos.component.html',
   styleUrl: './planos.component.css'
 })
