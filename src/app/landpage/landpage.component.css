@@ -231,6 +231,7 @@ body {
 }
 
 .btn-primary {
+  color: #e91e63 !important;
   padding: 1rem 2.5rem;
   background: var(--gradient-primary);
   color: white;
@@ -310,11 +311,13 @@ body {
 .stat-number {
   font-size: 1.75rem;
   font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #e91e63;
   line-height: 1.2;
+}
+
+.stat-number .star {
+  color: #ffd700;
+  margin-left: 0.15rem;
 }
 
 .stat-label {
@@ -404,6 +407,7 @@ body {
 
 .feature-card {
   background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 2.5rem;
   border-radius: 24px;
   border: 2px solid var(--border-color);
@@ -420,18 +424,21 @@ body {
   right: 0;
   height: 4px;
   background: var(--gradient-primary);
+  box-shadow: 0 2px 8px rgba(245, 4, 125, 0.08);
   transform: scaleX(0);
   transition: transform 0.4s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-8px);
+  box-shadow: 0 2px 8px rgba(245, 4, 125, 0.08);
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-light);
 }
 
 .feature-card:hover::before {
   transform: scaleX(1);
+  box-shadow: 0 2px 8px rgba(245, 4, 125, 0.08);
 }
 
 .card-icon {
@@ -525,18 +532,23 @@ body {
 }
 
 .faq-item {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 1rem;
   background: white;
   border-radius: 16px;
   border: 2px solid var(--border-color);
   overflow: hidden;
   transition: all 0.3s ease;
+
+  .question:hover {
+    background-color: #f48fb1;
+  }
 }
 
 .faq-item:hover,
 .faq-item.active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-color: var(--primary-light);
-  box-shadow: var(--shadow-sm);
 }
 
 .question {
@@ -604,12 +616,14 @@ body {
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 1rem;
+  color: #e91e63;
 }
 
 .cta-content > p {
   font-size: 1.25rem;
   margin-bottom: 2.5rem;
   opacity: 0.95;
+  color: #e91e63;
 }
 
 .cta .btn-primary {
@@ -626,6 +640,7 @@ body {
   margin-top: 1.5rem;
   font-size: 1rem;
   opacity: 0.9;
+  color: var(--primary-color);
 }
 
 /* =================================================================
@@ -838,6 +853,7 @@ body {
 
   .cta-content h2 {
     font-size: 2rem;
+    color: #e91e63;
   }
 
   .footer-content {
@@ -856,6 +872,7 @@ body {
     text-align: center;
   }
 }
+
 
 @media (max-width: 480px) {
   .hero-text h1 {
