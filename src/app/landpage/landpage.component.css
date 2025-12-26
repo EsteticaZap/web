@@ -133,6 +133,11 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+.mobile-login {
+  display: none;
+  margin-left: 1rem;
+}
+
 /* =================================================================
    HERO SECTION
    ================================================================= */
@@ -815,6 +820,13 @@ body {
 
   .nav-items {
     display: none;
+  }
+
+  .mobile-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
   }
 
   .hero {
