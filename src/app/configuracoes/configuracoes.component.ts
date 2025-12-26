@@ -13,7 +13,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputTextarea } from 'primeng/inputtextarea';
 import { MessageService } from 'primeng/api';
 import { Servico } from '../onboarding/onboarding.component';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -78,7 +78,7 @@ export interface ConfiguracoesSalao {
     TagModule,
     ChipModule,
     InputTextModule,
-    InputTextareaModule
+    InputTextarea
   ],
   providers: [MessageService],
   templateUrl: './configuracoes.component.html',
