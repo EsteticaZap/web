@@ -1,13 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CheckboxModule, DialogModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -22,6 +24,8 @@ export class LoginComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
+  acceptTerms: boolean = false;
+  showTerms: boolean = false;
   
   // Controle de modo (login ou registro)
   isRegisterMode: boolean = false;
@@ -44,6 +48,8 @@ export class LoginComponent {
     this.successMessage = '';
     this.displayName = '';
     this.confirmPassword = '';
+    this.acceptTerms = false;
+    this.showTerms = false;
   }
 
   async onSubmit(): Promise<void> {
@@ -64,6 +70,10 @@ export class LoginComponent {
       }
       if (this.password.length < 6) {
         this.errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
+        return;
+      }
+      if (!this.acceptTerms) {
+        this.errorMessage = 'Você precisa aceitar os Termos de Uso para continuar.';
         return;
       }
       await this.register();
