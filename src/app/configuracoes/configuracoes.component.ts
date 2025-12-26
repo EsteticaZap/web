@@ -6,6 +6,14 @@ import { AuthService, UserData } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { AvatarModule } from 'primeng/avatar';
+import { TagModule } from 'primeng/tag';
+import { ChipModule } from 'primeng/chip';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextarea } from 'primeng/inputtextarea';
 import { MessageService } from 'primeng/api';
 import { Servico } from '../onboarding/onboarding.component';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -58,7 +66,20 @@ export interface ConfiguracoesSalao {
 @Component({
   selector: 'app-configuracoes',
   standalone: true,
-  imports: [CommonModule, FormsModule, SideMenuComponent, ToastModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SideMenuComponent,
+    ToastModule,
+    DialogModule,
+    ButtonModule,
+    CardModule,
+    AvatarModule,
+    TagModule,
+    ChipModule,
+    InputTextModule,
+    InputTextarea
+  ],
   providers: [MessageService],
   templateUrl: './configuracoes.component.html',
   styleUrls: ['./configuracoes.component.css']
