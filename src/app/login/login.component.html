@@ -106,8 +106,96 @@
         {{ successMessage }}
       </div>
 
+      <!-- Termos de Uso (apenas no modo registro) -->
+      <div class="terms-section" *ngIf="isRegisterMode">
+        <div class="checkbox-label">
+          <p-checkbox
+            name="acceptTerms"
+            inputId="acceptTerms"
+            [(ngModel)]="acceptTerms"
+            binary="true"
+          ></p-checkbox>
+          <label for="acceptTerms">Li e aceito os Termos de Uso EstéticaZap</label>
+          <button type="button" class="link-button" (click)="showTerms = true">Ver termos</button>
+        </div>
+        <p-dialog
+          header="Termos de Uso — EstéticaZap"
+          [(visible)]="showTerms"
+          [modal]="true"
+          [style]="{ width: '600px', maxWidth: '90vw' }"
+          [contentStyle]="{ maxHeight: '60vh', overflow: 'auto' }"
+        >
+          <div class="terms-content">
+            <p><strong>Última atualização:</strong> [dd/mm/aaaa]</p>
+            <p>Estes Termos de Uso (“Termos”) regulam o acesso e a utilização da plataforma EstéticaZap (“Plataforma”), disponibilizada por [Razão Social/MEI], inscrita no CNPJ sob nº [CNPJ], com sede em [endereço] (“EstéticaZap”, “nós”).</p>
+            <p>Ao acessar, cadastrar-se ou utilizar a Plataforma, você (“Usuário”, “Cliente”) declara que leu, compreendeu e concorda com estes Termos, bem como com a Política de Privacidade indicada na Cláusula 8.</p>
+            <h4>1. DEFINIÇÕES</h4>
+            <p><strong>1.1.</strong> Usuário/Cliente: pessoa física ou jurídica que contrata e/ou utiliza a Plataforma (ex.: salão, clínica, profissional).</p>
+            <p><strong>1.2.</strong> Clientes Finais: clientes do Usuário (pessoas que agendam serviços).</p>
+            <p><strong>1.3.</strong> Conta: credenciais e perfil do Usuário na Plataforma.</p>
+            <p><strong>1.4.</strong> Dados Pessoais: informações relacionadas a pessoa natural identificada ou identificável, nos termos da LGPD.</p>
+            <h4>2. OBJETO E FUNCIONALIDADES</h4>
+            <p><strong>2.1.</strong> A Plataforma é um software de apoio ao agendamento, gestão de agenda, cadastro de clientes, comunicação e confirmações via WhatsApp (quando habilitado), relatórios e recursos correlatos.</p>
+            <p><strong>2.2.</strong> Alguns recursos podem depender de integrações com terceiros (ex.: provedores de mensageria/WhatsApp, e-mail, gateways de pagamento), e podem sofrer limitações técnicas e mudanças por parte desses terceiros.</p>
+            <h4>3. CADASTRO, CONTA E ACESSO</h4>
+            <p><strong>3.1.</strong> Para utilizar a Plataforma, o Usuário deve criar uma Conta e fornecer informações verdadeiras, completas e atualizadas.</p>
+            <p><strong>3.2.</strong> O Usuário é responsável por: manter a confidencialidade de logins e senhas; todas as atividades realizadas em sua Conta; garantir que apenas pessoas autorizadas acessem a Conta.</p>
+            <p><strong>3.3.</strong> Podemos suspender ou bloquear acessos quando houver indícios de fraude, uso indevido, violação destes Termos ou risco à segurança.</p>
+            <h4>4. OBRIGAÇÕES DO USUÁRIO</h4>
+            <p><strong>4.1.</strong> O Usuário concorda em: utilizar a Plataforma conforme a lei e estes Termos; obter todas as autorizações necessárias dos Clientes Finais para cadastro e contato (incluindo envio de mensagens via WhatsApp); manter seus próprios avisos, políticas e procedimentos de privacidade/atendimento, quando aplicável.</p>
+            <p><strong>4.2.</strong> É proibido: usar a Plataforma para fins ilícitos, discriminatórios, abusivos, ofensivos, ou para spam; tentar acessar áreas não autorizadas, explorar falhas, interferir no funcionamento; copiar, modificar, distribuir, vender ou alugar a Plataforma sem autorização.</p>
+            <h4>5. PLANOS, PAGAMENTO E CANCELAMENTO</h4>
+            <p><strong>5.1.</strong> A Plataforma pode ser ofertada em planos pagos e/ou período de teste, conforme descrito em [link da página de preços].</p>
+            <p><strong>5.2.</strong> Cobranças, reajustes, forma de pagamento, limites de uso (ex.: número de profissionais, mensagens, agendamentos) e condições promocionais serão as informadas no momento da contratação.</p>
+            <p><strong>5.3.</strong> Cancelamento: O Usuário pode cancelar a qualquer momento conforme instruções na Plataforma. Após o cancelamento, o acesso pode ser encerrado ao fim do ciclo contratado (ou imediatamente, dependendo do plano).</p>
+            <p><strong>5.4.</strong> Reembolsos (se aplicável): [descrever política de reembolso/chargeback].</p>
+            <h4>6. PROPRIEDADE INTELECTUAL</h4>
+            <p><strong>6.1.</strong> A Plataforma, sua marca, layout, códigos, funcionalidades e conteúdos são de propriedade do EstéticaZap, protegidos por leis de propriedade intelectual.</p>
+            <p><strong>6.2.</strong> O Usuário não adquire qualquer direito de propriedade sobre a Plataforma, apenas uma licença limitada, revogável e não exclusiva de uso durante a vigência do contrato.</p>
+            <h4>7. DISPONIBILIDADE, SUPORTE E LIMITAÇÕES</h4>
+            <p><strong>7.1.</strong> Buscamos manter a Plataforma disponível de forma contínua, mas podem ocorrer indisponibilidades por manutenção, atualizações, falhas de terceiros, força maior etc.</p>
+            <p><strong>7.2.</strong> Integrações (WhatsApp): o envio/recebimento de mensagens pode depender de políticas e disponibilidade de provedores e/ou da própria Meta/WhatsApp. O EstéticaZap não garante entrega, leitura ou tempo de resposta de mensagens.</p>
+            <p><strong>7.3.</strong> O Usuário compreende que resultados (ex.: redução de faltas, conversão) dependem do uso e do negócio do Usuário.</p>
+            <h4>8. PRIVACIDADE E PROTEÇÃO DE DADOS (LGPD)</h4>
+            <p><strong>8.1.</strong> O tratamento de Dados Pessoais na Plataforma é regido pela Política de Privacidade: [link da política].</p>
+            <p><strong>8.2.</strong> Papéis LGPD (importante para o seu produto): a) Em geral, quando o Usuário cadastra e gerencia Dados Pessoais de seus Clientes Finais, o Usuário atua como Controlador, pois define a finalidade e meios do tratamento. b) O EstéticaZap atua como Operador, tratando os dados em nome do Usuário para fornecer a Plataforma, conforme instruções do Usuário e estes Termos/Política. c) Em situações específicas (ex.: dados do próprio Usuário para cobrança e suporte), o EstéticaZap pode atuar como Controlador.</p>
+            <p><strong>8.3.</strong> Tipos de dados tratados (exemplos): do Usuário: nome, e-mail, telefone, empresa/CNPJ, dados de pagamento (processados por terceiros), logs de acesso; dos Clientes Finais: nome, telefone/WhatsApp, histórico de agendamentos, preferências/observações inseridas pelo Usuário, mensagens e confirmações (se habilitado).</p>
+            <p><strong>8.4.</strong> Finalidades e bases legais (exemplos): execução de contrato (prestação do serviço); cumprimento de obrigação legal/regulatória; legítimo interesse (segurança, prevenção a fraudes, melhoria do produto), quando aplicável; consentimento, quando necessário (ex.: determinadas comunicações, conforme o caso).</p>
+            <p><strong>8.5.</strong> Responsabilidade do Usuário sobre consentimento/comunicações: O Usuário declara que possui base legal adequada para cadastrar Clientes Finais e contatá-los (inclusive via WhatsApp), sendo responsável por gerenciar opt-out, preferências e reclamações dos Clientes Finais relacionadas ao seu negócio.</p>
+            <p><strong>8.6.</strong> Compartilhamento com terceiros: Podemos compartilhar dados com fornecedores essenciais para operar a Plataforma, como provedores de hospedagem/infraestrutura; ferramentas de suporte/atendimento; provedores de mensageria e integração com WhatsApp (quando habilitado); meios de pagamento/faturamento. Esses fornecedores tratam dados conforme contratos e medidas de segurança.</p>
+            <p><strong>8.7.</strong> Retenção e exclusão: Manteremos os dados pelo tempo necessário para cumprir as finalidades do serviço, obrigações legais e exercício de direitos. Após encerramento, os dados poderão ser excluídos/anonimizados conforme [prazo — ex.: 30/60/90 dias], salvo obrigação de retenção.</p>
+            <p><strong>8.8.</strong> Direitos do titular (Clientes Finais e Usuários pessoas físicas): Nos termos da LGPD, o titular pode solicitar confirmação, acesso, correção, portabilidade, anonimização, eliminação, informação sobre compartilhamento e revogação de consentimento, quando aplicável. Canal: suport@esteticazap.com.br.</p>
+            <p><strong>8.9.</strong> Encarregado (DPO): [Nome do Encarregado], contato: suport@esteticazap.com.br.</p>
+            <p><strong>8.10.</strong> Incidentes de segurança: Adotamos medidas razoáveis de segurança. Em caso de incidente relevante, seguiremos os procedimentos previstos em lei e, quando aplicável, notificaremos Usuários e/ou autoridade competente.</p>
+            <p><strong>8.11.</strong> Transferência internacional: Se utilizarmos serviços com servidores fora do Brasil, poderemos realizar transferência internacional de dados conforme mecanismos permitidos pela LGPD, descritos na Política de Privacidade.</p>
+            <h4>9. CONTEÚDO INSERIDO PELO USUÁRIO</h4>
+            <p><strong>9.1.</strong> O Usuário é responsável por quaisquer informações inseridas na Plataforma (cadastros, mensagens, observações), garantindo que possui direitos e base legal para isso.</p>
+            <p><strong>9.2.</strong> Não monitoramos previamente conteúdos inseridos, mas podemos remover/bloquear conteúdos ilícitos mediante denúncia, ordem judicial ou risco comprovado.</p>
+            <h4>10. LIMITAÇÃO DE RESPONSABILIDADE</h4>
+            <p><strong>10.1.</strong> Na máxima extensão permitida pela lei, o EstéticaZap não se responsabiliza por: perdas indiretas, lucros cessantes, danos morais ou perda de oportunidade decorrentes do uso; falhas de terceiros (WhatsApp/Meta, operadoras, internet, provedores); ações do Usuário no contato com Clientes Finais (ex.: mensagens enviadas, práticas comerciais).</p>
+            <p><strong>10.2.</strong> Quando aplicável e permitido por lei, a responsabilidade total do EstéticaZap ficará limitada ao valor pago pelo Usuário nos [últimos 3/6/12] meses. (Obs.: cláusulas de limitação variam conforme o modelo do negócio; vale revisão jurídica.)</p>
+            <h4>11. SUSPENSÃO E RESCISÃO</h4>
+            <p><strong>11.1.</strong> Podemos suspender ou rescindir o acesso do Usuário, com ou sem aviso, em caso de: violação destes Termos; uso fraudulento, ilícito, ou risco à Plataforma/terceiros; inadimplência (quando aplicável).</p>
+            <p><strong>11.2.</strong> O Usuário pode rescindir a qualquer momento, conforme Cláusula 5.</p>
+            <h4>12. ALTERAÇÕES DOS TERMOS</h4>
+            <p><strong>12.1.</strong> Podemos atualizar estes Termos para refletir melhorias, mudanças legais ou operacionais. A versão vigente será publicada em [link].</p>
+            <p><strong>12.2.</strong> Se a alteração for material, poderemos notificar o Usuário por e-mail ou aviso na Plataforma. O uso contínuo após a atualização indica aceitação.</p>
+            <h4>13. LEGISLAÇÃO E FORO</h4>
+            <p><strong>13.1.</strong> Estes Termos são regidos pelas leis da República Federativa do Brasil.</p>
+            <p><strong>13.2.</strong> Fica eleito o foro da Comarca de [cidade/UF], com renúncia a qualquer outro, por mais privilegiado que seja, salvo regras específicas de consumidor quando aplicáveis.</p>
+            <h4>14. CONTATO</h4>
+            <p>Dúvidas e suporte: suport@esteticazap.com.br</p>
+            <p>Assuntos de privacidade (LGPD): suport@esteticazap.com.br</p>
+          </div>
+        </p-dialog>
+      </div>
+
       <!-- Botão Principal -->
-      <button type="submit" class="btn-login" [disabled]="isLoading">
+      <button
+        type="submit"
+        class="btn-login"
+        [disabled]="isLoading || (isRegisterMode && !acceptTerms)"
+      >
         <span *ngIf="!isLoading">{{ isRegisterMode ? 'Criar conta' : 'Entrar' }}</span>
         <span *ngIf="isLoading">{{ isRegisterMode ? 'Criando...' : 'Entrando...' }}</span>
       </button>
