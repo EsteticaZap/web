@@ -115,8 +115,13 @@
             [(ngModel)]="acceptTerms"
             binary="true"
           ></p-checkbox>
-          <label for="acceptTerms">Li e aceito os Termos de Uso EstéticaZap</label>
-          <button type="button" class="link-button" (click)="showTerms = true">Ver termos</button>
+          <label
+            for="acceptTerms"
+            class="terms-link"
+            (click)="showTerms = true"
+          >
+            Li e aceito os Termos de Uso EstéticaZap
+          </label>
         </div>
         <p-dialog
           header="Termos de Uso — EstéticaZap"
