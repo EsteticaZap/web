@@ -7,14 +7,26 @@
       <span class="subtitle">Gerencie seus agendamentos</span>
     </div>
     <div class="header-right">
-      <p-select 
-        [options]="viewOptions" 
-        [(ngModel)]="selectedView" 
+      <p-select
+        [options]="viewOptions"
+        [(ngModel)]="selectedView"
         optionLabel="label"
         placeholder="Selecione a visão"
         class="view-select"
         (onChange)="onViewChange()">
       </p-select>
+
+      <!-- Filtro de Profissional -->
+      <select
+        class="professional-filter"
+        [(ngModel)]="profissionalFiltro"
+        (change)="filtrarPorProfissional(profissionalFiltro)">
+        <option [ngValue]="null">Todos os profissionais</option>
+        <option *ngFor="let prof of profissionais" [ngValue]="prof.id">
+          {{ prof.nome }}
+        </option>
+      </select>
+
       <button class="btn-new-appointment">
         <i class="fa fa-plus"></i> Novo Agendamento
       </button>
@@ -73,6 +85,16 @@
                 <div class="line-vertical"></div>
               </div>
               <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                <!-- Badge Profissional -->
+                <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
+                  <i class="fa fa-user-tie"></i>
+                  {{ appt.profissionalNome }}
+                </div>
+                <div *ngIf="!appt.profissionalNome" class="professional-badge unassigned">
+                  <i class="fa fa-exclamation-triangle"></i>
+                  Não atribuído
+                </div>
+
                 <div class="appt-header">
                   <div class="appt-avatar">
                     <img [src]="appt.image" [alt]="appt.client" />
@@ -220,10 +242,20 @@
           <tr *ngFor="let time of timeSlots" class="time-row">
             <td class="time-cell">{{ time }}</td>
             <td *ngFor="let day of weekDays; let dayIndex = index" class="day-cell">
-              <div 
-                *ngFor="let appt of getAppointmentsForSlot(time, dayIndex)" 
+              <div
+                *ngFor="let appt of getAppointmentsForSlot(time, dayIndex)"
                 class="appointment-card"
                 [ngClass]="getStatusClass(appt.status)">
+
+                <!-- Badge Profissional -->
+                <div *ngIf="appt.profissionalNome" class="professional-badge-small" [style.background-color]="getProfissionalColor(appt.profissionalId)">
+                  <i class="fa fa-user-tie"></i>
+                  {{ appt.profissionalNome }}
+                </div>
+                <div *ngIf="!appt.profissionalNome" class="professional-badge-small unassigned">
+                  <i class="fa fa-exclamation-triangle"></i>
+                </div>
+
                 <div class="appt-avatar">
                   <img [src]="appt.image" [alt]="appt.client" />
                 </div>

@@ -12,7 +12,7 @@
 </div>
 
 <!-- Conteúdo Principal -->
-<div *ngIf="!isLoading && !errorMessage && salao && currentStep <= 3" class="booking-container">
+<div *ngIf="!isLoading && !errorMessage && salao && currentStep <= 4" class="booking-container">
   <!-- Header do Salão -->
   <div class="salon-header">
     <div class="salon-photo" *ngIf="salao.fotoSalao">
@@ -35,21 +35,29 @@
   <div class="progress-indicator">
     <div class="progress-step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
       <div class="step-circle">
-        <i class="fa fa-spa" *ngIf="currentStep < 2"></i>
+        <i class="fa fa-user-tie" *ngIf="currentStep < 2"></i>
         <i class="fa fa-check" *ngIf="currentStep >= 2"></i>
       </div>
-      <span class="step-label">Serviços</span>
+      <span class="step-label">Profissional</span>
     </div>
     <div class="progress-line" [class.completed]="currentStep > 1"></div>
     <div class="progress-step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
       <div class="step-circle">
-        <i class="fa fa-calendar-alt" *ngIf="currentStep < 3"></i>
+        <i class="fa fa-spa" *ngIf="currentStep < 3"></i>
         <i class="fa fa-check" *ngIf="currentStep >= 3"></i>
       </div>
-      <span class="step-label">Data e Horário</span>
+      <span class="step-label">Serviços</span>
     </div>
     <div class="progress-line" [class.completed]="currentStep > 2"></div>
     <div class="progress-step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+      <div class="step-circle">
+        <i class="fa fa-calendar-alt" *ngIf="currentStep < 4"></i>
+        <i class="fa fa-check" *ngIf="currentStep >= 4"></i>
+      </div>
+      <span class="step-label">Data e Horário</span>
+    </div>
+    <div class="progress-line" [class.completed]="currentStep > 3"></div>
+    <div class="progress-step" [class.active]="currentStep >= 4" [class.completed]="currentStep > 4">
       <div class="step-circle">
         <i class="fa fa-user"></i>
       </div>
@@ -59,8 +67,51 @@
 
   <!-- Conteúdo das Etapas -->
   <div class="wizard-content">
-    <!-- ETAPA 1: Escolher Serviços -->
-    <div *ngIf="currentStep === 1" class="step-content step-services">
+    <!-- ETAPA 1: Escolher Profissional -->
+    <div *ngIf="currentStep === 1" class="step-content step-professionals">
+      <h2><i class="fa fa-user-tie"></i> Escolha seu Profissional</h2>
+      <p class="step-description">Selecione quem você gostaria que te atendesse</p>
+
+      <div class="services-grid">
+        <div
+          *ngFor="let profissional of profissionais"
+          class="service-card professional-card"
+          [class.selected]="profissionalSelecionado?.id === profissional.id"
+          (click)="selecionarProfissional(profissional)">
+
+          <div class="service-icon">
+            <i class="fa fa-check" *ngIf="profissionalSelecionado?.id === profissional.id"></i>
+          </div>
+
+          <div class="professional-header">
+            <div class="professional-photo">
+              <img
+                [src]="profissional.foto"
+                [alt]="profissional.nome"
+                class="professional-avatar" />
+            </div>
+
+            <div class="professional-info-inline">
+              <h3>{{ profissional.nome }}</h3>
+              <span class="professional-description-compact">{{ profissional.descricao }}</span>
+            </div>
+          </div>
+
+          <div class="professional-interests-compact" *ngIf="profissional.interesses.length > 0">
+            <i class="fa fa-heart"></i>
+            <span class="interests-preview">{{ profissional.interesses.slice(0, 3).join(' • ') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="profissionais.length === 0" class="empty-selection">
+        <i class="fa fa-user-times"></i>
+        <p>Nenhum profissional disponível no momento</p>
+      </div>
+    </div>
+
+    <!-- ETAPA 2: Escolher Serviços -->
+    <div *ngIf="currentStep === 2" class="step-content step-services">
       <h2><i class="fa fa-spa"></i> Escolha os Serviços</h2>
       <p class="step-description">Selecione um ou mais serviços que deseja realizar</p>
 
@@ -91,8 +142,8 @@
       </div>
     </div>
 
-    <!-- ETAPA 2: Escolher Data e Horário (Unificadas) -->
-    <div *ngIf="currentStep === 2" class="step-content step-date-time">
+    <!-- ETAPA 3: Escolher Data e Horário -->
+    <div *ngIf="currentStep === 3" class="step-content step-date-time">
       <h2><i class="fa fa-calendar-alt"></i> Escolha a Data e Horário</h2>
       <p class="step-description">Selecione o melhor dia e horário para você</p>
 
@@ -151,8 +202,8 @@
       </div>
     </div>
 
-    <!-- ETAPA 3: Dados do Cliente -->
-    <div *ngIf="currentStep === 3" class="step-content step-client">
+    <!-- ETAPA 4: Dados do Cliente -->
+    <div *ngIf="currentStep === 4" class="step-content step-client">
       <h2><i class="fa fa-user"></i> Seus Dados</h2>
       <p class="step-description">Informe seus dados para confirmar o agendamento</p>
 
@@ -180,7 +231,17 @@
         <!-- Resumo do Agendamento -->
         <div class="booking-summary">
           <h3><i class="fa fa-clipboard-list"></i> Resumo do Agendamento</h3>
-          
+
+          <div class="summary-item">
+            <span class="summary-label">
+              <i class="fa fa-user-tie"></i>
+              Profissional:
+            </span>
+            <span class="summary-value">
+              {{ profissionalSelecionado?.nome }}
+            </span>
+          </div>
+
           <div class="summary-item">
             <span class="summary-label">
               <i class="fa fa-spa"></i>
@@ -247,16 +308,16 @@
 
     <!-- Navegação -->
     <div class="wizard-navigation">
-      <button 
-        *ngIf="currentStep > 1" 
+      <button
+        *ngIf="currentStep > 1"
         class="btn btn-secondary"
         (click)="prevStep()">
         <i class="fa fa-arrow-left"></i>
         Voltar
       </button>
-      
-      <button 
-        *ngIf="currentStep < 3" 
+
+      <button
+        *ngIf="currentStep < 4"
         class="btn btn-primary"
         [disabled]="!canGoNext()"
         (click)="nextStep()">
@@ -264,8 +325,8 @@
         <i class="fa fa-arrow-right"></i>
       </button>
 
-      <button 
-        *ngIf="currentStep === 3" 
+      <button
+        *ngIf="currentStep === 4"
         class="btn btn-primary btn-lg"
         [disabled]="!canGoNext() || isSaving"
         (click)="finalizarAgendamento()">
@@ -278,7 +339,7 @@
 </div>
 
 <!-- Tela de Sucesso -->
-<div *ngIf="currentStep === 4 && successMessage" class="success-container">
+<div *ngIf="currentStep === 5 && successMessage" class="success-container">
   <div class="success-icon">
     <i class="fa fa-check-circle"></i>
   </div>

@@ -1,9 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { 
-  Auth, 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   User,
   createUserWithEmailAndPassword,
@@ -13,6 +13,7 @@ import {
   updateProfile
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, getDoc, serverTimestamp } from '@angular/fire/firestore';
+import { MigrationService } from './migration.service';
 
 export interface UserData {
   uid: string;
@@ -23,6 +24,8 @@ export interface UserData {
   updatedAt: any;
   onboardingCompleted?: boolean;
   configuracoes?: any;
+  migracaoMultiProfissional?: boolean;
+  migracaoData?: any;
 }
 
 @Injectable({
@@ -32,6 +35,7 @@ export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
+  private migrationService = inject(MigrationService);
   
   // Signals para gerenciar estado de autenticação
   currentUser = signal<User | null>(null);
@@ -56,15 +60,35 @@ export class AuthService {
   }
 
   /**
-   * Carregar dados do usuário do Firestore
+   * Carregar dados do usuário do Firestore e executar migração se necessário
    */
   private async loadUserData(uid: string): Promise<void> {
     try {
       const userDocRef = doc(this.firestore, 'users', uid);
       const userSnap = await getDoc(userDocRef);
-      
+
       if (userSnap.exists()) {
-        this.userData.set(userSnap.data() as UserData);
+        const data = userSnap.data() as UserData;
+        this.userData.set(data);
+
+        // Executar migração se necessário
+        // Condições: onboarding completo E não migrado ainda
+        if (data['onboardingCompleted'] && !data['migracaoMultiProfissional']) {
+          try {
+            console.log('Detectada necessidade de migração para multi-profissional');
+            await this.migrationService.migrateToMultiProfessional(uid, data);
+
+            // Recarregar dados do usuário após migração
+            const updatedSnap = await getDoc(userDocRef);
+            if (updatedSnap.exists()) {
+              this.userData.set(updatedSnap.data() as UserData);
+            }
+          } catch (error) {
+            console.error('Erro na migração automática:', error);
+            // Não bloquear o login se a migração falhar
+            // O usuário ainda pode usar o sistema, mas sem o sistema multi-profissional
+          }
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);

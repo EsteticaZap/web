@@ -8,6 +8,8 @@ import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Servico } from '../onboarding/onboarding.component';
+import { Profissional } from '../interfaces/profissional.interface';
+import { ProfissionalService } from '../services/profissional.service';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -64,6 +66,7 @@ export interface ConfiguracoesSalao {
 export class ConfiguracoesComponent implements OnInit {
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
+  private profissionalService = inject(ProfissionalService);
   private router = inject(Router);
   private messageService = inject(MessageService);
   private dataLoaded = false;
@@ -72,7 +75,7 @@ export class ConfiguracoesComponent implements OnInit {
   isSaving = false;
   successMessage = '';
   errorMessage = '';
-  activeTab = 'info'; // info, horarios, avancado
+  activeTab = 'info'; // info, horarios, servicos, equipe, avancado
 
   // Foto do salão
   selectedFile: File | null = null;
@@ -148,6 +151,34 @@ export class ConfiguracoesComponent implements OnInit {
     { valor: 180, label: '3 horas' }
   ];
 
+  // Profissionais
+  profissionais: Profissional[] = [];
+  novoProfissional: Omit<Profissional, 'id' | 'createdAt' | 'updatedAt'> = {
+    salonId: '',
+    nome: '',
+    foto: '',
+    descricao: '',
+    interesses: [],
+    ativo: true,
+    ordem: 0
+  };
+  editandoProfissional: Profissional | null = null;
+  mostrarFormProfissional = false;
+  isLoadingProfissionais = false;
+  isSavingProfissional = false;
+  selectedFileProfissional: File | null = null;
+  previewUrlProfissional: string = '';
+  interesseTemp: string = '';
+
+  // Alias para o HTML (compatibilidade)
+  get novoInteresse(): string {
+    return this.interesseTemp;
+  }
+
+  set novoInteresse(value: string) {
+    this.interesseTemp = value;
+  }
+
   constructor() {
     // Effect para reagir quando os dados do usuário estiverem disponíveis
     effect(() => {
@@ -217,16 +248,24 @@ export class ConfiguracoesComponent implements OnInit {
     // Carregar serviços
     this.carregarServicos();
 
+    // Carregar profissionais
+    this.carregarProfissionais();
+
     this.isLoading = false;
   }
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
     this.clearMessages();
-    
+
     // Carregar serviços quando acessar a aba
     if (tab === 'servicos' && this.servicos.length === 0) {
       this.carregarServicos();
+    }
+
+    // Carregar profissionais quando acessar a aba
+    if (tab === 'equipe' && this.profissionais.length === 0) {
+      this.carregarProfissionais();
     }
   }
 
@@ -572,5 +611,439 @@ export class ConfiguracoesComponent implements OnInit {
       return `${horas}h`;
     }
     return `${horas}h ${mins}min`;
+  }
+
+  // ========== Métodos de Profissionais ==========
+
+  async carregarProfissionais(): Promise<void> {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    this.isLoadingProfissionais = true;
+    try {
+      this.profissionais = await this.profissionalService.listarPorSalao(currentUser.uid);
+    } catch (error) {
+      console.error('Erro ao carregar profissionais:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao carregar profissionais.',
+        life: 3000
+      });
+    } finally {
+      this.isLoadingProfissionais = false;
+    }
+  }
+
+  abrirFormProfissional(profissional?: Profissional): void {
+    const currentUser = this.authService.currentUser();
+
+    if (profissional) {
+      // Editar
+      this.novoProfissional = { ...profissional };
+      this.previewUrlProfissional = profissional.foto;
+      this.editandoProfissional = profissional;
+    } else {
+      // Criar novo
+      this.novoProfissional = {
+        salonId: currentUser?.uid || '',
+        nome: '',
+        foto: '',
+        descricao: '',
+        interesses: [],
+        ativo: true,
+        ordem: this.profissionais.length
+      };
+      this.previewUrlProfissional = '';
+      this.editandoProfissional = null;
+    }
+
+    this.mostrarFormProfissional = true;
+  }
+
+  cancelarFormProfissional(): void {
+    this.mostrarFormProfissional = false;
+    this.editandoProfissional = null;
+    this.previewUrlProfissional = '';
+    this.selectedFileProfissional = null;
+    this.interesseTemp = '';
+    const currentUser = this.authService.currentUser();
+    this.novoProfissional = {
+      salonId: currentUser?.uid || '',
+      nome: '',
+      foto: '',
+      descricao: '',
+      interesses: [],
+      ativo: true,
+      ordem: 0
+    };
+  }
+
+  async salvarProfissional(): Promise<void> {
+    if (!this.novoProfissional.nome.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe o nome do profissional.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (!this.novoProfissional.descricao.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Informe uma descrição para o profissional.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (!this.previewUrlProfissional) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Adicione uma foto do profissional.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (this.novoProfissional.interesses.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Adicione pelo menos 1 interesse.',
+        life: 3000
+      });
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    this.isSavingProfissional = true;
+
+    // Adicionar foto em base64
+    this.novoProfissional.foto = this.previewUrlProfissional;
+
+    try {
+      if (this.editandoProfissional && this.editandoProfissional.id) {
+        // Atualizar profissional existente
+        await this.profissionalService.atualizar(this.editandoProfissional.id, {
+          nome: this.novoProfissional.nome,
+          foto: this.novoProfissional.foto,
+          descricao: this.novoProfissional.descricao,
+          interesses: this.novoProfissional.interesses,
+          ativo: this.novoProfissional.ativo,
+          ordem: this.novoProfissional.ordem
+        });
+
+        // Atualizar na lista local
+        const index = this.profissionais.findIndex(p => p.id === this.editandoProfissional!.id);
+        if (index !== -1) {
+          this.profissionais[index] = { ...this.novoProfissional, id: this.editandoProfissional.id } as Profissional;
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Profissional atualizado com sucesso!',
+          life: 3000
+        });
+      } else {
+        // Criar novo profissional
+        const profissionalId = await this.profissionalService.criar({
+          salonId: currentUser.uid,
+          nome: this.novoProfissional.nome,
+          foto: this.novoProfissional.foto,
+          descricao: this.novoProfissional.descricao,
+          interesses: this.novoProfissional.interesses,
+          ativo: true,
+          ordem: this.profissionais.length
+        });
+
+        // Adicionar na lista local
+        this.profissionais.push({ ...this.novoProfissional, id: profissionalId } as Profissional);
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Profissional adicionado com sucesso!',
+          life: 3000
+        });
+      }
+
+      this.cancelarFormProfissional();
+    } catch (error: any) {
+      console.error('Erro ao salvar profissional:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: error.message || 'Erro ao salvar profissional. Tente novamente.',
+        life: 5000
+      });
+    } finally {
+      this.isSavingProfissional = false;
+    }
+  }
+
+  async desativarProfissional(profissional: Profissional): Promise<void> {
+    if (!profissional.id) return;
+
+    // Verificar se é o último profissional ativo
+    const ativosRestantes = this.profissionais.filter(p => p.ativo && p.id !== profissional.id);
+
+    if (ativosRestantes.length === 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Operação Bloqueada',
+        detail: 'Você deve ter pelo menos um profissional ativo. Adicione outro antes de desativar este.',
+        life: 6000
+      });
+      return;
+    }
+
+    try {
+      await this.profissionalService.desativar(profissional.id);
+
+      // Atualizar na lista local
+      const index = this.profissionais.findIndex(p => p.id === profissional.id);
+      if (index !== -1) {
+        this.profissionais[index].ativo = false;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Profissional desativado com sucesso!',
+        life: 3000
+      });
+    } catch (error) {
+      console.error('Erro ao desativar profissional:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao desativar profissional. Tente novamente.',
+        life: 5000
+      });
+    }
+  }
+
+  async reativarProfissional(profissional: Profissional): Promise<void> {
+    if (!profissional.id) return;
+
+    try {
+      await this.profissionalService.reativar(profissional.id);
+
+      // Atualizar na lista local
+      const index = this.profissionais.findIndex(p => p.id === profissional.id);
+      if (index !== -1) {
+        this.profissionais[index].ativo = true;
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Profissional reativado com sucesso!',
+        life: 3000
+      });
+    } catch (error) {
+      console.error('Erro ao reativar profissional:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao reativar profissional. Tente novamente.',
+        life: 5000
+      });
+    }
+  }
+
+  async onFileSelectedProfissional(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'Por favor, selecione apenas arquivos de imagem.',
+          life: 3000
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'A imagem deve ter no máximo 5MB.',
+          life: 3000
+        });
+        return;
+      }
+
+      this.selectedFileProfissional = file;
+
+      try {
+        // Comprimir imagem antes de converter para base64
+        const compressedBase64 = await this.compressImage(file, 800, 0.7);
+        this.previewUrlProfissional = compressedBase64;
+      } catch (error) {
+        console.error('Erro ao processar imagem:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Erro ao processar imagem. Tente novamente.',
+          life: 3000
+        });
+      }
+    }
+  }
+
+  /**
+   * Comprimir imagem para reduzir tamanho do base64
+   * @param file Arquivo de imagem
+   * @param maxWidth Largura máxima (default 800px)
+   * @param quality Qualidade JPEG (0-1, default 0.7)
+   */
+  private compressImage(file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const img = new Image();
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionar mantendo proporção
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Não foi possível obter contexto do canvas'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Converter para base64 com compressão
+          const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedBase64);
+        };
+
+        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+        img.src = e.target?.result as string;
+      };
+
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  removePhotoProfissional(): void {
+    this.selectedFileProfissional = null;
+    this.previewUrlProfissional = '';
+  }
+
+  adicionarInteresse(): void {
+    const interesse = this.interesseTemp.trim();
+
+    if (!interesse) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Digite um interesse antes de adicionar.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (interesse.length < 2) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Interesse deve ter pelo menos 2 caracteres.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (this.novoProfissional.interesses.length >= 10) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Máximo de 10 interesses permitidos.',
+        life: 3000
+      });
+      return;
+    }
+
+    if (this.novoProfissional.interesses.includes(interesse)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Este interesse já foi adicionado.',
+        life: 3000
+      });
+      return;
+    }
+
+    this.novoProfissional.interesses.push(interesse);
+    this.interesseTemp = '';
+  }
+
+  removerInteresse(index: number): void {
+    this.novoProfissional.interesses.splice(index, 1);
+  }
+
+  /**
+   * Fechar formulário de profissional
+   */
+  fecharFormProfissional(): void {
+    this.mostrarFormProfissional = false;
+    this.editandoProfissional = null;
+    this.novoProfissional = {
+      salonId: '',
+      nome: '',
+      foto: '',
+      descricao: '',
+      interesses: [],
+      ativo: true,
+      ordem: 0
+    };
+    this.previewUrlProfissional = '';
+    this.selectedFileProfissional = null;
+    this.interesseTemp = '';
+  }
+
+  /**
+   * Validar formulário de profissional
+   */
+  validarFormProfissional(): boolean {
+    return !!(
+      this.novoProfissional.nome.trim() &&
+      this.novoProfissional.foto.trim() &&
+      this.novoProfissional.descricao.trim() &&
+      this.novoProfissional.interesses.length > 0
+    );
+  }
+
+  /**
+   * Alias para compatibilidade com HTML
+   */
+  onFileChangeProfissional(event: Event): void {
+    this.onFileSelectedProfissional(event);
   }
 }

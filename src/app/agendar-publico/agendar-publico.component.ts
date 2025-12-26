@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Firestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Servico } from '../onboarding/onboarding.component';
 import { ClienteService } from '../services/cliente.service';
+import { Profissional } from '../interfaces/profissional.interface';
+import { ProfissionalService } from '../services/profissional.service';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -46,6 +48,8 @@ interface SalaoData {
 
 interface Agendamento {
   salonId: string;
+  profissionalId: string;     // NOVO: ID do profissional
+  profissionalNome: string;   // NOVO: Nome do profissional (denormalizado)
   clienteId: string;          // ID do cliente vinculado
   clienteNome: string;
   clienteTelefone: string;
@@ -71,25 +75,28 @@ export class AgendarPublicoComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private clienteService = inject(ClienteService);
+  private profissionalService = inject(ProfissionalService);
 
   salonId: string = '';
   salao: SalaoData | null = null;
   servicos: Servico[] = [];
+  profissionais: Profissional[] = [];
   isLoading = true;
   errorMessage = '';
 
   // Etapas do wizard
   currentStep = 1;
-  totalSteps = 3;
+  totalSteps = 4;
 
-  // Etapa 1: Serviços selecionados
+  // Etapa 1: Profissional selecionado
+  profissionalSelecionado: Profissional | null = null;
+
+  // Etapa 2: Serviços selecionados
   servicosSelecionados: Servico[] = [];
 
-  // Etapa 2: Data selecionada
+  // Etapa 3: Data e horário selecionados
   dataSelecionada: Date | null = null;
   diasDisponiveis: Date[] = [];
-
-  // Etapa 3: Horário selecionado
   horarioSelecionado: string = '';
   horariosDisponiveis: string[] = [];
 
@@ -141,6 +148,21 @@ export class AgendarPublicoComponent implements OnInit {
         id: doc.id,
         ...doc.data()
       } as Servico));
+
+      // Buscar profissionais ativos do salão
+      this.profissionais = await this.profissionalService.listarAtivos(this.salonId);
+
+      if (this.profissionais.length === 0) {
+        this.errorMessage = 'Este salão ainda não cadastrou profissionais. Entre em contato diretamente.';
+        this.isLoading = false;
+        return;
+      }
+
+      // Se houver apenas 1 profissional, selecionar automaticamente
+      if (this.profissionais.length === 1) {
+        this.profissionalSelecionado = this.profissionais[0];
+        console.log('Profissional único selecionado automaticamente:', this.profissionalSelecionado.nome);
+      }
 
       this.generateCalendar();
       this.isLoading = false;
@@ -299,12 +321,12 @@ export class AgendarPublicoComponent implements OnInit {
 
     if (!horario.ativo) return;
 
-    // Buscar agendamentos existentes para o dia
+    // Buscar agendamentos existentes para o dia (apenas do profissional selecionado)
     const agendamentosRef = collection(this.firestore, 'agendamentos');
     const dataStr = this.dataSelecionada.toISOString().split('T')[0];
     const q = query(
       agendamentosRef,
-      where('salonId', '==', this.salonId),
+      where('profissionalId', '==', this.profissionalSelecionado!.id),  // 🔥 MUDANÇA CRÍTICA: filtro por profissional
       where('data', '==', dataStr),
       where('status', 'in', ['pendente', 'confirmado'])
     );
@@ -365,11 +387,16 @@ export class AgendarPublicoComponent implements OnInit {
 
   // ==================== NAVEGAÇÃO ====================
 
+  selecionarProfissional(profissional: Profissional): void {
+    this.profissionalSelecionado = profissional;
+  }
+
   canGoNext(): boolean {
     switch (this.currentStep) {
-      case 1: return this.servicosSelecionados.length > 0;
-      case 2: return this.dataSelecionada !== null && this.horarioSelecionado !== '';
-      case 3: return this.clienteNome.trim() !== '' && this.clienteTelefone.trim() !== '';
+      case 1: return this.profissionalSelecionado !== null;
+      case 2: return this.servicosSelecionados.length > 0;
+      case 3: return this.dataSelecionada !== null && this.horarioSelecionado !== '';
+      case 4: return this.clienteNome.trim() !== '' && this.clienteTelefone.trim() !== '';
       default: return false;
     }
   }
@@ -449,9 +476,11 @@ export class AgendarPublicoComponent implements OnInit {
 
       const dataAgendamento = this.dataSelecionada.toISOString().split('T')[0];
 
-      // ETAPA 3: Criar agendamento vinculado ao cliente
+      // ETAPA 3: Criar agendamento vinculado ao cliente e profissional
       const agendamento: Agendamento = {
         salonId: this.salonId,
+        profissionalId: this.profissionalSelecionado!.id!,      // Vincular ao profissional
+        profissionalNome: this.profissionalSelecionado!.nome,   // Denormalizado para performance
         clienteId: clienteId,  // Vincular ao cliente
         clienteNome: this.clienteNome,
         clienteTelefone: this.clienteTelefone,
@@ -488,7 +517,7 @@ export class AgendarPublicoComponent implements OnInit {
       console.log('Histórico do cliente atualizado');
 
       this.successMessage = 'Agendamento realizado com sucesso! Em breve você receberá uma confirmação.';
-      this.currentStep = 4; // Tela de sucesso
+      this.currentStep = 5; // Tela de sucesso
     } catch (error) {
       console.error('Erro ao criar agendamento:', error);
       this.errorMessage = 'Erro ao realizar agendamento. Tente novamente.';

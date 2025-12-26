@@ -3,6 +3,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
+import { Profissional } from '../interfaces/profissional.interface';
+import { ProfissionalService } from '../services/profissional.service';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -59,6 +61,7 @@ interface OnboardingData {
 export class OnboardingComponent implements OnInit {
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
+  private profissionalService = inject(ProfissionalService);
   private isBrowser: boolean;
 
   @Input() visible: boolean = false;
@@ -66,7 +69,7 @@ export class OnboardingComponent implements OnInit {
   @Output() onComplete = new EventEmitter<void>();
 
   currentStep = 0;
-  totalSteps = 5;
+  totalSteps = 6;
   isLoading = false;
   isSaving = false;
   errorMessage = '';
@@ -85,6 +88,23 @@ export class OnboardingComponent implements OnInit {
   };
   editandoServico: Servico | null = null;
   mostrarFormServico = false;
+
+  // Profissionais
+  profissionais: Profissional[] = [];
+  novoProfissional: Omit<Profissional, 'id' | 'createdAt' | 'updatedAt'> = {
+    salonId: '',
+    nome: '',
+    foto: '',
+    descricao: '',
+    interesses: [],
+    ativo: true,
+    ordem: 0
+  };
+  editandoProfissional: Profissional | null = null;
+  mostrarFormProfissional = false;
+  selectedFileProfissional: File | null = null;
+  previewUrlProfissional: string = '';
+  interesseTemp: string = '';
 
   // Opções de duração em minutos
   opcoesDuracao = [
@@ -143,6 +163,7 @@ export class OnboardingComponent implements OnInit {
     { label: 'Localização', icon: 'fa-map-marker-alt' },
     { label: 'Horários', icon: 'fa-clock' },
     { label: 'Serviços', icon: 'fa-scissors' },
+    { label: 'Equipe', icon: 'fa-users' },
     { label: 'Finalizar', icon: 'fa-check' }
   ];
 
@@ -194,6 +215,16 @@ export class OnboardingComponent implements OnInit {
         const temDiaAtivo = Object.values(this.data.horariosFuncionamento).some(h => h.ativo);
         if (!temDiaAtivo) {
           this.errorMessage = 'Selecione pelo menos um dia de funcionamento.';
+          return false;
+        }
+        break;
+      case 3:
+        // Serviços (opcional)
+        break;
+      case 4:
+        // Validar profissionais
+        if (this.profissionais.length === 0) {
+          this.errorMessage = 'Adicione pelo menos um profissional à sua equipe.';
           return false;
         }
         break;
@@ -298,6 +329,11 @@ export class OnboardingComponent implements OnInit {
       // Salvar serviços na coleção separada
       if (this.servicos.length > 0) {
         await this.salvarServicosNoFirestore();
+      }
+
+      // Salvar profissionais na coleção separada
+      if (this.profissionais.length > 0) {
+        await this.salvarProfissionaisNoFirestore();
       }
 
       // Recarregar dados do usuário para atualizar o cache
@@ -440,6 +476,246 @@ export class OnboardingComponent implements OnInit {
         userId: currentUser.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
+      });
+    }
+  }
+
+  // ========== Métodos de Profissionais ==========
+
+  abrirFormProfissional(): void {
+    const currentUser = this.authService.currentUser();
+    this.novoProfissional = {
+      salonId: currentUser?.uid || '',
+      nome: '',
+      foto: '',
+      descricao: '',
+      interesses: [],
+      ativo: true,
+      ordem: this.profissionais.length
+    };
+    this.editandoProfissional = null;
+    this.previewUrlProfissional = '';
+    this.selectedFileProfissional = null;
+    this.mostrarFormProfissional = true;
+  }
+
+  editarProfissional(profissional: Profissional, index: number): void {
+    this.novoProfissional = { ...profissional };
+    this.previewUrlProfissional = profissional.foto;
+    this.editandoProfissional = profissional;
+    this.mostrarFormProfissional = true;
+  }
+
+  cancelarFormProfissional(): void {
+    this.mostrarFormProfissional = false;
+    this.editandoProfissional = null;
+    this.previewUrlProfissional = '';
+    this.selectedFileProfissional = null;
+    this.interesseTemp = '';
+    const currentUser = this.authService.currentUser();
+    this.novoProfissional = {
+      salonId: currentUser?.uid || '',
+      nome: '',
+      foto: '',
+      descricao: '',
+      interesses: [],
+      ativo: true,
+      ordem: 0
+    };
+  }
+
+  salvarProfissional(): void {
+    if (!this.novoProfissional.nome.trim()) {
+      this.errorMessage = 'Informe o nome do profissional.';
+      return;
+    }
+
+    if (this.novoProfissional.nome.trim().length < 3) {
+      this.errorMessage = 'Nome deve ter pelo menos 3 caracteres.';
+      return;
+    }
+
+    if (!this.novoProfissional.descricao.trim()) {
+      this.errorMessage = 'Informe uma descrição para o profissional.';
+      return;
+    }
+
+    if (this.novoProfissional.descricao.trim().length < 10) {
+      this.errorMessage = 'Descrição deve ter pelo menos 10 caracteres.';
+      return;
+    }
+
+    if (!this.previewUrlProfissional) {
+      this.errorMessage = 'Adicione uma foto do profissional.';
+      return;
+    }
+
+    if (this.novoProfissional.interesses.length === 0) {
+      this.errorMessage = 'Adicione pelo menos 1 interesse.';
+      return;
+    }
+
+    this.errorMessage = '';
+
+    // Adicionar a foto em base64
+    this.novoProfissional.foto = this.previewUrlProfissional;
+
+    if (this.editandoProfissional) {
+      // Editar profissional existente
+      const index = this.profissionais.findIndex(p => p === this.editandoProfissional);
+      if (index !== -1) {
+        this.profissionais[index] = { ...this.novoProfissional } as Profissional;
+      }
+    } else {
+      // Adicionar novo profissional
+      this.profissionais.push({ ...this.novoProfissional } as Profissional);
+    }
+
+    this.cancelarFormProfissional();
+  }
+
+  removerProfissional(index: number): void {
+    this.profissionais.splice(index, 1);
+    // Reordenar os profissionais
+    this.profissionais.forEach((prof, i) => {
+      prof.ordem = i;
+    });
+  }
+
+  async onFileSelectedProfissional(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        this.errorMessage = 'Por favor, selecione apenas arquivos de imagem.';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.errorMessage = 'A imagem deve ter no máximo 5MB.';
+        return;
+      }
+
+      this.selectedFileProfissional = file;
+
+      try {
+        // Comprimir imagem antes de converter para base64
+        const compressedBase64 = await this.compressImage(file, 800, 0.7);
+        this.previewUrlProfissional = compressedBase64;
+        this.errorMessage = '';
+      } catch (error) {
+        console.error('Erro ao processar imagem:', error);
+        this.errorMessage = 'Erro ao processar imagem. Tente novamente.';
+      }
+    }
+  }
+
+  /**
+   * Comprimir imagem para reduzir tamanho do base64
+   * @param file Arquivo de imagem
+   * @param maxWidth Largura máxima (default 800px)
+   * @param quality Qualidade JPEG (0-1, default 0.7)
+   */
+  private compressImage(file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const img = new Image();
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionar mantendo proporção
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Não foi possível obter contexto do canvas'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Converter para base64 com compressão
+          const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedBase64);
+        };
+
+        img.onerror = () => reject(new Error('Erro ao carregar imagem'));
+        img.src = e.target?.result as string;
+      };
+
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  removePhotoProfissional(): void {
+    this.selectedFileProfissional = null;
+    this.previewUrlProfissional = '';
+  }
+
+  adicionarInteresse(): void {
+    const interesse = this.interesseTemp.trim();
+
+    if (!interesse) {
+      this.errorMessage = 'Digite um interesse antes de adicionar.';
+      return;
+    }
+
+    if (interesse.length < 2) {
+      this.errorMessage = 'Interesse deve ter pelo menos 2 caracteres.';
+      return;
+    }
+
+    if (interesse.length > 50) {
+      this.errorMessage = 'Interesse deve ter no máximo 50 caracteres.';
+      return;
+    }
+
+    if (this.novoProfissional.interesses.length >= 10) {
+      this.errorMessage = 'Máximo de 10 interesses permitidos.';
+      return;
+    }
+
+    if (this.novoProfissional.interesses.includes(interesse)) {
+      this.errorMessage = 'Este interesse já foi adicionado.';
+      return;
+    }
+
+    this.novoProfissional.interesses.push(interesse);
+    this.interesseTemp = '';
+    this.errorMessage = '';
+  }
+
+  removerInteresse(index: number): void {
+    this.novoProfissional.interesses.splice(index, 1);
+  }
+
+  async salvarProfissionaisNoFirestore(): Promise<void> {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    // Salvar cada profissional usando o ProfissionalService
+    for (const profissional of this.profissionais) {
+      await this.profissionalService.criar({
+        salonId: currentUser.uid,
+        nome: profissional.nome,
+        foto: profissional.foto,
+        descricao: profissional.descricao,
+        interesses: profissional.interesses,
+        ativo: profissional.ativo,
+        ordem: profissional.ordem
       });
     }
   }

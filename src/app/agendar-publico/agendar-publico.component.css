@@ -1036,3 +1036,129 @@
     font-size: 0.9rem;
   }
 }
+
+/* ========== ESTILOS PARA PROFISSIONAIS (UX MELHORADA) ========== */
+
+/* Header com layout horizontal (foto + info) */
+.professional-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Foto do profissional */
+.professional-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #e0e0e0;
+  background: #f5f5f5;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.professional-card.selected .professional-photo {
+  border-color: #e91e63;
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.2);
+}
+
+.professional-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Info inline (ao lado da foto) */
+.professional-info-inline {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.professional-info-inline h3 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+
+.professional-description-compact {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  margin: 0;
+}
+
+/* Interesses (rodapé do card) */
+.professional-interests-compact {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: #999;
+}
+
+.professional-interests-compact i {
+  color: #e91e63;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.interests-preview {
+  color: #666;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Card profissional com altura adaptável */
+.professional-card {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+}
+
+/* Ajustes mobile */
+@media (max-width: 768px) {
+  .professional-header {
+    gap: 1rem;
+  }
+
+  .professional-photo {
+    width: 110px;
+    height: 110px;
+  }
+
+  .professional-info-inline h3 {
+    font-size: 1.125rem;
+  }
+
+  .professional-description-compact {
+    font-size: 0.875rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .professional-interests-compact {
+    font-size: 0.8125rem;
+  }
+
+  .professional-card {
+    min-height: 190px;
+    padding: 1.5rem;
+  }
+}

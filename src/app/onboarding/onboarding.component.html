@@ -327,8 +327,146 @@
         </div>
       </div>
 
-      <!-- Step 5: Finalizar -->
+      <!-- Step 5: Equipe -->
       <div *ngIf="currentStep === 4" class="step-content">
+        <div class="step-header">
+          <h3>Monte sua Equipe</h3>
+          <p>Cadastre os profissionais do seu salão</p>
+        </div>
+
+        <!-- Lista de Profissionais -->
+        <div class="profissionais-container">
+          <div *ngIf="profissionais.length === 0 && !mostrarFormProfissional" class="empty-profissionais">
+            <i class="fa fa-users"></i>
+            <p>Nenhum profissional cadastrado ainda</p>
+            <button class="btn btn-primary" (click)="abrirFormProfissional()">
+              <i class="fa fa-plus"></i>
+              Adicionar Profissional
+            </button>
+          </div>
+
+          <!-- Lista de profissionais cadastrados -->
+          <div *ngIf="profissionais.length > 0" class="profissionais-list">
+            <div *ngFor="let prof of profissionais; let i = index" class="profissional-card">
+              <div class="profissional-foto">
+                <img [src]="prof.foto" [alt]="prof.nome" />
+              </div>
+              <div class="profissional-info">
+                <h4 class="profissional-nome">{{ prof.nome }}</h4>
+                <p class="profissional-descricao">{{ prof.descricao }}</p>
+                <div class="profissional-interesses" *ngIf="prof.interesses.length > 0">
+                  <span *ngFor="let interesse of prof.interesses" class="interesse-chip">
+                    <i class="fa fa-heart"></i>
+                    {{ interesse }}
+                  </span>
+                </div>
+              </div>
+              <div class="profissional-actions">
+                <button class="btn-icon" (click)="editarProfissional(prof, i)" title="Editar">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-danger" (click)="removerProfissional(i)" title="Remover">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary btn-add-profissional" (click)="abrirFormProfissional()">
+              <i class="fa fa-plus"></i>
+              Adicionar outro profissional
+            </button>
+          </div>
+
+          <!-- Formulário de Profissional -->
+          <div *ngIf="mostrarFormProfissional" class="profissional-form">
+            <h4>{{ editandoProfissional ? 'Editar Profissional' : 'Novo Profissional' }}</h4>
+
+            <!-- Foto do Profissional -->
+            <div class="form-group">
+              <label>Foto do Profissional *</label>
+              <div class="photo-upload-profissional" (click)="photoProfissionalInput.click()">
+                <div class="photo-preview-profissional" [class.has-photo]="previewUrlProfissional">
+                  <img *ngIf="previewUrlProfissional" [src]="previewUrlProfissional" alt="Foto do profissional" />
+                  <div *ngIf="!previewUrlProfissional" class="photo-placeholder-profissional">
+                    <i class="fa fa-camera"></i>
+                    <span>Adicionar foto</span>
+                  </div>
+                </div>
+                <input
+                  #photoProfissionalInput
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelectedProfissional($event)"
+                  hidden />
+              </div>
+              <button *ngIf="previewUrlProfissional" class="btn-remove-photo-prof" (click)="removePhotoProfissional(); $event.stopPropagation()">
+                <i class="fa fa-times"></i> Remover foto
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="nomeProfissional">Nome Completo *</label>
+              <input
+                type="text"
+                id="nomeProfissional"
+                [(ngModel)]="novoProfissional.nome"
+                placeholder="Ex: Maria Silva" />
+            </div>
+
+            <div class="form-group">
+              <label for="descricaoProfissional">Descrição *</label>
+              <textarea
+                id="descricaoProfissional"
+                [(ngModel)]="novoProfissional.descricao"
+                placeholder="Ex: Especialista em colorimetria com 5 anos de experiência"
+                rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Hobbies e Interesses *</label>
+              <p class="field-help">Adicione interesses para criar conexão com seus clientes</p>
+
+              <div class="interesses-input-group">
+                <input
+                  type="text"
+                  [(ngModel)]="interesseTemp"
+                  placeholder="Ex: Yoga, Café, Viagens..."
+                  (keyup.enter)="adicionarInteresse()" />
+                <button class="btn btn-primary btn-sm" (click)="adicionarInteresse()" type="button">
+                  <i class="fa fa-plus"></i>
+                  Adicionar
+                </button>
+              </div>
+
+              <div class="interesses-list" *ngIf="novoProfissional.interesses.length > 0">
+                <span *ngFor="let interesse of novoProfissional.interesses; let i = index" class="interesse-tag">
+                  {{ interesse }}
+                  <button class="btn-remove-interesse" (click)="removerInteresse(i)" type="button">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" (click)="cancelarFormProfissional()">
+                Cancelar
+              </button>
+              <button class="btn btn-primary" (click)="salvarProfissional()">
+                {{ editandoProfissional ? 'Salvar Alterações' : 'Adicionar Profissional' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <i class="fa fa-info-circle"></i>
+          <p>Você pode adicionar mais profissionais depois nas configurações.</p>
+        </div>
+      </div>
+
+      <!-- Step 6: Finalizar -->
+      <div *ngIf="currentStep === 5" class="step-content">
         <div class="step-header">
           <h3>Tudo pronto!</h3>
           <p>Revise suas configurações</p>
@@ -372,6 +510,19 @@
                   {{ getHorario(dia.key).inicio }} - {{ getHorario(dia.key).fim }}
                 </span>
                 <span *ngIf="!getHorario(dia.key).ativo" class="fechado">Fechado</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-section" *ngIf="profissionais.length > 0">
+            <h4><i class="fa fa-users"></i> Equipe ({{ profissionais.length }})</h4>
+            <div class="summary-profissionais">
+              <div *ngFor="let prof of profissionais" class="summary-profissional-item">
+                <img [src]="prof.foto" [alt]="prof.nome" class="profissional-thumb" />
+                <div class="profissional-details">
+                  <strong>{{ prof.nome }}</strong>
+                  <p>{{ prof.descricao }}</p>
+                </div>
               </div>
             </div>
           </div>

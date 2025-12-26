@@ -835,3 +835,113 @@
     font-size: 0.85rem;
   }
 }
+
+/* ========== CORREÇÃO DE LAYOUT PARA FORMULÁRIO DE PROFISSIONAL ========== */
+
+/* Limitar altura do formulário de profissional para evitar scroll no modal */
+.profissional-form {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-top: 20px;
+}
+
+/* Estilo da scrollbar do formulário */
+.profissional-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.profissional-form::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.profissional-form::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.profissional-form::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Garantir que step-content tenha altura máxima apropriada */
+.step-content {
+  max-height: calc(90vh - 250px);
+  overflow-y: auto;
+}
+
+/* Container de profissionais sem altura máxima para permitir scroll natural */
+.profissionais-container {
+  overflow: visible;
+}
+
+/* Foto do profissional com tamanho fixo para evitar expansão */
+.photo-preview-profissional {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #e0e0e0;
+  background: #f9f9f9;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.photo-preview-profissional img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-placeholder-profissional {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  cursor: pointer;
+}
+
+/* Upload container */
+.photo-upload-profissional {
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+/* Botão de remover foto */
+.btn-remove-photo-prof {
+  display: block;
+  margin: 8px auto 0;
+  padding: 6px 12px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-remove-photo-prof:hover {
+  background: #cc0000;
+}
+
+/* Manter botões de ação sempre visíveis */
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 16px 0 8px;
+  margin-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}

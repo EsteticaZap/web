@@ -5,6 +5,8 @@ import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { SelectModule } from 'primeng/select';
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
+import { Profissional } from '../interfaces/profissional.interface';
+import { ProfissionalService } from '../services/profissional.service';
 
 interface ViewOption {
   label: string;
@@ -13,6 +15,8 @@ interface ViewOption {
 
 interface Agendamento {
   salonId: string;
+  profissionalId?: string;      // Profissional responsável (pode ser undefined para agendamentos legado)
+  profissionalNome?: string;    // Nome do profissional (denormalizado)
   clienteNome: string;
   clienteTelefone: string;
   servicos: { id: string; nome: string; valor: number; duracao: number }[];
@@ -35,6 +39,8 @@ interface Appointment {
   status: 'confirmed' | 'pending' | 'declined';
   image: string;
   price: string;
+  profissionalId?: string;      // ID do profissional
+  profissionalNome?: string;    // Nome do profissional
 }
 
 interface DailySummary {
@@ -70,11 +76,16 @@ interface MonthlySummary {
 export class AgendaComponent implements OnInit {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
-  
+  private profissionalService = inject(ProfissionalService);
+
   isBrowser: boolean;
   currentView = 'weekly';
   isLoading = true;
   allAgendamentos: Agendamento[] = [];
+
+  // Profissionais e filtro
+  profissionais: Profissional[] = [];
+  profissionalFiltro: string | null = null;  // null = "Todos"
   
   // Opções de visualização
   viewOptions: ViewOption[] = [
@@ -121,8 +132,27 @@ export class AgendaComponent implements OnInit {
       this.currentDay = new Date();
       this.currentWeekStart = this.getMonday(new Date());
       this.currentMonth = new Date();
-      
-      await this.carregarAgendamentos();
+
+      // Carregar profissionais e agendamentos em paralelo
+      await Promise.all([
+        this.carregarProfissionais(),
+        this.carregarAgendamentos()
+      ]);
+    }
+  }
+
+  /**
+   * Carregar profissionais do salão
+   */
+  async carregarProfissionais(): Promise<void> {
+    try {
+      const currentUser = this.authService.currentUser();
+      if (!currentUser) return;
+
+      this.profissionais = await this.profissionalService.listarPorSalao(currentUser.uid);
+      console.log(`Carregados ${this.profissionais.length} profissionais`);
+    } catch (error) {
+      console.error('Erro ao carregar profissionais:', error);
     }
   }
 
@@ -137,13 +167,13 @@ export class AgendaComponent implements OnInit {
   }
 
   /**
-   * Carregar agendamentos do Firestore
+   * Carregar agendamentos do Firestore com filtro opcional de profissional
    */
   async carregarAgendamentos(): Promise<void> {
     try {
       this.isLoading = true;
       const currentUser = this.authService.currentUser();
-      
+
       if (!currentUser) {
         console.error('Usuário não autenticado');
         this.isLoading = false;
@@ -153,16 +183,22 @@ export class AgendaComponent implements OnInit {
       console.log('Carregando agendamentos para o usuário:', currentUser.uid);
 
       const agendamentosRef = collection(this.firestore, 'agendamentos');
-      // Removido orderBy para evitar necessidade de índice composto
-      // A ordenação será feita localmente
-      const q = query(
+
+      // Construir query com filtro opcional de profissional
+      let q = query(
         agendamentosRef,
         where('salonId', '==', currentUser.uid)
       );
-      
+
+      // Adicionar filtro de profissional se selecionado
+      if (this.profissionalFiltro) {
+        q = query(q, where('profissionalId', '==', this.profissionalFiltro));
+        console.log('Filtrando por profissional:', this.profissionalFiltro);
+      }
+
       const snapshot = await getDocs(q);
       console.log(`Encontrados ${snapshot.docs.length} agendamentos no Firebase`);
-      
+
       this.allAgendamentos = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -179,12 +215,12 @@ export class AgendaComponent implements OnInit {
 
       // Converter para o formato Appointment
       this.appointments = this.allAgendamentos.map(agend => this.convertToAppointment(agend));
-      
+
       console.log('Appointments convertidos:', this.appointments.length);
-      
+
       // Forçar atualização do calendário
       this._lastMonthKey = '';
-      
+
       this.isLoading = false;
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
@@ -228,7 +264,9 @@ export class AgendaComponent implements OnInit {
       date: date,
       status: status,
       image: '/girllandpage.png',
-      price: price
+      price: price,
+      profissionalId: agend.profissionalId,
+      profissionalNome: agend.profissionalNome
     };
   }
 
@@ -506,5 +544,36 @@ export class AgendaComponent implements OnInit {
 
   changeView(view: string): void {
     this.currentView = view;
+  }
+
+  // ==================== FILTRO DE PROFISSIONAL ====================
+
+  /**
+   * Filtrar agendamentos por profissional
+   */
+  filtrarPorProfissional(profissionalId: string | null): void {
+    this.profissionalFiltro = profissionalId;
+    this.carregarAgendamentos();
+  }
+
+  /**
+   * Limpar filtro de profissional
+   */
+  limparFiltro(): void {
+    this.profissionalFiltro = null;
+    this.carregarAgendamentos();
+  }
+
+  /**
+   * Obter cor única por profissional
+   */
+  getProfissionalColor(profissionalId?: string): string {
+    if (!profissionalId) return '#9E9E9E'; // Cinza para agendamentos sem profissional
+
+    const index = this.profissionais.findIndex(p => p.id === profissionalId);
+    if (index === -1) return '#9E9E9E';
+
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#DDA15E', '#BC6C25'];
+    return colors[index % colors.length];
   }
 }
