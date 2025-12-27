@@ -1,2 +1,63 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
+
+:root {
+  --primary-color: #e91e63;
+  --primary-dark: #c2185b;
+  --primary-light: #f48fb1;
+  --secondary-color: #9c27b0;
+  --secondary-light: #ba68c8;
+  --accent-color: #ff6f9d;
+
+  --gradient-primary: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
+  --gradient-soft: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%);
+  --gradient-hero: linear-gradient(135deg, #ffffff 0%, #fce4ec 100%);
+  --gradient-accent: linear-gradient(90deg, #ff6f91 0%, #ff8fb8 100%);
+
+  --bg-page: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-muted: #f5f5f5;
+  --navbar-bg: rgba(255, 255, 255, 0.95);
+
+  --text-dark: #2c3e50;
+  --text-medium: #666666;
+  --text-light: #999999;
+
+  --border-color: #f0f0f0;
+  --shadow-sm: 0 2px 8px rgba(233, 30, 99, 0.08);
+  --shadow-md: 0 4px 20px rgba(233, 30, 99, 0.12);
+  --shadow-lg: 0 8px 32px rgba(233, 30, 99, 0.16);
+
+  --chip-strong-bg: rgba(233, 30, 99, 0.12);
+  --chip-strong-text: #c2185b;
+  --status-strong-bg: #fce4ec;
+  --status-strong-text: #ad1457;
+  --status-soft-bg: #f3e5f5;
+  --status-soft-text: #7b1fa2;
+  --status-warn-bg: #fff3cd;
+  --status-warn-text: #8a6d00;
+
+  --neutral-100: #ffffff;
+  --neutral-200: #f7f7f7;
+  --neutral-300: #f0f0f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page: #0f172a;
+    --bg-surface: #111827;
+    --bg-muted: #1f2937;
+    --navbar-bg: rgba(17, 24, 39, 0.9);
+
+    --text-dark: #e5e7eb;
+    --text-medium: #cbd5e1;
+    --text-light: #94a3b8;
+
+    --border-color: rgba(255, 255, 255, 0.08);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.75);
+    --gradient-soft: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    --gradient-hero: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  }
+}

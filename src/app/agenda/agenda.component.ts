@@ -573,7 +573,7 @@ export class AgendaComponent implements OnInit {
     const index = this.profissionais.findIndex(p => p.id === profissionalId);
     if (index === -1) return '#9E9E9E';
 
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#DDA15E', '#BC6C25'];
+    const colors = ['#e91e63', '#ff6f9d', '#f48fb1', '#ba68c8', '#9c27b0', '#ff8fb8', '#f06292', '#ad1457'];
     return colors[index % colors.length];
   }
 }

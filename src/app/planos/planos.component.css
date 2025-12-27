@@ -340,16 +340,16 @@
 }
 
 .info-pagamento {
-  background: #e3f2fd;
+  background: var(--status-soft-bg);
   padding: 0.875rem;
   border-radius: 0.5rem;
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid var(--secondary-color);
 }
 
 .info-pagamento p {
   margin: 0;
   font-size: 0.8125rem;
-  color: #1565c0;
+  color: var(--secondary-color);
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;

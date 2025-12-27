@@ -348,7 +348,7 @@
 }
 
 .action-btn.whatsapp:hover {
-  background: #25d366;
+  background: var(--primary-color);
   color: #fff;
 }
 
@@ -435,13 +435,13 @@
 }
 
 .summary-item.total .summary-icon {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--status-soft-bg);
+  color: var(--secondary-color);
 }
 
 .summary-item.ativos .summary-icon {
-  background: #e8f5e9;
-  color: #e91e63;
+  background: var(--status-strong-bg);
+  color: var(--primary-color);
 }
 
 .summary-item.novos .summary-icon {
@@ -615,7 +615,7 @@
   height: 32px;
   border: none;
   border-radius: 50%;
-  background: #25d366;
+  background: var(--primary-color);
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -625,7 +625,7 @@
 }
 
 .btn-parabens:hover {
-  background: #1da851;
+  background: var(--primary-dark);
   transform: scale(1.1);
 }
 
