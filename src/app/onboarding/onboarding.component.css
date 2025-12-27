@@ -137,7 +137,7 @@
 
 .progress {
   height: 100%;
-  background: linear-gradient(90deg, #e91e63, #45d000);
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   transition: width 0.5s ease;
   border-radius: 2px;
 }
@@ -619,7 +619,7 @@
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #9c27b0 0%, #247300 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-color) 100%);
 }
 
 .btn-success:disabled {
