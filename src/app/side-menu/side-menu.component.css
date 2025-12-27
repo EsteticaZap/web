@@ -10,7 +10,7 @@ aside.side-menu {
   flex-direction: column;
   padding: 1.5rem 1rem;
   box-sizing: border-box;
-  z-index: 100;
+  z-index: 180;
 }
 
 .side-menu .brand {
@@ -199,36 +199,104 @@ aside.side-menu {
 
 /* ==================== MOBILE RESPONSIVO ==================== */
 
-/* Botão Hambúrguer - visível apenas em mobile como parte do header */
-.hamburger-btn {
+/* Header mobile que exibe hambúrguer, logo e notificações */
+.mobile-topbar {
   display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 140;
-  background: #ffffff;
-  border: none;
   height: 60px;
-  border-bottom: 1px solid #e8e8e8;
-  cursor: pointer;
-  align-items: center;
   padding: 0 1rem;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  z-index: 200;
+}
+
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-brand img {
+  width: 32px;
+  height: 32px;
+}
+
+.mobile-brand span {
+  font-weight: 600;
+  color: #333;
+}
+
+.hamburger-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.75rem;
+  border: 1px solid #f0f0f0;
+  background: #ffffff;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .hamburger-btn i {
-  font-size: 1.25rem;
-  color: #333;
+  font-size: 1.2rem;
 }
 
 .hamburger-btn:hover {
   background: #fafafa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .hamburger-btn:active i {
   transform: scale(0.95);
+}
+
+.mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.notification-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #f0f0f0;
+  background: #ffffff;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.notification-btn:hover {
+  background: #fafafa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.notification-btn i {
+  font-size: 1.1rem;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e91e63;
 }
 
 /* Overlay escuro - visível apenas em mobile quando menu aberto */
@@ -253,9 +321,14 @@ aside.side-menu {
 
 /* Media query para tablets e mobile */
 @media (max-width: 768px) {
-  /* Mostrar botão hambúrguer como header */
-  .hamburger-btn {
+  /* Mostrar header mobile completo */
+  .mobile-topbar {
     display: flex;
+  }
+
+  /* Mostrar botão hambúrguer como parte do header */
+  .hamburger-btn {
+    display: inline-flex;
   }
 
   /* Mostrar overlay quando necessário */
@@ -267,7 +340,7 @@ aside.side-menu {
   aside.side-menu {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    z-index: 150;
+    z-index: 190;
     top: 0;
   }
 
@@ -284,8 +357,8 @@ aside.side-menu {
   }
 
   .hamburger-btn {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
   }
 
   .hamburger-btn i {

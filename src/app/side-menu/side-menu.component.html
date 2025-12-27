@@ -1,7 +1,21 @@
-<!-- Botão Hambúrguer (visível apenas em mobile) -->
-<button class="hamburger-btn" (click)="toggleMenu()" aria-label="Abrir menu">
-  <i class="fa fa-bars"></i>
-</button>
+<!-- Header Mobile -->
+<header class="mobile-topbar">
+  <button class="hamburger-btn" (click)="toggleMenu()" aria-label="Abrir menu">
+    <i class="fa fa-bars"></i>
+  </button>
+
+  <div class="mobile-brand">
+    <img src="/logo.png" alt="EstéticaZap logo" />
+    <span>EstéticaZap</span>
+  </div>
+
+  <div class="mobile-actions">
+    <button class="notification-btn" aria-label="Ver notificações">
+      <i class="fa fa-bell"></i>
+      <span class="notification-dot"></span>
+    </button>
+  </div>
+</header>
 
 <!-- Overlay escuro (visível apenas quando menu estiver aberto em mobile) -->
 <div class="menu-overlay"
