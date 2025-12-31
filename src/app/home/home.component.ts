@@ -73,6 +73,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Dados para gráficos
   weeklyRevenue: number[] = [0, 0, 0, 0, 0, 0, 0];
   topServices: { label: string; count: number }[] = [];
+  attendanceStats = { showed: 0, noShow: 0 };
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -167,7 +168,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.carregarAgendamentosHoje(currentUser.uid),
         this.carregarEstatisticas(currentUser.uid),
         this.carregarFaturamentoSemanal(currentUser.uid),
-        this.carregarServicosPopulares(currentUser.uid)
+        this.carregarServicosPopulares(currentUser.uid),
+        this.carregarTaxaComparecimento(currentUser.uid)
       ]);
 
       this.isLoadingData = false;
@@ -329,6 +331,46 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Carregar taxa de comparecimento (compareceu vs cancelou/no-show)
+   */
+  async carregarTaxaComparecimento(salonId: string): Promise<void> {
+    try {
+      const hoje = new Date();
+      let showed = 0;
+      let noShow = 0;
+
+      // Considerar últimos 7 dias
+      for (let i = 0; i < 7; i++) {
+        const data = new Date(hoje);
+        data.setDate(data.getDate() - i);
+        const dataStr = data.toISOString().split('T')[0];
+
+        const agendamentosRef = collection(this.firestore, 'agendamentos');
+        const q = query(
+          agendamentosRef,
+          where('salonId', '==', salonId),
+          where('data', '==', dataStr),
+          where('status', 'in', ['confirmado', 'cancelado'])
+        );
+
+        const snapshot = await getDocs(q);
+        snapshot.docs.forEach(doc => {
+          const agend = doc.data() as Agendamento;
+          if (agend.status === 'confirmado') {
+            showed += 1;
+          } else if (agend.status === 'cancelado') {
+            noShow += 1;
+          }
+        });
+      }
+
+      this.attendanceStats = { showed, noShow };
+    } catch (error) {
+      console.error('Erro ao carregar taxa de comparecimento:', error);
+    }
+  }
+
+  /**
    * Carregar serviços mais populares
    */
   async carregarServicosPopulares(salonId: string): Promise<void> {
@@ -440,18 +482,23 @@ export class HomeComponent implements OnInit, AfterViewInit {
       }
     }
 
-    // Métodos de Pagamento (mantendo mockado por enquanto - aguardando implementação de pagamentos)
+    // Taxa de comparecimento (compareceu vs cancelou/no-show)
     if (this.paymentsCanvas?.nativeElement) {
       const paymentsCtx = this.paymentsCanvas.nativeElement.getContext('2d');
       if (paymentsCtx) {
+        const showed = this.attendanceStats.showed;
+        const noShow = this.attendanceStats.noShow;
+        const hasData = showed > 0 || noShow > 0;
+
         new Chart(paymentsCtx, {
-          type: 'doughnut',
+          type: 'bar',
           data: {
-            labels: ['Pix', 'Cartão', 'Dinheiro'],
+            labels: ['Compareceu', 'Cancelou/No-show'],
             datasets: [
               {
-                data: [55, 30, 15],
-                backgroundColor: ['#e91e63', '#ff6b6b', '#868e96']
+                label: 'Atendimentos',
+                data: hasData ? [showed, noShow] : [0, 0],
+                backgroundColor: ['#4caf50', '#ff6b6b']
               }
             ]
           },
@@ -460,8 +507,19 @@ export class HomeComponent implements OnInit, AfterViewInit {
             maintainAspectRatio: false,
             plugins: {
               legend: {
-                position: 'bottom'
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const value = context.parsed.y || 0;
+                    return `${context.label}: ${value}`;
+                  }
+                }
               }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
             }
           }
         });
