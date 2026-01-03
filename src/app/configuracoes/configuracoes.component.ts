@@ -938,6 +938,7 @@ export class ConfiguracoesComponent implements OnInit {
         // Comprimir imagem antes de converter para base64
         const compressedBase64 = await this.compressImage(file, 800, 0.7);
         this.previewUrlProfissional = compressedBase64;
+        this.novoProfissional.foto = compressedBase64;
       } catch (error) {
         console.error('Erro ao processar imagem:', error);
         this.messageService.add({
@@ -1002,6 +1003,7 @@ export class ConfiguracoesComponent implements OnInit {
   removePhotoProfissional(): void {
     this.selectedFileProfissional = null;
     this.previewUrlProfissional = '';
+    this.novoProfissional.foto = '';
   }
 
   adicionarInteresse(): void {
@@ -1079,12 +1081,12 @@ export class ConfiguracoesComponent implements OnInit {
    * Validar formulário de profissional
    */
   validarFormProfissional(): boolean {
-    return !!(
-      this.novoProfissional.nome.trim() &&
-      this.novoProfissional.foto.trim() &&
-      this.novoProfissional.descricao.trim() &&
-      this.novoProfissional.interesses.length > 0
-    );
+    const nomeValido = this.novoProfissional.nome.trim().length > 0;
+    const descricaoValida = this.novoProfissional.descricao.trim().length > 0;
+    const fotoValida = !!((this.previewUrlProfissional && this.previewUrlProfissional.trim()) || this.novoProfissional.foto.trim());
+    const interessesValidos = this.novoProfissional.interesses.length > 0;
+
+    return nomeValido && fotoValida && descricaoValida && interessesValidos;
   }
 
   /**
