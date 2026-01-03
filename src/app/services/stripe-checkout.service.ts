@@ -18,6 +18,19 @@ interface RetrievedSession {
 export class StripeCheckoutService {
   private stripeLoader: Promise<StripeInstance | null> | null = null;
 
+  private async safeParseJson(response: Response): Promise<{ data: any; rawText: string }> {
+    const text = await response.text();
+    if (!text.trim()) {
+      return { data: null, rawText: '' };
+    }
+
+    try {
+      return { data: JSON.parse(text), rawText: text };
+    } catch {
+      return { data: null, rawText: text };
+    }
+  }
+
   private async loadStripe(): Promise<StripeInstance> {
     if (typeof window === 'undefined') {
       throw new Error('O Stripe só pode ser carregado no navegador.');
@@ -98,9 +111,13 @@ export class StripeCheckoutService {
       })
     });
 
-    const data = await response.json();
-    if (!response.ok || !data.sessionId) {
-      throw new Error(data.error || 'Não foi possível criar a sessão de pagamento.');
+    const { data, rawText } = await this.safeParseJson(response);
+    if (!response.ok || !data?.sessionId) {
+      const mensagemErro =
+        data?.error ||
+        (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
+        'Não foi possível criar a sessão de pagamento. Por favor, tente novamente.';
+      throw new Error(mensagemErro);
     }
 
     return data as CheckoutSessionResponse;
@@ -116,10 +133,14 @@ export class StripeCheckoutService {
 
   async buscarSessao(sessionId: string): Promise<RetrievedSession> {
     const response = await fetch(`/api/checkout-session/${sessionId}`);
-    const data = await response.json();
+    const { data, rawText } = await this.safeParseJson(response);
 
-    if (!response.ok || !data.id) {
-      throw new Error(data.error || 'Não foi possível recuperar o status do pagamento.');
+    if (!response.ok || !data?.id) {
+      const mensagemErro =
+        data?.error ||
+        (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
+        'Não foi possível recuperar o status do pagamento. Por favor, tente novamente.';
+      throw new Error(mensagemErro);
     }
 
     return data as RetrievedSession;
