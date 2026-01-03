@@ -1,12 +1,14 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, OnInit, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { OnboardingComponent } from '../onboarding/onboarding.component';
 import { AuthService } from '../services/auth.service';
 import { ClienteService } from '../services/cliente.service';
 import { Firestore, doc, getDoc, collection, query, where, getDocs, orderBy } from '@angular/fire/firestore';
 import { Chart, registerables } from 'chart.js';
+import { SelectModule } from 'primeng/select';
 
 Chart.register(...registerables);
 
@@ -29,7 +31,14 @@ interface Agendamento {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, SideMenuComponent, OnboardingComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    SideMenuComponent,
+    OnboardingComponent,
+    SelectModule
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -74,6 +83,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   weeklyRevenue: number[] = [0, 0, 0, 0, 0, 0, 0];
   topServices: { label: string; count: number }[] = [];
   attendanceStats = { showed: 0, noShow: 0 };
+  periodOptions = [{ label: 'Esta Semana', value: 'thisWeek' }];
+  selectedPeriod = this.periodOptions[0].value;
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);

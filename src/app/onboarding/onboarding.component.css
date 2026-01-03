@@ -307,6 +307,30 @@
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
+:host ::ng-deep .form-control-select .p-select {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-focus {
+  border-color: #e91e63;
+  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+}
+
+:host ::ng-deep .form-control-select .p-select-label {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+:host ::ng-deep .form-control-select .p-select-option.p-select-option-selected {
+  background: #e8f5e9;
+  color: #e91e63;
+}
+
 .form-group-small {
   max-width: 180px;
 }

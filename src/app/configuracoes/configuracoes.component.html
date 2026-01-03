@@ -169,10 +169,15 @@
             </div>
             <div class="form-group">
               <label for="estado">Estado</label>
-              <select id="estado" [(ngModel)]="config.estado">
-                <option value="">Selecione</option>
-                <option *ngFor="let uf of estados" [value]="uf">{{ uf }}</option>
-              </select>
+              <p-select
+                inputId="estado"
+                [options]="estadoOptions"
+                [(ngModel)]="config.estado"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Selecione"
+                styleClass="form-control-select">
+              </p-select>
             </div>
             <div class="form-group">
               <label for="cep">CEP</label>
@@ -432,39 +437,43 @@
         
         <div class="form-group">
           <label for="intervalo">Intervalo entre agendamentos</label>
-          <select id="intervalo" [(ngModel)]="config.intervaloAgendamento">
-            <option [value]="0">0 minutos</option>
-            <option [value]="5">5 minutos</option>
-            <option [value]="10">10 minutos</option>
-            <option [value]="15">15 minutos</option>
-            <option [value]="30">30 minutos</option>
-            <option [value]="45">45 minutos</option>
-            <option [value]="60">1 hora</option>
-          </select>
+          <p-select
+            inputId="intervalo"
+            [options]="intervaloOptions"
+            [(ngModel)]="config.intervaloAgendamento"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecione"
+            styleClass="form-control-select">
+          </p-select>
           <span class="form-hint">Tempo mínimo entre um agendamento e outro</span>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="antecedenciaMin">Antecedência mínima</label>
-            <select id="antecedenciaMin" [(ngModel)]="config.antecedenciaMinima">
-              <option [value]="1">1 hora</option>
-              <option [value]="2">2 horas</option>
-              <option [value]="4">4 horas</option>
-              <option [value]="12">12 horas</option>
-              <option [value]="24">24 horas</option>
-            </select>
+            <p-select
+              inputId="antecedenciaMin"
+              [options]="antecedenciaMinOptions"
+              [(ngModel)]="config.antecedenciaMinima"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione"
+              styleClass="form-control-select">
+            </p-select>
             <span class="form-hint">Tempo mínimo antes do horário para agendar</span>
           </div>
           <div class="form-group">
             <label for="antecedenciaMax">Antecedência máxima</label>
-            <select id="antecedenciaMax" [(ngModel)]="config.antecedenciaMaxima">
-              <option [value]="7">7 dias</option>
-              <option [value]="15">15 dias</option>
-              <option [value]="30">30 dias</option>
-              <option [value]="60">60 dias</option>
-              <option [value]="90">90 dias</option>
-            </select>
+            <p-select
+              inputId="antecedenciaMax"
+              [options]="antecedenciaMaxOptions"
+              [(ngModel)]="config.antecedenciaMaxima"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione"
+              styleClass="form-control-select">
+            </p-select>
             <span class="form-hint">Quantos dias no futuro pode agendar</span>
           </div>
         </div>
@@ -518,11 +527,15 @@
         </div>
         <div class="form-group">
           <label for="duracaoServico">Duração</label>
-          <select id="duracaoServico" [(ngModel)]="novoServico.duracao">
-            <option *ngFor="let opcao of opcoesDuracao" [value]="opcao.valor">
-              {{ opcao.label }}
-            </option>
-          </select>
+          <p-select
+            inputId="duracaoServico"
+            [options]="opcoesDuracao"
+            [(ngModel)]="novoServico.duracao"
+            optionLabel="label"
+            optionValue="valor"
+            placeholder="Selecione"
+            styleClass="form-control-select">
+          </p-select>
         </div>
       </div>
 

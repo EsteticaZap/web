@@ -337,9 +337,33 @@
   margin-bottom: 1rem;
 }
 .chart-card .period-select {
+  min-width: 140px;
+}
+
+:host ::ng-deep .period-select .p-select {
   border: 1px solid #ccc;
   border-radius: 0.375rem;
+  background: #fff;
+}
+
+:host ::ng-deep .period-select .p-select-label {
   padding: 0.25rem 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+:host ::ng-deep .period-select .p-select.p-focus {
+  border-color: #e91e63;
+  box-shadow: 0 0 0 2px rgba(56, 176, 0, 0.15);
+}
+
+:host ::ng-deep .period-select .p-select-option.p-select-option-selected {
+  background: #e8f5e9;
+  color: #e91e63;
+}
+
+:host ::ng-deep .period-select .p-select-option:hover {
+  background: #f5f5f5;
 }
 .chart-card .chart-placeholder {
   flex: 1;

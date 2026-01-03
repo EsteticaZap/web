@@ -285,6 +285,30 @@
   box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
 }
 
+:host ::ng-deep .form-control-select .p-select {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-focus {
+  border-color: #e91e63;
+  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+}
+
+:host ::ng-deep .form-control-select .p-select-label {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+:host ::ng-deep .form-control-select .p-select-option.p-select-option-selected {
+  background: #e8f5e9;
+  color: #e91e63;
+}
+
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: #999;

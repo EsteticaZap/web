@@ -18,6 +18,7 @@ import { MessageService } from 'primeng/api';
 import { Servico } from '../onboarding/onboarding.component';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
+import { SelectModule } from 'primeng/select';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -78,7 +79,8 @@ export interface ConfiguracoesSalao {
     TagModule,
     ChipModule,
     InputTextModule,
-    InputTextarea
+    InputTextarea,
+    SelectModule
   ],
   providers: [MessageService],
   templateUrl: './configuracoes.component.html',
@@ -144,6 +146,30 @@ export class ConfiguracoesComponent implements OnInit {
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
     'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  ];
+  estadoOptions = this.estados.map(uf => ({ label: uf, value: uf }));
+  intervaloOptions = [
+    { label: '0 minutos', value: 0 },
+    { label: '5 minutos', value: 5 },
+    { label: '10 minutos', value: 10 },
+    { label: '15 minutos', value: 15 },
+    { label: '30 minutos', value: 30 },
+    { label: '45 minutos', value: 45 },
+    { label: '1 hora', value: 60 }
+  ];
+  antecedenciaMinOptions = [
+    { label: '1 hora', value: 1 },
+    { label: '2 horas', value: 2 },
+    { label: '4 horas', value: 4 },
+    { label: '12 horas', value: 12 },
+    { label: '24 horas', value: 24 }
+  ];
+  antecedenciaMaxOptions = [
+    { label: '7 dias', value: 7 },
+    { label: '15 dias', value: 15 },
+    { label: '30 dias', value: 30 },
+    { label: '60 dias', value: 60 },
+    { label: '90 dias', value: 90 }
   ];
 
   // Serviços

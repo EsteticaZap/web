@@ -134,10 +134,15 @@
           </div>
           <div class="form-group">
             <label for="estado">Estado</label>
-            <select id="estado" [(ngModel)]="data.estado">
-              <option value="">Selecione</option>
-              <option *ngFor="let uf of estados" [value]="uf">{{ uf }}</option>
-            </select>
+            <p-select
+              inputId="estado"
+              [options]="estadoOptions"
+              [(ngModel)]="data.estado"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecione"
+              styleClass="form-control-select">
+            </p-select>
           </div>
         </div>
 
@@ -293,11 +298,15 @@
               </div>
               <div class="form-group">
                 <label for="duracaoServico">Duração</label>
-                <select id="duracaoServico" [(ngModel)]="novoServico.duracao">
-                  <option *ngFor="let opcao of opcoesDuracao" [value]="opcao.valor">
-                    {{ opcao.label }}
-                  </option>
-                </select>
+                <p-select
+                  inputId="duracaoServico"
+                  [options]="opcoesDuracao"
+                  [(ngModel)]="novoServico.duracao"
+                  optionLabel="label"
+                  optionValue="valor"
+                  styleClass="form-control-select"
+                  placeholder="Selecione">
+                </p-select>
               </div>
             </div>
 
@@ -533,24 +542,25 @@
           <div class="form-row">
             <div class="form-group">
               <label>Intervalo entre agendamentos</label>
-              <select [(ngModel)]="data.intervaloAgendamento">
-                <option [value]="0">0 minutos</option>
-                <option [value]="5">5 minutos</option>
-                <option [value]="10">10 minutos</option>
-                <option [value]="15">15 minutos</option>
-                <option [value]="30">30 minutos</option>
-                <option [value]="45">45 minutos</option>
-                <option [value]="60">1 hora</option>
-              </select>
+              <p-select
+                [options]="intervaloOptions"
+                [(ngModel)]="data.intervaloAgendamento"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="form-control-select"
+                placeholder="Selecione">
+              </p-select>
             </div>
             <div class="form-group">
               <label>Antecedência mínima</label>
-              <select [(ngModel)]="data.antecedenciaMinima">
-                <option [value]="1">1 hora</option>
-                <option [value]="2">2 horas</option>
-                <option [value]="4">4 horas</option>
-                <option [value]="24">24 horas</option>
-              </select>
+              <p-select
+                [options]="antecedenciaMinOptions"
+                [(ngModel)]="data.antecedenciaMinima"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="form-control-select"
+                placeholder="Selecione">
+              </p-select>
             </div>
           </div>
         </div>
