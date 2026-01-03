@@ -2,7 +2,6 @@ import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, O
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { OnboardingComponent } from '../onboarding/onboarding.component';
 import { AuthService } from '../services/auth.service';
 import { ClienteService } from '../services/cliente.service';
@@ -35,7 +34,6 @@ interface Agendamento {
     CommonModule,
     RouterModule,
     FormsModule,
-    SideMenuComponent,
     OnboardingComponent,
     SelectModule
   ],

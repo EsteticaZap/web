@@ -1,7 +1,6 @@
 import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ClienteService, Cliente as ClienteFirestore } from '../services/cliente.service';
 import { AuthService } from '../services/auth.service';
@@ -34,7 +33,7 @@ interface ClienteSummary {
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [CommonModule, SideMenuComponent, FormsModule, DatePickerModule],
+  imports: [CommonModule, FormsModule, DatePickerModule],
   templateUrl: './clientes.component.html',
   styleUrls: ['./clientes.component.css']
 })
