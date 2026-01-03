@@ -355,19 +355,23 @@
 
     <!-- Tab: Equipe -->
     <div *ngIf="activeTab === 'equipe'" class="tab-content">
-      <div class="config-section">
-        <div class="section-header">
-          <h3>Equipe do Salão</h3>
+      <div class="config-section equipe-section">
+        <div class="section-header equipe-header">
+          <div>
+            <p class="section-overtitle">Equipe</p>
+            <h3>Equipe do Salão</h3>
+          </div>
           <p-button
             *ngIf="!mostrarFormProfissional"
             icon="pi pi-plus"
             label="Adicionar Profissional"
+            styleClass="btn-rosa"
             size="small"
             (onClick)="abrirFormProfissional()">
           </p-button>
         </div>
 
-        <p class="section-description">
+        <p class="section-description equipe-description">
           Cadastre os profissionais do seu salão com foto, descrição e interesses para criar conexão com seus clientes.
         </p>
 
@@ -378,53 +382,55 @@
         </div>
 
         <!-- Lista de Profissionais -->
-        <div *ngIf="!isLoadingProfissionais" class="profissionais-container">
-          <div *ngIf="profissionais.length === 0 && !mostrarFormProfissional" class="empty-profissionais">
-            <i class="fa fa-users"></i>
-            <p>Nenhum profissional cadastrado ainda</p>
-            <p-button icon="pi pi-plus" label="Adicionar Profissional" (onClick)="abrirFormProfissional()"></p-button>
-          </div>
-
-          <!-- Lista de profissionais cadastrados -->
-          <div *ngIf="profissionais.length > 0" class="profissionais-list">
-            <div class="profissionais-grid">
-              <p-card *ngFor="let profissional of profissionais" styleClass="profissional-card" [ngClass]="{ inativo: !profissional.ativo }">
-                <div class="profissional-card__header">
-                  <p-avatar [image]="profissional.foto" shape="circle" size="xlarge" styleClass="profissional-avatar"></p-avatar>
-                  <div class="profissional-header-text">
-                    <div class="profissional-header-top">
-                      <h4 class="profissional-nome">{{ profissional.nome }}</h4>
-                      <p-tag [severity]="profissional.ativo ? 'success' : 'warning'" [value]="profissional.ativo ? 'Ativo' : 'Inativo'"></p-tag>
-                    </div>
-                    <p class="profissional-descricao">{{ profissional.descricao }}</p>
-                  </div>
-                </div>
-                <div class="profissional-interesses" *ngIf="profissional.interesses.length > 0">
-                  <p-chip *ngFor="let interesse of profissional.interesses" [label]="interesse" icon="pi pi-heart" styleClass="interesse-chip"></p-chip>
-                </div>
-                <div class="profissional-actions">
-                  <p-button label="Editar" icon="pi pi-pencil" styleClass="p-button-text" (onClick)="abrirFormProfissional(profissional)"></p-button>
-                  <p-button
-                    *ngIf="profissional.ativo"
-                    label="Desativar"
-                    icon="pi pi-ban"
-                    severity="danger"
-                    styleClass="p-button-text"
-                    (onClick)="desativarProfissional(profissional)">
-                  </p-button>
-                  <p-button
-                    *ngIf="!profissional.ativo"
-                    label="Reativar"
-                    icon="pi pi-check"
-                    severity="success"
-                    styleClass="p-button-text"
-                    (onClick)="reativarProfissional(profissional)">
-                  </p-button>
-                </div>
-              </p-card>
+        <div *ngIf="!isLoadingProfissionais" class="profissionais-container equipe-container">
+          <div class="equipe-body">
+            <div *ngIf="profissionais.length === 0 && !mostrarFormProfissional" class="empty-profissionais">
+              <i class="fa fa-users"></i>
+              <p>Nenhum profissional cadastrado ainda</p>
+              <p-button icon="pi pi-plus" label="Adicionar Profissional" styleClass="btn-rosa" (onClick)="abrirFormProfissional()"></p-button>
             </div>
 
-            <p-button icon="pi pi-plus" label="Adicionar outro profissional" styleClass="btn-add-profissional" (onClick)="abrirFormProfissional()"></p-button>
+            <!-- Lista de profissionais cadastrados -->
+            <div *ngIf="profissionais.length > 0" class="profissionais-list equipe-list">
+              <div class="profissionais-grid equipe-grid">
+                <p-card *ngFor="let profissional of profissionais" styleClass="profissional-card equipe-card" [ngClass]="{ inativo: !profissional.ativo }">
+                  <div class="profissional-card__header">
+                    <p-avatar [image]="profissional.foto" shape="circle" size="xlarge" styleClass="profissional-avatar"></p-avatar>
+                    <div class="profissional-header-text">
+                      <div class="profissional-header-top">
+                        <h4 class="profissional-nome">{{ profissional.nome }}</h4>
+                        <p-tag [severity]="profissional.ativo ? 'success' : 'warning'" [value]="profissional.ativo ? 'Ativo' : 'Inativo'"></p-tag>
+                      </div>
+                      <p class="profissional-descricao">{{ profissional.descricao }}</p>
+                    </div>
+                  </div>
+                  <div class="profissional-interesses" *ngIf="profissional.interesses.length > 0">
+                    <p-chip *ngFor="let interesse of profissional.interesses" [label]="interesse" icon="pi pi-heart" styleClass="interesse-chip"></p-chip>
+                  </div>
+                  <div class="profissional-actions">
+                    <p-button label="Editar" icon="pi pi-pencil" styleClass="p-button-text btn-rosa" (onClick)="abrirFormProfissional(profissional)"></p-button>
+                    <p-button
+                      *ngIf="profissional.ativo"
+                      label="Desativar"
+                      icon="pi pi-ban"
+                      severity="danger"
+                      styleClass="p-button-text btn-rosa-ghost"
+                      (onClick)="desativarProfissional(profissional)">
+                    </p-button>
+                    <p-button
+                      *ngIf="!profissional.ativo"
+                      label="Reativar"
+                      icon="pi pi-check"
+                      severity="success"
+                      styleClass="p-button-text btn-rosa"
+                      (onClick)="reativarProfissional(profissional)">
+                    </p-button>
+                  </div>
+                </p-card>
+              </div>
+
+              <p-button icon="pi pi-plus" label="Adicionar outro profissional" styleClass="btn-add-profissional btn-rosa" (onClick)="abrirFormProfissional()"></p-button>
+            </div>
           </div>
         </div>
       </div>
