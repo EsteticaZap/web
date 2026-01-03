@@ -72,56 +72,58 @@
           <h2>Horários do Dia</h2>
         </div>
         <div class="timeline">
-          <ng-container *ngFor="let appt of getDailyAppointments(); let i = index">
-            <!-- Appointment -->
-            <div class="timeline-item" [ngClass]="getStatusClass(appt.status)">
-              <div class="timeline-time">
-                <span class="time-label">{{ appt.startTime }}</span>
-                <span class="duration">{{ getDuration(appt) }} min</span>
-              </div>
-              <div class="timeline-line">
-                <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
-                <div class="line-vertical"></div>
-              </div>
-              <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
-                <!-- Badge Profissional -->
-                <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
-                  <i class="fa fa-user-tie"></i>
-                  {{ appt.profissionalNome }}
+          <ng-container *ngIf="getDailyAppointments() as dailyAppts">
+            <ng-container *ngFor="let appt of dailyAppts; let i = index">
+              <!-- Appointment -->
+              <div class="timeline-item" [ngClass]="getStatusClass(appt.status)">
+                <div class="timeline-time">
+                  <span class="time-label">{{ appt.startTime }}</span>
+                  <span class="duration">{{ getDuration(appt) }} min</span>
                 </div>
-                <div *ngIf="!appt.profissionalNome" class="professional-badge unassigned">
-                  <i class="fa fa-exclamation-triangle"></i>
-                  Não atribuído
+                <div class="timeline-line">
+                  <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
+                  <div class="line-vertical"></div>
                 </div>
-
-                <div class="appt-header">
-                  <div class="appt-avatar">
-                    <img [src]="appt.image" [alt]="appt.client" />
+                <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                  <!-- Badge Profissional -->
+                  <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
+                    <i class="fa fa-user-tie"></i>
+                    {{ appt.profissionalNome }}
                   </div>
-                  <div class="appt-details">
-                    <span class="appt-client">{{ appt.client }}</span>
-                    <span class="appt-service">{{ appt.service }}</span>
+                  <div *ngIf="!appt.profissionalNome" class="professional-badge unassigned">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    Não atribuído
+                  </div>
+
+                  <div class="appt-header">
+                    <div class="appt-avatar">
+                      <img [src]="appt.image" [alt]="appt.client" />
+                    </div>
+                    <div class="appt-details">
+                      <span class="appt-client">{{ appt.client }}</span>
+                      <span class="appt-service">{{ appt.service }}</span>
+                    </div>
+                  </div>
+                  <div class="appt-footer">
+                    <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
+                    <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
+                    <span class="appt-price">{{ appt.price }}</span>
                   </div>
                 </div>
-                <div class="appt-footer">
-                  <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
-                  <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
-                  <span class="appt-price">{{ appt.price }}</span>
-                </div>
               </div>
-            </div>
 
-            <!-- Intervalo para Almoço (após item das 12h ou quando necessário) -->
-            <div *ngIf="shouldShowLunchBreak(appt, i)" class="lunch-break">
-              <i class="fa fa-utensils"></i>
-              <span>Intervalo para Almoço 12:00 - 13:00</span>
+              <!-- Intervalo para Almoço (após item das 12h ou quando necessário) -->
+              <div *ngIf="shouldShowLunchBreak(dailyAppts, i)" class="lunch-break">
+                <i class="fa fa-utensils"></i>
+                <span>Intervalo para Almoço 12:00 - 13:00</span>
+              </div>
+            </ng-container>
+
+            <div *ngIf="dailyAppts.length === 0" class="no-appointments">
+              <i class="fa fa-calendar-times"></i>
+              <p>Nenhum agendamento para este dia</p>
             </div>
           </ng-container>
-
-          <div *ngIf="getDailyAppointments().length === 0" class="no-appointments">
-            <i class="fa fa-calendar-times"></i>
-            <p>Nenhum agendamento para este dia</p>
-          </div>
         </div>
       </div>
 
@@ -314,7 +316,12 @@
           <div *ngFor="let calDay of calendarDays" 
                class="calendar-day"
                [class.other-month]="!calDay.isCurrentMonth"
-               [class.today]="calDay.isToday">
+               [class.today]="calDay.isToday"
+               role="button"
+               tabindex="0"
+               (click)="openDayModal(calDay)"
+               (keydown.enter)="openDayModal(calDay)"
+               (keydown.space)="openDayModal(calDay); $event.preventDefault()">
             <div class="day-number">{{ calDay.day }}</div>
             <div class="day-appointments" *ngIf="calDay.appointments.length > 0">
               <div class="appt-bar confirmed" *ngIf="getConfirmedCount(calDay.appointments) > 0"></div>
@@ -364,6 +371,159 @@
           <div class="summary-revenue">
             <span class="revenue-label">Faturamento Previsto</span>
             <span class="revenue-value">{{ monthlySummaryData.revenue }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalhe do Dia -->
+  <div *ngIf="isDayModalOpen" class="agenda-modal-overlay" (click)="closeDayModal()">
+    <div class="agenda-modal" (click)="$event.stopPropagation()">
+      <div class="agenda-modal-header">
+        <div class="modal-date-info">
+          <span class="modal-day-name">{{ modalDayOfWeek }}</span>
+          <h4>{{ modalDayFormatted }}</h4>
+        </div>
+        <div class="modal-actions">
+          <button class="nav-btn" type="button" (click)="previousDay()">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <button class="nav-btn" type="button" (click)="nextDay()">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+          <button class="modal-close" type="button" (click)="closeDayModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="agenda-modal-body">
+        <div class="daily-content modal-daily-content">
+          <!-- Horários do Dia -->
+          <div class="daily-schedule">
+            <div class="schedule-header">
+              <h2>Agenda do Dia</h2>
+            </div>
+            <div class="timeline">
+              <ng-container *ngIf="getDailyAppointments(modalDay || currentDay) as modalDailyAppts">
+                <ng-container *ngFor="let appt of modalDailyAppts; let i = index">
+                  <!-- Appointment -->
+                  <div class="timeline-item" [ngClass]="getStatusClass(appt.status)">
+                    <div class="timeline-time">
+                      <span class="time-label">{{ appt.startTime }}</span>
+                      <span class="duration">{{ getDuration(appt) }} min</span>
+                    </div>
+                    <div class="timeline-line">
+                      <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
+                      <div class="line-vertical"></div>
+                    </div>
+                    <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                      <!-- Badge Profissional -->
+                      <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
+                        <i class="fa fa-user-tie"></i>
+                        {{ appt.profissionalNome }}
+                      </div>
+                      <div *ngIf="!appt.profissionalNome" class="professional-badge unassigned">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        Não atribuído
+                      </div>
+  
+                      <div class="appt-header">
+                        <div class="appt-avatar">
+                          <img [src]="appt.image" [alt]="appt.client" />
+                        </div>
+                        <div class="appt-details">
+                          <span class="appt-client">{{ appt.client }}</span>
+                          <span class="appt-service">{{ appt.service }}</span>
+                        </div>
+                      </div>
+                      <div class="appt-footer">
+                        <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
+                        <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
+                        <span class="appt-price">{{ appt.price }}</span>
+                      </div>
+                    </div>
+                  </div>
+  
+                  <!-- Intervalo para Almoço (após item das 12h ou quando necessário) -->
+                  <div *ngIf="shouldShowLunchBreak(modalDailyAppts, i)" class="lunch-break">
+                    <i class="fa fa-utensils"></i>
+                    <span>Intervalo para Almoço 12:00 - 13:00</span>
+                  </div>
+                </ng-container>
+  
+                <div *ngIf="modalDailyAppts.length === 0" class="no-appointments">
+                  <i class="fa fa-calendar-times"></i>
+                  <p>Nenhum agendamento para este dia</p>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+  
+          <!-- Sidebar Direita -->
+          <div class="daily-sidebar">
+            <!-- Resumo do Dia -->
+            <div class="summary-card" *ngIf="getDailySummary(modalDay || currentDay) as modalSummary">
+              <h3>Resumo do Dia</h3>
+              <div class="summary-items">
+                <div class="summary-item confirmed">
+                  <div class="summary-icon">
+                    <i class="fa fa-check-circle"></i>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-label">Confirmados</span>
+                    <span class="summary-value">{{ modalSummary.confirmed }}</span>
+                  </div>
+                </div>
+                <div class="summary-item pending">
+                  <div class="summary-icon">
+                    <i class="fa fa-clock"></i>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-label">Pendentes</span>
+                    <span class="summary-value">{{ modalSummary.pending }}</span>
+                  </div>
+                </div>
+                <div class="summary-item declined">
+                  <div class="summary-icon">
+                    <i class="fa fa-times-circle"></i>
+                  </div>
+                  <div class="summary-info">
+                    <span class="summary-label">Recusados</span>
+                    <span class="summary-value">{{ modalSummary.declined }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="summary-revenue">
+                <span class="revenue-label">Faturamento Previsto</span>
+                <span class="revenue-value">{{ modalSummary.revenue }}</span>
+              </div>
+            </div>
+  
+            <!-- Ações Rápidas -->
+            <div class="quick-actions-card">
+              <h3>Ações Rápidas</h3>
+              <div class="action-buttons">
+                <button class="action-btn new-appointment">
+                  <div class="action-icon">
+                    <i class="fa fa-plus"></i>
+                  </div>
+                  <span>Novo Agendamento</span>
+                </button>
+                <button class="action-btn send-reminder">
+                  <div class="action-icon">
+                    <i class="fa fa-bell"></i>
+                  </div>
+                  <span>Enviar Lembrete</span>
+                </button>
+                <button class="action-btn block-time">
+                  <div class="action-icon">
+                    <i class="fa fa-ban"></i>
+                  </div>
+                  <span>Bloquear Horário</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

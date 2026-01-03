@@ -950,6 +950,8 @@
   border-radius: 0.5rem;
   position: relative;
   background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .calendar-day.other-month {
@@ -963,6 +965,16 @@
 .calendar-day.today {
   background: #fff8e1;
   border-color: #fbbc05;
+}
+
+.calendar-day:hover {
+  border-color: #e91e63;
+  box-shadow: 0 6px 20px rgba(233, 30, 99, 0.08);
+}
+
+.calendar-day:focus {
+  outline: 2px solid #e91e63;
+  outline-offset: 2px;
 }
 
 .day-number {
@@ -1016,6 +1028,115 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+/* Modal Detalhe do Dia */
+.agenda-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease;
+}
+
+.agenda-modal {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agenda-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(90deg, #fff, #fff7fb);
+}
+
+.modal-date-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.modal-date-info h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.modal-day-name {
+  font-size: 0.8rem;
+  color: #9c9c9c;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+.agenda-modal-body {
+  padding: 1rem 1.5rem 1.5rem;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.modal-daily-content {
+  grid-template-columns: 1fr 320px;
+}
+
+@media (max-width: 768px) {
+  .agenda-modal-body {
+    padding: 1rem;
+  }
+
+  .modal-daily-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Responsive Monthly */

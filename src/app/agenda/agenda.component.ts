@@ -81,6 +81,8 @@ export class AgendaComponent implements OnInit {
   currentView = 'daily';
   isLoading = true;
   allAgendamentos: Agendamento[] = [];
+  isDayModalOpen = false;
+  modalDay: Date | null = null;
 
   // Profissionais e filtro
   profissionais: Profissional[] = [];
@@ -333,18 +335,34 @@ export class AgendaComponent implements OnInit {
   // ==================== VISÃO DIÁRIA ====================
 
   get currentDayFormatted(): string {
-    const day = this.currentDay.getDate();
-    const month = this.monthNames[this.currentDay.getMonth()];
-    const year = this.currentDay.getFullYear();
-    return `${day} ${month} ${year}`;
+    return this.formatDateLabel(this.currentDay);
+  }
+
+  get modalDayFormatted(): string {
+    return this.formatDateLabel(this.modalDay || this.currentDay);
+  }
+
+  get modalDayOfWeek(): string {
+    return this.dayNames[(this.modalDay || this.currentDay).getDay()];
   }
 
   get currentDayOfWeek(): string {
     return this.dayNames[this.currentDay.getDay()];
   }
 
+  private formatDateLabel(date: Date): string {
+    const day = date.getDate();
+    const month = this.monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  }
+
   get dailySummary(): DailySummary {
-    const dailyAppts = this.getDailyAppointments();
+    return this.getDailySummary(this.currentDay);
+  }
+
+  getDailySummary(date: Date): DailySummary {
+    const dailyAppts = this.getDailyAppointments(date);
     const confirmed = dailyAppts.filter(a => a.status === 'confirmed').length;
     const pending = dailyAppts.filter(a => a.status === 'pending').length;
     const declined = dailyAppts.filter(a => a.status === 'declined').length;
@@ -366,20 +384,22 @@ export class AgendaComponent implements OnInit {
   }
 
   previousDay(): void {
-    const newDay = new Date(this.currentDay);
+    const newDay = new Date(this.modalDay || this.currentDay);
     newDay.setDate(newDay.getDate() - 1);
     this.currentDay = newDay;
+    this.modalDay = newDay;
   }
 
   nextDay(): void {
-    const newDay = new Date(this.currentDay);
+    const newDay = new Date(this.modalDay || this.currentDay);
     newDay.setDate(newDay.getDate() + 1);
     this.currentDay = newDay;
+    this.modalDay = newDay;
   }
 
-  getDailyAppointments(): Appointment[] {
+  getDailyAppointments(date: Date = this.currentDay): Appointment[] {
     return this.appointments
-      .filter(appt => appt.date.toDateString() === this.currentDay.toDateString())
+      .filter(appt => appt.date.toDateString() === date.toDateString())
       .sort((a, b) => {
         const timeA = parseInt(a.startTime.replace(':', ''));
         const timeB = parseInt(b.startTime.replace(':', ''));
@@ -393,13 +413,12 @@ export class AgendaComponent implements OnInit {
     return (endHour * 60 + endMin) - (startHour * 60 + startMin);
   }
 
-  shouldShowLunchBreak(appt: Appointment, index: number): boolean {
-    const dailyAppts = this.getDailyAppointments();
-    const nextAppt = dailyAppts[index + 1];
+  shouldShowLunchBreak(appointments: Appointment[], index: number): boolean {
+    const nextAppt = appointments[index + 1];
     
     if (!nextAppt) return false;
     
-    const currentEndHour = parseInt(appt.endTime.split(':')[0]);
+    const currentEndHour = parseInt(appointments[index].endTime.split(':')[0]);
     const nextStartHour = parseInt(nextAppt.startTime.split(':')[0]);
     
     // Mostrar intervalo de almoço se o atual termina antes das 13h e o próximo começa após 12h
@@ -568,6 +587,23 @@ export class AgendaComponent implements OnInit {
   limparFiltro(): void {
     this.profissionalFiltro = null;
     this.carregarAgendamentos();
+  }
+
+  /**
+   * Abrir modal de detalhes do dia na visão mensal
+   */
+  openDayModal(day: CalendarDay): void {
+    this.modalDay = new Date(day.date);
+    this.currentDay = new Date(day.date);
+    this.isDayModalOpen = true;
+  }
+
+  /**
+   * Fechar modal de detalhes do dia
+   */
+  closeDayModal(): void {
+    this.isDayModalOpen = false;
+    this.modalDay = null;
   }
 
   /**
