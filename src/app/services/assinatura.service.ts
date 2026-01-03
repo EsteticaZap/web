@@ -10,6 +10,7 @@ export interface Assinatura {
   dataFim?: any;
   valorMensal?: number;
   metodoPagamento?: string;
+  checkoutSessionId?: string;
   createdAt: any;
   updatedAt: any;
 }
@@ -152,7 +153,10 @@ export class AssinaturaService {
   /**
    * Atualizar assinatura para plano pro
    */
-  async atualizarParaPro(metodoPagamento: string): Promise<{ success: boolean; error?: string }> {
+  async atualizarParaPro(
+    metodoPagamento: string,
+    checkoutSessionId?: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const user = this.authService.currentUser();
       if (!user) {
@@ -168,6 +172,7 @@ export class AssinaturaService {
         dataInicio: serverTimestamp(),
         valorMensal: 49.90,
         metodoPagamento: metodoPagamento,
+        checkoutSessionId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
