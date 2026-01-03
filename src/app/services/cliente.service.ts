@@ -9,7 +9,8 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  deleteDoc
 } from '@angular/fire/firestore';
 
 export interface ServicoRealizado {
@@ -131,6 +132,20 @@ export class ClienteService {
       console.log('Cliente atualizado:', clienteId);
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove um cliente definitivamente do Firestore
+   */
+  async deletarClienteHard(clienteId: string): Promise<void> {
+    try {
+      const clienteRef = doc(this.firestore, 'clientes', clienteId);
+      await deleteDoc(clienteRef);
+      console.log('Cliente deletado definitivamente:', clienteId);
+    } catch (error) {
+      console.error('Erro ao deletar cliente definitivamente:', error);
       throw error;
     }
   }
