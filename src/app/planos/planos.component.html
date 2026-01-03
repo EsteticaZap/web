@@ -8,6 +8,21 @@
     <p class="subtitulo">Gerencie seu salão de beleza com eficiência e praticidade. Escolha o plano que melhor se adapta às suas necessidades.</p>
   </div>
 
+  <div class="alerta" *ngIf="mensagemSucesso">
+    <i class="pi pi-check-circle"></i>
+    {{ mensagemSucesso }}
+  </div>
+
+  <div class="alerta erro" *ngIf="mensagemErro">
+    <i class="pi pi-times-circle"></i>
+    {{ mensagemErro }}
+  </div>
+
+  <div class="alerta info" *ngIf="verificandoSessaoPagamento">
+    <i class="pi pi-spin pi-spinner"></i>
+    Validando seu pagamento com o Stripe...
+  </div>
+
   <!-- Loading -->
   <div *ngIf="assinaturaService.isLoading()" class="loading-container">
     <div class="spinner"></div>
@@ -131,7 +146,9 @@
       </div>
 
       <div class="info-pagamento">
-        <p><i class="pi pi-info-circle"></i> Este é um pagamento simulado. Em produção, você seria redirecionado para uma plataforma de pagamento segura.</p>
+        <p><i class="pi pi-info-circle"></i> Você será redirecionado para o checkout seguro do Stripe para concluir o pagamento.</p>
+        <p class="resumo-secundario"><i class="pi pi-shield"></i> Pagamento processado com segurança pelo Stripe. Nenhum dado sensível fica salvo no EstéticaZap.</p>
+        <p *ngIf="erroModalPagamento" class="erro-modal"><i class="pi pi-times-circle"></i> {{ erroModalPagamento }}</p>
       </div>
     </div>
 
@@ -142,7 +159,7 @@
       <button class="btn-confirmar" (click)="confirmarPagamento()" [disabled]="isLoadingPagamento">
         <span *ngIf="!isLoadingPagamento">
           <i class="pi pi-check"></i>
-          Confirmar Pagamento
+          Ir para pagamento seguro
         </span>
         <span *ngIf="isLoadingPagamento">
           <i class="pi pi-spin pi-spinner"></i>
