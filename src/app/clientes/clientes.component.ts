@@ -46,7 +46,9 @@ export class ClientesComponent implements OnInit {
   searchTerm = '';
   selectedFilter = 'todos';
   showModal = false;
+  showDeleteModal = false;
   editingCliente: Cliente | null = null;
+  clienteParaExcluir: Cliente | null = null;
   isLoading = true;
   
   // Form fields
@@ -425,9 +427,28 @@ export class ClientesComponent implements OnInit {
   }
 
   deleteCliente(cliente: Cliente): void {
-    if (confirm(`Tem certeza que deseja excluir o cliente ${cliente.nome}?`)) {
-      // Por segurança, vamos apenas inativar o cliente ao invés de deletar
-      this.toggleClienteStatus(cliente);
+    this.clienteParaExcluir = cliente;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(): void {
+    this.showDeleteModal = false;
+    this.clienteParaExcluir = null;
+  }
+
+  async confirmDeleteCliente(): Promise<void> {
+    if (!this.clienteParaExcluir) {
+      return;
+    }
+
+    try {
+      await this.clienteService.deletarClienteHard(this.clienteParaExcluir.id);
+      this.clientes = this.clientes.filter(c => c.id !== this.clienteParaExcluir?.id);
+      this.closeDeleteModal();
+      console.log('Cliente deletado definitivamente');
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      alert('Erro ao deletar cliente. Tente novamente.');
     }
   }
 

@@ -320,3 +320,36 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Delete Cliente -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-content danger" (click)="$event.stopPropagation()">
+    <div class="modal-header danger">
+      <div class="modal-title-with-icon">
+        <span class="warning-icon">
+          <i class="fa fa-exclamation-triangle"></i>
+        </span>
+        <div>
+          <h2>Confirmar exclusão</h2>
+          <p>Essa ação não poderá ser desfeita.</p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeDeleteModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="delete-message">
+        Deseja excluir definitivamente o cliente
+        <strong>{{ clienteParaExcluir?.nome }}</strong>?
+      </p>
+      <p class="delete-helper">
+        Todos os dados deste cliente serão removidos da base.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-delete" (click)="confirmDeleteCliente()">Excluir cliente</button>
+    </div>
+  </div>
+</div>
