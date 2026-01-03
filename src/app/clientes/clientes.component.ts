@@ -243,16 +243,6 @@ export class ClientesComponent implements OnInit {
       .slice(0, 5);
   }
 
-  get aniversariantesDoMes(): Cliente[] {
-    const mesAtual = new Date().getMonth();
-    return this.clientes
-      .filter(c => c.aniversario && c.aniversario.getMonth() === mesAtual)
-      .sort((a, b) => {
-        if (!a.aniversario || !b.aniversario) return 0;
-        return a.aniversario.getDate() - b.aniversario.getDate();
-      });
-  }
-
   setFilter(filter: string): void {
     this.selectedFilter = filter;
   }
@@ -264,11 +254,6 @@ export class ClientesComponent implements OnInit {
   formatDate(date: Date | null): string {
     if (!date) return '-';
     return date.toLocaleDateString('pt-BR');
-  }
-
-  formatBirthday(date: Date | null): string {
-    if (!date) return '-';
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
 
   getStatusClass(status: string): string {

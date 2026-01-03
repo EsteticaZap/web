@@ -192,30 +192,6 @@
         </div>
       </div>
 
-      <!-- Aniversariantes Card -->
-      <div class="aniversariantes-card">
-        <h3>
-          <i class="fa fa-birthday-cake"></i>
-          Aniversariantes do Mês
-        </h3>
-        <div class="aniversariantes-list" *ngIf="aniversariantesDoMes.length > 0">
-          <div *ngFor="let cliente of aniversariantesDoMes" class="aniversariante-item">
-            <div class="aniversariante-avatar">
-              <img [src]="cliente.avatar" [alt]="cliente.nome" />
-            </div>
-            <div class="aniversariante-info">
-              <span class="aniversariante-nome">{{ cliente.nome }}</span>
-              <span class="aniversariante-data">{{ formatBirthday(cliente.aniversario) }}</span>
-            </div>
-            <button class="btn-parabens" (click)="sendWhatsApp(cliente)" title="Enviar parabéns">
-              <i class="fa fa-brands fa-whatsapp"></i>
-            </button>
-          </div>
-        </div>
-        <div *ngIf="aniversariantesDoMes.length === 0" class="no-aniversariantes">
-          <p>Nenhum aniversariante este mês</p>
-        </div>
-      </div>
     </div>
   </div>
 </div>
