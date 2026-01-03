@@ -509,7 +509,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
               {
                 label: 'Atendimentos',
                 data: hasData ? [showed, noShow] : [0, 0],
-                backgroundColor: ['#4caf50', '#ff6b6b']
+                backgroundColor: ['#e91e63', '#ff6b6b']
               }
             ]
           },

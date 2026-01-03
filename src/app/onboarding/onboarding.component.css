@@ -107,7 +107,7 @@
   background: #e91e63;
   color: white;
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(56, 176, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
 }
 
 .step.completed .step-icon {
@@ -137,7 +137,7 @@
 
 .progress {
   height: 100%;
-  background: linear-gradient(90deg, #e91e63, #45d000);
+  background: linear-gradient(90deg, #e91e63, #ff6b6b);
   transition: width 0.5s ease;
   border-radius: 2px;
 }
@@ -304,7 +304,7 @@
 .form-group select:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 :host ::ng-deep .form-control-select .p-select {
@@ -317,7 +317,7 @@
 
 :host ::ng-deep .form-control-select .p-select.p-focus {
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 :host ::ng-deep .form-control-select .p-select-label {
@@ -327,7 +327,7 @@
 }
 
 :host ::ng-deep .form-control-select .p-select-option.p-select-option-selected {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -806,7 +806,7 @@
 .servico-form .form-group input[type="number"]:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 .form-actions {
