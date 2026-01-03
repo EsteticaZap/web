@@ -69,3 +69,16 @@ app-configuracoes .p-button.btn-rosa.p-disabled {
   color: #fff;
   box-shadow: none;
 }
+
+/* Ajustes de responsividade para o toast no mobile */
+@media (max-width: 640px) {
+  .p-toast {
+    width: calc(100% - 2rem);
+    max-width: 100%;
+  }
+
+  .p-toast-top-right {
+    left: 1rem;
+    right: 1rem;
+  }
+}
