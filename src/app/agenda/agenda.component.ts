@@ -86,6 +86,9 @@ export class AgendaComponent implements OnInit {
   // Profissionais e filtro
   profissionais: Profissional[] = [];
   profissionalFiltro: string | null = null;  // null = "Todos"
+  profissionalOptions: { label: string; value: string | null }[] = [
+    { label: 'Todos os profissionais', value: null }
+  ];
   
   // Opções de visualização
   viewOptions: ViewOption[] = [
@@ -150,6 +153,10 @@ export class AgendaComponent implements OnInit {
       if (!currentUser) return;
 
       this.profissionais = await this.profissionalService.listarPorSalao(currentUser.uid);
+      this.profissionalOptions = [
+        { label: 'Todos os profissionais', value: null },
+        ...this.profissionais.map(prof => ({ label: prof.nome, value: prof.id || null }))
+      ];
       console.log(`Carregados ${this.profissionais.length} profissionais`);
     } catch (error) {
       console.error('Erro ao carregar profissionais:', error);

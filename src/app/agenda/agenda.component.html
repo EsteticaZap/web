@@ -17,15 +17,15 @@
       </p-select>
 
       <!-- Filtro de Profissional -->
-      <select
+      <p-select
         class="professional-filter"
+        [options]="profissionalOptions"
         [(ngModel)]="profissionalFiltro"
-        (change)="filtrarPorProfissional(profissionalFiltro)">
-        <option [ngValue]="null">Todos os profissionais</option>
-        <option *ngFor="let prof of profissionais" [ngValue]="prof.id">
-          {{ prof.nome }}
-        </option>
-      </select>
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos os profissionais"
+        (onChange)="filtrarPorProfissional($event.value)">
+      </p-select>
 
       <button class="btn-new-appointment">
         <i class="fa fa-plus"></i> Novo Agendamento

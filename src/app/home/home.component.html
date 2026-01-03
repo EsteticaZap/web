@@ -95,9 +95,13 @@
     <div class="dashboard-card chart-card">
       <header class="chart-header">
         <h2>Faturamento Semanal</h2>
-        <select class="period-select">
-          <option>Esta Semana</option>
-        </select>
+        <p-select
+          class="period-select"
+          [options]="periodOptions"
+          [(ngModel)]="selectedPeriod"
+          optionLabel="label"
+          optionValue="value">
+        </p-select>
       </header>
 <canvas #barCanvas class="chart-canvas"></canvas>
     </div>

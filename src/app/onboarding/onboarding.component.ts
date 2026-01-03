@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SelectModule } from 'primeng/select';
 import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -54,7 +55,7 @@ interface OnboardingData {
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SelectModule],
   templateUrl: './onboarding.component.html',
   styleUrls: ['./onboarding.component.css']
 })
@@ -156,6 +157,29 @@ export class OnboardingComponent implements OnInit {
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
     'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  ];
+  estadoOptions = this.estados.map(uf => ({ label: uf, value: uf }));
+  intervaloOptions = [
+    { label: '0 minutos', value: 0 },
+    { label: '5 minutos', value: 5 },
+    { label: '10 minutos', value: 10 },
+    { label: '15 minutos', value: 15 },
+    { label: '30 minutos', value: 30 },
+    { label: '45 minutos', value: 45 },
+    { label: '1 hora', value: 60 }
+  ];
+  antecedenciaMinOptions = [
+    { label: '1 hora', value: 1 },
+    { label: '2 horas', value: 2 },
+    { label: '4 horas', value: 4 },
+    { label: '24 horas', value: 24 }
+  ];
+  antecedenciaMaxOptions = [
+    { label: '7 dias', value: 7 },
+    { label: '15 dias', value: 15 },
+    { label: '30 dias', value: 30 },
+    { label: '60 dias', value: 60 },
+    { label: '90 dias', value: 90 }
   ];
 
   steps = [
