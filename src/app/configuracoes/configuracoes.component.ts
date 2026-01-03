@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, UserData } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
-import { SideMenuComponent } from '../side-menu/side-menu.component';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -70,7 +69,6 @@ export interface ConfiguracoesSalao {
   imports: [
     CommonModule,
     FormsModule,
-    SideMenuComponent,
     ToastModule,
     DialogModule,
     ButtonModule,
