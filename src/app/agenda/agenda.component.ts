@@ -79,7 +79,7 @@ export class AgendaComponent implements OnInit {
   private profissionalService = inject(ProfissionalService);
 
   isBrowser: boolean;
-  currentView = 'weekly';
+  currentView = 'daily';
   isLoading = true;
   allAgendamentos: Agendamento[] = [];
 
@@ -96,7 +96,7 @@ export class AgendaComponent implements OnInit {
     { label: 'Visão Mensal', value: 'monthly' },
     { label: 'Visão Diária', value: 'daily' }
   ];
-  selectedView: ViewOption = this.viewOptions[1]; // Visão Mensal como padrão
+  selectedView: ViewOption = this.viewOptions[2]; // Visão Diária como padrão
   
   // Data atual da semana
   currentWeekStart = new Date(2024, 10, 18); // 18 de novembro de 2024 (segunda-feira)
