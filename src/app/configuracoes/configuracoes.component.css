@@ -113,9 +113,9 @@
 }
 
 .alert-success {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #c8e6c9;
+  background: #fce4ec;
+  color: #e91e63;
+  border: 1px solid #f8bbd0;
 }
 
 .alert-error {
@@ -282,7 +282,7 @@
 .form-group select:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 :host ::ng-deep .form-control-select .p-select {
@@ -295,7 +295,7 @@
 
 :host ::ng-deep .form-control-select .p-select.p-focus {
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 :host ::ng-deep .form-control-select .p-select-label {
@@ -305,7 +305,7 @@
 }
 
 :host ::ng-deep .form-control-select .p-select-option.p-select-option-selected {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -465,7 +465,7 @@
 .horario-input input[type="time"]:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 .horario-separator {
@@ -650,7 +650,7 @@
 }
 
 .btn-primary:disabled {
-  background: #9cd986;
+  background: #f8b6cc;
   cursor: not-allowed;
 }
 
@@ -677,14 +677,14 @@
 }
 
 .btn-success {
-  background: #4caf50;
+  background: #e91e63;
   color: #fff;
-  border: 1px solid #4caf50;
+  border: 1px solid #e91e63;
 }
 
 .btn-success:hover {
-  background: #3d8b40;
-  border-color: #3d8b40;
+  background: #c2185b;
+  border-color: #c2185b;
 }
 
 .btn-warning {
@@ -710,9 +710,9 @@
 }
 
 .btn-success.btn-ghost {
-  color: #2e7d32;
-  border-color: #a5d6a7;
-  background: #f1fff0;
+  color: #e91e63;
+  border-color: #f8bbd0;
+  background: #fff5f9;
 }
 
 .btn-warning.btn-ghost {

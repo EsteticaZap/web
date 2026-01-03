@@ -313,7 +313,7 @@
 }
 
 .status-badge.status-ativo {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -440,7 +440,7 @@
 }
 
 .summary-item.ativos .summary-icon {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -833,7 +833,7 @@
 .form-group textarea:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 .form-group input::placeholder,
@@ -870,7 +870,7 @@
 :host ::ng-deep .datepicker-fullwidth .p-datepicker-input:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 :host ::ng-deep .datepicker-fullwidth .p-datepicker-input::placeholder {
@@ -900,7 +900,7 @@
 }
 
 :host ::ng-deep .p-datepicker table td > span:focus {
-  box-shadow: 0 0 0 2px rgba(56, 176, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
 }
 
 :host ::ng-deep .p-datepicker .p-datepicker-buttonbar {

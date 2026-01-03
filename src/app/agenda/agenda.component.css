@@ -56,7 +56,7 @@
 
 :host ::ng-deep .view-select .p-select.p-focus {
   border-color: #e91e63;
-  box-shadow: 0 0 0 2px rgba(56, 176, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
 }
 
 :host ::ng-deep .view-select .p-select-label {
@@ -66,7 +66,7 @@
 }
 
 :host ::ng-deep .p-select-option.p-select-option-selected {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -90,7 +90,7 @@
 
 :host ::ng-deep .professional-filter .p-select.p-focus {
   border-color: #e91e63;
-  box-shadow: 0 0 0 2px rgba(56, 176, 0, 0.2);
+  box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.2);
 }
 
 :host ::ng-deep .professional-filter .p-select-label {
@@ -279,7 +279,7 @@
 
 /* Appointment cards */
 .appointment-card {
-  background: #e8f5e9;
+  background: #fce4ec;
   border-radius: 0.5rem;
   padding: 0.5rem;
   margin-bottom: 0.25rem;
@@ -297,7 +297,7 @@
 }
 
 .appointment-card.status-confirmed {
-  background: #e8f5e9;
+  background: #fce4ec;
   border-left-color: #e91e63;
 }
 
@@ -548,14 +548,14 @@
 
 .timeline-content {
   flex: 1;
-  background: #e8f5e9;
+  background: #fce4ec;
   border-radius: 0.75rem;
   padding: 1rem;
   border-left: 4px solid #e91e63;
 }
 
 .timeline-content.status-confirmed {
-  background: #e8f5e9;
+  background: #fce4ec;
   border-left-color: #e91e63;
 }
 
@@ -731,7 +731,7 @@
 }
 
 .summary-item.confirmed .summary-icon {
-  background: #e8f5e9;
+  background: #fce4ec;
   color: #e91e63;
 }
 
@@ -816,7 +816,7 @@
 }
 
 .action-btn:hover {
-  background: #e8f5e9;
+  background: #fce4ec;
 }
 
 .action-icon {

@@ -93,7 +93,7 @@
 .input-wrapper input:focus {
   outline: none;
   border-color: #e91e63;
-  box-shadow: 0 0 0 3px rgba(56, 176, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
 }
 
 .input-wrapper input::placeholder {
@@ -204,8 +204,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #fce4ec;
+  color: #e91e63;
   padding: 0.75rem;
   border-radius: 0.5rem;
   font-size: 0.8rem;
@@ -231,7 +231,7 @@
 }
 
 .btn-login:disabled {
-  background: #a5d6a7;
+  background: #f8b6cc;
   cursor: not-allowed;
 }
 
