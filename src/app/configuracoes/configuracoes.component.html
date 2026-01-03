@@ -650,7 +650,14 @@
           [(ngModel)]="interesseTemp"
           placeholder="Ex: Yoga, Café, Viagens..."
           (keyup.enter)="adicionarInteresse()" />
-        <p-button icon="pi pi-plus" label="Adicionar" size="small" (onClick)="adicionarInteresse()" type="button"></p-button>
+        <p-button
+          icon="pi pi-plus"
+          label="Adicionar"
+          size="small"
+          styleClass="btn-rosa"
+          [disabled]="!interesseTemp.trim()"
+          (onClick)="adicionarInteresse()"
+          type="button"></p-button>
       </div>
 
       <div class="interesses-list" *ngIf="novoProfissional.interesses.length > 0">
@@ -672,6 +679,7 @@
         icon="pi pi-check"
         [loading]="isSavingProfissional"
         [disabled]="!validarFormProfissional()"
+        styleClass="btn-rosa"
         (onClick)="salvarProfissional()">
       </p-button>
     </div>

@@ -1,2 +1,71 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
+
+app-configuracoes .profissional-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.25rem 0 0.5rem;
+}
+
+app-configuracoes .profissional-form .form-group {
+  margin: 0;
+  gap: 0.35rem;
+}
+
+app-configuracoes .profissional-form .form-group input,
+app-configuracoes .profissional-form .form-group textarea {
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+}
+
+app-configuracoes .profissional-form .form-group textarea {
+  min-height: 120px;
+}
+
+app-configuracoes .interesses-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #f3d4e2;
+  border-radius: 0.8rem;
+  background: #fff7fb;
+}
+
+app-configuracoes .interesses-input-group input {
+  flex: 1;
+  background: transparent;
+}
+
+app-configuracoes .interesses-input-group .p-button.btn-rosa {
+  min-width: 155px;
+}
+
+app-configuracoes .interesses-list {
+  margin-top: 0.75rem;
+}
+
+app-configuracoes .interesses-list .p-chip {
+  background: #fff5f9;
+  color: #c2185b;
+  border: 1px solid #f6cadd;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+}
+
+app-configuracoes .interesses-list .p-chip .p-chip-icon,
+app-configuracoes .interesses-list .p-chip .p-chip-remove-icon {
+  color: #c2185b;
+}
+
+app-configuracoes .dialog-footer {
+  gap: 0.75rem;
+}
+
+app-configuracoes .p-button.btn-rosa.p-disabled {
+  background: #f8b6cc;
+  border-color: #f8b6cc;
+  color: #fff;
+  box-shadow: none;
+}
