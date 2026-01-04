@@ -196,6 +196,9 @@
           <div *ngIf="dataSelecionada && horariosDisponiveis.length === 0" class="empty-selection">
             <i class="fa fa-calendar-times"></i>
             <p>Não há horários disponíveis para este dia.</p>
+            <p *ngIf="bloqueioNoDia" class="blocked-note">
+              Existe um bloqueio cadastrado para este dia. Escolha outra data ou profissional.
+            </p>
             <p style="font-size: 0.875rem; color: #999; margin-top: 0.5rem;">Selecione outra data</p>
           </div>
         </div>

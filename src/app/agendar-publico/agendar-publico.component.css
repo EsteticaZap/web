@@ -613,6 +613,11 @@
   margin: 0 0 1rem 0;
 }
 
+.blocked-note {
+  color: #c62828;
+  font-weight: 600;
+}
+
 /* Navegação */
 .wizard-navigation {
   display: flex;

@@ -61,6 +61,10 @@
           <span class="dot declined"></span>
           Recusado
         </div>
+        <div class="legend-item">
+          <span class="dot blocked"></span>
+          Bloqueado
+        </div>
       </div>
     </div>
 
@@ -96,18 +100,26 @@
                   </div>
 
                   <div class="appt-header">
-                    <div class="appt-avatar">
-                      <img [src]="appt.image" [alt]="appt.client" />
+                    <div class="appt-avatar" [class.blocked-avatar]="appt.status === 'blocked'">
+                      <i *ngIf="appt.status === 'blocked'" class="fa fa-ban"></i>
+                      <img *ngIf="appt.status !== 'blocked'" [src]="appt.image" [alt]="appt.client" />
                     </div>
                     <div class="appt-details">
-                      <span class="appt-client">{{ appt.client }}</span>
-                      <span class="appt-service">{{ appt.service }}</span>
+                      <ng-container *ngIf="appt.status === 'blocked'; else regularAppointment">
+                        <span class="appt-client">Horário bloqueado</span>
+                        <span class="appt-service">{{ appt.service }}</span>
+                      </ng-container>
+                      <ng-template #regularAppointment>
+                        <span class="appt-client">{{ appt.client }}</span>
+                        <span class="appt-service">{{ appt.service }}</span>
+                      </ng-template>
                     </div>
                   </div>
                   <div class="appt-footer">
                     <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
                     <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
-                    <span class="appt-price">{{ appt.price }}</span>
+                    <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
+                    <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
                   </div>
                 </div>
               </div>
@@ -177,7 +189,7 @@
               </div>
               <span>Enviar Lembrete</span>
             </button>
-            <button class="action-btn block-time">
+            <button class="action-btn block-time" (click)="openBlockModal(currentDay)">
               <div class="action-icon">
                 <i class="fa fa-ban"></i>
               </div>
@@ -218,6 +230,10 @@
           <span class="dot declined"></span>
           Recusado
         </div>
+        <div class="legend-item">
+          <span class="dot blocked"></span>
+          Bloqueado
+        </div>
       </div>
     </div>
 
@@ -251,11 +267,12 @@
                   <i class="fa fa-exclamation-triangle"></i>
                 </div>
 
-                <div class="appt-avatar">
-                  <img [src]="appt.image" [alt]="appt.client" />
+                <div class="appt-avatar" [class.blocked-avatar]="appt.status === 'blocked'">
+                  <i *ngIf="appt.status === 'blocked'" class="fa fa-ban"></i>
+                  <img *ngIf="appt.status !== 'blocked'" [src]="appt.image" [alt]="appt.client" />
                 </div>
                 <div class="appt-info">
-                  <div class="appt-client">{{ appt.client }}</div>
+                  <div class="appt-client">{{ appt.status === 'blocked' ? 'Horário bloqueado' : appt.client }}</div>
                   <div class="appt-service">{{ appt.service }}</div>
                   <div class="appt-time">{{ appt.startTime }} - {{ appt.endTime }}</div>
                 </div>
@@ -296,6 +313,10 @@
           <span class="dot declined"></span>
           Recusado
         </div>
+        <div class="legend-item">
+          <span class="dot blocked"></span>
+          Bloqueado
+        </div>
       </div>
     </div>
 
@@ -320,7 +341,10 @@
             <div class="day-appointments" *ngIf="calDay.appointments.length > 0">
               <div class="appt-bar confirmed" *ngIf="getConfirmedCount(calDay.appointments) > 0"></div>
               <div class="appt-bar pending" *ngIf="getPendingCount(calDay.appointments) > 0"></div>
-              <span class="appt-count">{{ calDay.appointments.length }} agend.</span>
+              <span class="appt-count">
+                {{ getActiveAppointmentsCount(calDay.appointments) }} agend.
+                <span *ngIf="hasBlockedAppointments(calDay.appointments)" class="blocked-chip">+ bloqueios</span>
+              </span>
             </div>
             <div class="today-label" *ngIf="calDay.isToday">
               <span>Hoje - {{ calDay.appointments.length }}</span>
@@ -423,18 +447,26 @@
                       </div>
   
                       <div class="appt-header">
-                        <div class="appt-avatar">
-                          <img [src]="appt.image" [alt]="appt.client" />
+                        <div class="appt-avatar" [class.blocked-avatar]="appt.status === 'blocked'">
+                          <i *ngIf="appt.status === 'blocked'" class="fa fa-ban"></i>
+                          <img *ngIf="appt.status !== 'blocked'" [src]="appt.image" [alt]="appt.client" />
                         </div>
                         <div class="appt-details">
-                          <span class="appt-client">{{ appt.client }}</span>
-                          <span class="appt-service">{{ appt.service }}</span>
+                          <ng-container *ngIf="appt.status === 'blocked'; else regularAppointmentModal">
+                            <span class="appt-client">Horário bloqueado</span>
+                            <span class="appt-service">{{ appt.service }}</span>
+                          </ng-container>
+                          <ng-template #regularAppointmentModal>
+                            <span class="appt-client">{{ appt.client }}</span>
+                            <span class="appt-service">{{ appt.service }}</span>
+                          </ng-template>
                         </div>
                       </div>
                       <div class="appt-footer">
                         <span class="appt-time-range">{{ appt.startTime }} - {{ appt.endTime }}</span>
                         <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
-                        <span class="appt-price">{{ appt.price }}</span>
+                        <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
+                        <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
                       </div>
                     </div>
                   </div>
@@ -504,7 +536,7 @@
                   </div>
                   <span>Enviar Lembrete</span>
                 </button>
-                <button class="action-btn block-time">
+                <button class="action-btn block-time" (click)="openBlockModal(modalDay || currentDay)">
                   <div class="action-icon">
                     <i class="fa fa-ban"></i>
                   </div>
@@ -513,6 +545,71 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bloquear Horário -->
+  <div *ngIf="isBlockModalOpen" class="agenda-modal-overlay" (click)="closeBlockModal()">
+    <div class="agenda-modal block-modal" (click)="$event.stopPropagation()">
+      <div class="agenda-modal-header">
+        <div class="modal-date-info">
+          <span class="modal-day-name">Bloquear horário</span>
+          <h4>{{ blockFormDateLabel }}</h4>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-close" type="button" (click)="closeBlockModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="agenda-modal-body block-modal-body">
+        <div class="block-form-grid">
+          <div class="form-group">
+            <label>Data</label>
+            <input type="date" [(ngModel)]="blockForm.data">
+          </div>
+          <div class="form-group">
+            <label>Início</label>
+            <input type="time" [(ngModel)]="blockForm.horaInicio">
+          </div>
+          <div class="form-group">
+            <label>Fim</label>
+            <input type="time" [(ngModel)]="blockForm.horaFim">
+          </div>
+          <div class="form-group full-width">
+            <label class="checkbox">
+              <input type="checkbox" [(ngModel)]="blockForm.aplicaParaTodos" (change)="onAplicaParaTodosChange()" />
+              Bloquear para todo o salão
+            </label>
+          </div>
+          <div class="form-group full-width">
+            <label>Profissional</label>
+            <select [(ngModel)]="blockForm.profissionalId" [disabled]="blockForm.aplicaParaTodos">
+              <option [ngValue]="null">Selecione</option>
+              <option *ngFor="let profissional of profissionais" [ngValue]="profissional.id">{{ profissional.nome }}</option>
+            </select>
+            <small *ngIf="blockForm.aplicaParaTodos" class="hint">Todos os profissionais serão bloqueados</small>
+          </div>
+          <div class="form-group full-width">
+            <label>Motivo (opcional)</label>
+            <textarea rows="2" [(ngModel)]="blockForm.motivo" placeholder="Ex: folga, manutenção, feriado..."></textarea>
+          </div>
+        </div>
+
+        <div *ngIf="blockModalError" class="block-error">
+          <i class="fa fa-exclamation-circle"></i>
+          {{ blockModalError }}
+        </div>
+
+        <div class="block-modal-actions">
+          <button class="btn-secondary" type="button" (click)="closeBlockModal()">Cancelar</button>
+          <button class="btn-primary" type="button" [disabled]="isSavingBloqueio" (click)="salvarBloqueio()">
+            <i *ngIf="isSavingBloqueio" class="fa fa-spinner fa-spin"></i>
+            <span *ngIf="!isSavingBloqueio">Salvar bloqueio</span>
+            <span *ngIf="isSavingBloqueio">Salvando...</span>
+          </button>
         </div>
       </div>
     </div>
