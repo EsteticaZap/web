@@ -224,6 +224,11 @@ export class ConfiguracoesComponent implements OnInit {
     this.interesseTemp = value;
   }
 
+  private parseNumber(value: any, fallback: number): number {
+    const parsed = Number(value);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+
   constructor() {
     // Effect para reagir quando os dados do usuário estiverem disponíveis
     effect(() => {
@@ -263,9 +268,9 @@ export class ConfiguracoesComponent implements OnInit {
         this.config.estado = configuracoes.estado || '';
         this.config.cep = configuracoes.cep || '';
         this.config.descricao = configuracoes.descricao || '';
-        this.config.intervaloAgendamento = configuracoes.intervaloAgendamento || 30;
-        this.config.antecedenciaMinima = configuracoes.antecedenciaMinima || 2;
-        this.config.antecedenciaMaxima = configuracoes.antecedenciaMaxima || 30;
+        this.config.intervaloAgendamento = this.parseNumber(configuracoes.intervaloAgendamento, 30);
+        this.config.antecedenciaMinima = this.parseNumber(configuracoes.antecedenciaMinima, 2);
+        this.config.antecedenciaMaxima = this.parseNumber(configuracoes.antecedenciaMaxima, 30);
         
         // Carregar horários de funcionamento com merge profundo
         if (configuracoes.horariosFuncionamento) {
@@ -408,6 +413,11 @@ export class ConfiguracoesComponent implements OnInit {
       if (fotoBase64) {
         this.config.fotoSalao = fotoBase64;
       }
+
+      // Garantir que valores numéricos sejam salvos corretamente
+      this.config.intervaloAgendamento = this.parseNumber(this.config.intervaloAgendamento, 30);
+      this.config.antecedenciaMinima = this.parseNumber(this.config.antecedenciaMinima, 2);
+      this.config.antecedenciaMaxima = this.parseNumber(this.config.antecedenciaMaxima, 30);
 
       // Atualizar documento no Firestore
       const userDocRef = doc(this.firestore, 'users', currentUser.uid);
