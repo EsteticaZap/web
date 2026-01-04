@@ -309,11 +309,14 @@
 
 :host ::ng-deep .form-control-select .p-select {
   width: 100%;
-  min-height: 56px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #fff;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host ::ng-deep .form-control-select .p-select:hover {
+  border-color: #e91e63;
 }
 
 :host ::ng-deep .form-control-select .p-select.p-focus {
@@ -322,7 +325,7 @@
 }
 
 :host ::ng-deep .form-control-select .p-select-label {
-  padding: 0.9rem 0.9rem;
+  padding: 0.65rem 0.75rem;
   font-size: 0.98rem;
   color: #333;
 }
@@ -330,6 +333,10 @@
 :host ::ng-deep .form-control-select .p-select-option.p-select-option-selected {
   background: #fce4ec;
   color: #e91e63;
+}
+
+:host ::ng-deep .form-control-select .p-select-option:hover {
+  background: #fff0f6;
 }
 
 .form-group-small {
