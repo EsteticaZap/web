@@ -970,3 +970,100 @@
   gap: 12px;
   justify-content: flex-end;
 }
+
+/* Lista de profissionais organizada */
+.profissionais-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profissional-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.profissional-foto img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.profissional-info {
+  overflow: hidden;
+}
+
+.profissional-nome {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+}
+
+.profissional-descricao {
+  margin: 0 0 6px 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.profissional-interesses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.interesse-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: #fce4ec;
+  color: #e91e63;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.profissional-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.summary-profissionais {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.summary-profissional-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.summary-profissional-item .profissional-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.summary-profissional-item p {
+  margin: 0;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+/* Evitar múltiplos scrolls aninhados */
+.step-content {
+  max-height: none;
+  overflow: visible;
+}
