@@ -8,6 +8,7 @@ import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Request, Response } from 'express';
+import { AgendaService } from './agenda.service';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -15,6 +16,8 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 app.use(express.json());
+
+const agendaService = new AgendaService();
 
 const stripeSecretKey = process.env['STRIPE_SECRET_KEY'];
 const defaultPriceId = process.env['STRIPE_PRICE_ID'];
@@ -113,6 +116,36 @@ app.get('/api/checkout-session/:id', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Erro ao buscar sessão de checkout:', error);
     return res.status(500).json({ error: (error as Error).message || 'Erro ao buscar sessão de pagamento.' });
+  }
+});
+
+app.patch('/api/agendamentos/:id/confirmar', async (req: Request, res: Response) => {
+  try {
+    const agendamentoId = req.params['id'];
+    if (!agendamentoId) {
+      return res.status(400).json({ error: 'ID do agendamento é obrigatório.' });
+    }
+
+    await agendaService.confirmarAgendamento(agendamentoId);
+    return res.json({ id: agendamentoId, status: 'confirmado' });
+  } catch (error) {
+    console.error('Erro ao confirmar agendamento:', error);
+    return res.status(500).json({ error: (error as Error).message || 'Erro ao confirmar agendamento.' });
+  }
+});
+
+app.patch('/api/agendamentos/:id/cancelar', async (req: Request, res: Response) => {
+  try {
+    const agendamentoId = req.params['id'];
+    if (!agendamentoId) {
+      return res.status(400).json({ error: 'ID do agendamento é obrigatório.' });
+    }
+
+    await agendaService.cancelarAgendamento(agendamentoId);
+    return res.json({ id: agendamentoId, status: 'cancelado' });
+  } catch (error) {
+    console.error('Erro ao cancelar agendamento:', error);
+    return res.status(500).json({ error: (error as Error).message || 'Erro ao cancelar agendamento.' });
   }
 });
 
