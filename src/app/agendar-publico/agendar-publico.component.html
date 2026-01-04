@@ -12,7 +12,7 @@
 </div>
 
 <!-- Conteúdo Principal -->
-<div *ngIf="!isLoading && !errorMessage && salao && currentStep <= 4" class="booking-container">
+<div *ngIf="!isLoading && !errorMessage && salao && currentStep <= 4" class="booking-container" #bookingTop>
   <!-- Header do Salão -->
   <div class="salon-header">
     <div class="salon-photo" *ngIf="salao.fotoSalao">
@@ -175,7 +175,7 @@
         </div>
 
         <!-- Horários -->
-        <div class="time-container">
+        <div class="time-container" #timeSection>
           <h3><i class="fa fa-clock"></i> Horários Disponíveis</h3>
           
           <div *ngIf="!dataSelecionada" class="empty-selection">
