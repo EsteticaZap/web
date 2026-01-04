@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -81,6 +81,8 @@ export class AgendarPublicoComponent implements OnInit {
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
   private readonly fallbackIntervalo = 30;
+  @ViewChild('bookingTop') bookingTopRef?: ElementRef<HTMLElement>;
+  @ViewChild('timeSection') timeSectionRef?: ElementRef<HTMLElement>;
 
   salonId: string = '';
   salao: SalaoData | null = null;
@@ -314,6 +316,7 @@ export class AgendarPublicoComponent implements OnInit {
     this.dataSelecionada = day.date;
     this.generateCalendar();
     this.calcularHorariosDisponiveis();
+    this.scrollToTimeSectionOnMobile();
   }
 
   previousMonth(): void {
@@ -459,6 +462,7 @@ export class AgendarPublicoComponent implements OnInit {
     
     if (this.currentStep < this.totalSteps) {
       this.currentStep++;
+      this.scrollToTopOnMobile();
     }
   }
 
@@ -583,5 +587,35 @@ export class AgendarPublicoComponent implements OnInit {
     this.clienteTelefone = '';
     this.successMessage = '';
     this.generateCalendar();
+  }
+
+  private isMobile(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 768;
+  }
+
+  private scrollToElement(target?: ElementRef<HTMLElement>, block: ScrollLogicalPosition = 'start'): void {
+    if (!target) return;
+
+    target.nativeElement.scrollIntoView({
+      behavior: 'smooth',
+      block,
+      inline: 'nearest'
+    });
+  }
+
+  private scrollToTopOnMobile(): void {
+    if (!this.isMobile()) return;
+
+    setTimeout(() => {
+      this.scrollToElement(this.bookingTopRef, 'start');
+    }, 50);
+  }
+
+  private scrollToTimeSectionOnMobile(): void {
+    if (!this.isMobile()) return;
+
+    setTimeout(() => {
+      this.scrollToElement(this.timeSectionRef, 'start');
+    }, 50);
   }
 }
