@@ -225,6 +225,8 @@
             [(ngModel)]="clienteTelefone"
             (input)="formatPhone($event)"
             placeholder="(00) 00000-0000"
+            inputmode="numeric"
+            pattern="[0-9]*"
             maxlength="15" />
         </div>
 
