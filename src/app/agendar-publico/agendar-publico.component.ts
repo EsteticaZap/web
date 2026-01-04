@@ -8,6 +8,8 @@ import { ClienteService } from '../services/cliente.service';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
 import { formatPhoneMask } from '../utils/phone-utils';
+import { BloqueioHorario } from '../interfaces/bloqueio.interface';
+import { BloqueioService } from '../services/bloqueio.service';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -77,6 +79,7 @@ export class AgendarPublicoComponent implements OnInit {
   private router = inject(Router);
   private clienteService = inject(ClienteService);
   private profissionalService = inject(ProfissionalService);
+  private bloqueioService = inject(BloqueioService);
   private readonly fallbackIntervalo = 30;
 
   salonId: string = '';
@@ -101,6 +104,7 @@ export class AgendarPublicoComponent implements OnInit {
   diasDisponiveis: Date[] = [];
   horarioSelecionado: string = '';
   horariosDisponiveis: string[] = [];
+  bloqueioNoDia = false;
 
   // Etapa 4: Dados do cliente
   clienteNome = '';
@@ -234,6 +238,11 @@ export class AgendarPublicoComponent implements OnInit {
     return mins === 0 ? `${horas}h` : `${horas}h ${mins}min`;
   }
 
+  private timeStringToMinutes(time: string): number {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+  }
+
   // ==================== ETAPA 2: DATA ====================
 
   generateCalendar(): void {
@@ -324,8 +333,9 @@ export class AgendarPublicoComponent implements OnInit {
   // ==================== ETAPA 3: HORÁRIO ====================
 
   async calcularHorariosDisponiveis(): Promise<void> {
-    if (!this.dataSelecionada || !this.salao?.configuracoes) return;
+    if (!this.dataSelecionada || !this.salao?.configuracoes || !this.profissionalSelecionado) return;
 
+    this.bloqueioNoDia = false;
     this.horariosDisponiveis = [];
     const dayOfWeek = this.dataSelecionada.getDay();
     const dias = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
@@ -345,6 +355,11 @@ export class AgendarPublicoComponent implements OnInit {
     );
     const snapshot = await getDocs(q);
     const agendamentosExistentes = snapshot.docs.map(doc => doc.data() as Agendamento);
+    const bloqueios = await this.bloqueioService.listarPorSalaoEData(this.salonId, dataStr);
+    const bloqueiosFiltrados: BloqueioHorario[] = bloqueios.filter(bloqueio =>
+      bloqueio.aplicaParaTodos || bloqueio.profissionalId === this.profissionalSelecionado!.id
+    );
+    this.bloqueioNoDia = bloqueiosFiltrados.length > 0;
 
     // Gerar slots de horário
     const slots: string[] = [];
@@ -381,10 +396,8 @@ export class AgendarPublicoComponent implements OnInit {
       // Verificar conflito com agendamentos existentes considerando o intervalo entre agendamentos
       const agendamentoEmConflito = agendamentosExistentes
         .map(agend => {
-          const [agendIniHora, agendIniMin] = agend.horaInicio.split(':').map(Number);
-          const [agendFimHora, agendFimMin] = agend.horaFim.split(':').map(Number);
-          const agendIni = agendIniHora * 60 + agendIniMin;
-          const agendFim = agendFimHora * 60 + agendFimMin;
+          const agendIni = this.timeStringToMinutes(agend.horaInicio);
+          const agendFim = this.timeStringToMinutes(agend.horaFim);
 
           return {
             agendIni,
@@ -396,6 +409,17 @@ export class AgendarPublicoComponent implements OnInit {
           // Se o horário proposto encostar em um agendamento existente ou entrar na janela de intervalo após ele, pular
           return currentTime < cooldownFim && horarioFimCandidato > agendIni;
         });
+
+      const bloqueioEmConflito = bloqueiosFiltrados.find(bloqueio => {
+        const inicioBloqueio = this.timeStringToMinutes(bloqueio.horaInicio);
+        const fimBloqueio = this.timeStringToMinutes(bloqueio.horaFim);
+        return currentTime < fimBloqueio && horarioFimCandidato > inicioBloqueio;
+      });
+
+      if (bloqueioEmConflito) {
+        currentTime = Math.max(currentTime + 1, this.timeStringToMinutes(bloqueioEmConflito.horaFim));
+        continue;
+      }
 
       if (agendamentoEmConflito) {
         // Avançar diretamente para o fim do intervalo configurado após o agendamento em conflito
@@ -553,6 +577,8 @@ export class AgendarPublicoComponent implements OnInit {
     this.servicosSelecionados = [];
     this.dataSelecionada = null;
     this.horarioSelecionado = '';
+    this.horariosDisponiveis = [];
+    this.bloqueioNoDia = false;
     this.clienteNome = '';
     this.clienteTelefone = '';
     this.successMessage = '';

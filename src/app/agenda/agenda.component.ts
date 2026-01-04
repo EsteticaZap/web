@@ -6,6 +6,8 @@ import { Firestore, collection, query, where, getDocs } from '@angular/fire/fire
 import { AuthService } from '../services/auth.service';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
+import { BloqueioService } from '../services/bloqueio.service';
+import { BloqueioHorario } from '../interfaces/bloqueio.interface';
 
 interface ViewOption {
   label: string;
@@ -28,6 +30,8 @@ interface Agendamento {
   createdAt: any;
 }
 
+type AppointmentStatus = 'confirmed' | 'pending' | 'declined' | 'blocked';
+
 interface Appointment {
   id: string;
   client: string;
@@ -35,7 +39,7 @@ interface Appointment {
   startTime: string;
   endTime: string;
   date: Date; // Data real do agendamento
-  status: 'confirmed' | 'pending' | 'declined';
+  status: AppointmentStatus;
   image: string;
   price: string;
   profissionalId?: string;      // ID do profissional
@@ -76,6 +80,7 @@ export class AgendaComponent implements OnInit {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
   private profissionalService = inject(ProfissionalService);
+  private bloqueioService = inject(BloqueioService);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -83,6 +88,10 @@ export class AgendaComponent implements OnInit {
   allAgendamentos: Agendamento[] = [];
   isDayModalOpen = false;
   modalDay: Date | null = null;
+  isBlockModalOpen = false;
+  isSavingBloqueio = false;
+  blockModalError = '';
+  bloqueios: BloqueioHorario[] = [];
 
   // Profissionais e filtro
   profissionais: Profissional[] = [];
@@ -125,6 +134,15 @@ export class AgendaComponent implements OnInit {
 
   // Agendamentos
   appointments: Appointment[] = [];
+
+  blockForm = {
+    data: '',
+    horaInicio: '09:00',
+    horaFim: '10:00',
+    aplicaParaTodos: true,
+    profissionalId: null as string | null,
+    motivo: ''
+  };
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -204,13 +222,19 @@ export class AgendaComponent implements OnInit {
         console.log('Filtrando por profissional:', this.profissionalFiltro);
       }
 
-      const snapshot = await getDocs(q);
+      const [snapshot, bloqueios] = await Promise.all([
+        getDocs(q),
+        this.bloqueioService.listarPorSalao(currentUser.uid)
+      ]);
+
       console.log(`Encontrados ${snapshot.docs.length} agendamentos no Firebase`);
 
       this.allAgendamentos = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Agendamento & { id: string }));
+
+      this.bloqueios = this.filtrarBloqueiosPorProfissional(bloqueios);
 
       // Ordenar localmente por data
       this.allAgendamentos.sort((a, b) => {
@@ -222,7 +246,10 @@ export class AgendaComponent implements OnInit {
       console.log('Agendamentos ordenados:', this.allAgendamentos.length);
 
       // Converter para o formato Appointment
-      this.appointments = this.allAgendamentos.map(agend => this.convertToAppointment(agend));
+      const agendamentoAppointments = this.allAgendamentos.map(agend => this.convertToAppointment(agend));
+      const bloqueioAppointments = this.bloqueios.map(bloqueio => this.convertBloqueioToAppointment(bloqueio));
+
+      this.appointments = this.sortAppointments([...agendamentoAppointments, ...bloqueioAppointments]);
 
       console.log('Appointments convertidos:', this.appointments.length);
 
@@ -242,7 +269,7 @@ export class AgendaComponent implements OnInit {
    */
   private convertToAppointment(agend: Agendamento & { id?: string }): Appointment {
     // Converter status
-    let status: 'confirmed' | 'pending' | 'declined';
+    let status: AppointmentStatus;
     if (agend.status === 'confirmado') {
       status = 'confirmed';
     } else if (agend.status === 'pendente') {
@@ -276,6 +303,48 @@ export class AgendaComponent implements OnInit {
       profissionalId: agend.profissionalId,
       profissionalNome: agend.profissionalNome
     };
+  }
+
+  /**
+   * Converter Bloqueio do Firestore para Appointment (para exibição)
+   */
+  private convertBloqueioToAppointment(bloqueio: BloqueioHorario): Appointment {
+    const [year, month, day] = bloqueio.data.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    const professionalLabel = bloqueio.aplicaParaTodos
+      ? 'Todos os profissionais'
+      : (bloqueio.profissionalNome || 'Profissional');
+
+    return {
+      id: bloqueio.id || `bloqueio-${bloqueio.data}-${bloqueio.horaInicio}`,
+      client: 'Horário bloqueado',
+      service: bloqueio.motivo?.trim() || 'Indisponível para agendamento',
+      startTime: bloqueio.horaInicio,
+      endTime: bloqueio.horaFim,
+      date,
+      status: 'blocked',
+      image: '/girllandpage.png',
+      price: 'Indisponível',
+      profissionalId: bloqueio.profissionalId || undefined,
+      profissionalNome: professionalLabel
+    };
+  }
+
+  /**
+   * Ordenar appointments por data e horário
+   */
+  private sortAppointments(appointments: Appointment[]): Appointment[] {
+    return [...appointments].sort((a, b) => {
+      const dateDiff = a.date.getTime() - b.date.getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return this.timeStringToMinutes(a.startTime) - this.timeStringToMinutes(b.startTime);
+    });
+  }
+
+  private filtrarBloqueiosPorProfissional(bloqueios: BloqueioHorario[]): BloqueioHorario[] {
+    if (!this.profissionalFiltro) return bloqueios;
+    return bloqueios.filter(b => b.aplicaParaTodos || b.profissionalId === this.profissionalFiltro);
   }
 
   // ==================== VISÃO SEMANAL ====================
@@ -496,9 +565,9 @@ export class AgendaComponent implements OnInit {
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
     
-    const monthlyAppts = this.appointments.filter(appt => {
-      return appt.date.getFullYear() === year && appt.date.getMonth() === month;
-    });
+    const monthlyAppts = this.appointments
+      .filter(appt => appt.status !== 'blocked')
+      .filter(appt => appt.date.getFullYear() === year && appt.date.getMonth() === month);
 
     const confirmed = monthlyAppts.filter(a => a.status === 'confirmed').length;
     const pending = monthlyAppts.filter(a => a.status === 'pending').length;
@@ -543,6 +612,14 @@ export class AgendaComponent implements OnInit {
     return appointments.filter(a => a.status === 'pending').length;
   }
 
+  getActiveAppointmentsCount(appointments: Appointment[]): number {
+    return appointments.filter(a => a.status !== 'blocked').length;
+  }
+
+  hasBlockedAppointments(appointments: Appointment[]): boolean {
+    return appointments.some(a => a.status === 'blocked');
+  }
+
   // ==================== UTILITÁRIOS ====================
 
   getStatusClass(status: string): string {
@@ -550,6 +627,7 @@ export class AgendaComponent implements OnInit {
       case 'confirmed': return 'status-confirmed';
       case 'pending': return 'status-pending';
       case 'declined': return 'status-declined';
+      case 'blocked': return 'status-blocked';
       default: return '';
     }
   }
@@ -559,6 +637,7 @@ export class AgendaComponent implements OnInit {
       case 'confirmed': return 'Confirmado';
       case 'pending': return 'Pendente';
       case 'declined': return 'Recusado';
+      case 'blocked': return 'Bloqueado';
       default: return '';
     }
   }
@@ -617,5 +696,104 @@ export class AgendaComponent implements OnInit {
 
     const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#DDA15E', '#BC6C25'];
     return colors[index % colors.length];
+  }
+
+  private timeStringToMinutes(time: string): number {
+    const [hour, minute] = time.split(':').map(Number);
+    return hour * 60 + minute;
+  }
+
+  get blockFormDateLabel(): string {
+    if (!this.blockForm.data) return 'Selecione a data';
+    const date = new Date(this.blockForm.data + 'T00:00:00');
+    return this.formatDateLabel(date);
+  }
+
+  openBlockModal(date?: Date): void {
+    const targetDate = date || this.modalDay || this.currentDay || new Date();
+    this.resetBlockForm(targetDate);
+    this.blockModalError = '';
+    this.isBlockModalOpen = true;
+  }
+
+  closeBlockModal(): void {
+    this.isBlockModalOpen = false;
+  }
+
+  private resetBlockForm(date: Date): void {
+    this.blockForm = {
+      data: this.formatDateInput(date),
+      horaInicio: '09:00',
+      horaFim: '10:00',
+      aplicaParaTodos: true,
+      profissionalId: null,
+      motivo: ''
+    };
+  }
+
+  onAplicaParaTodosChange(): void {
+    if (this.blockForm.aplicaParaTodos) {
+      this.blockForm.profissionalId = null;
+    }
+  }
+
+  private formatDateInput(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  async salvarBloqueio(): Promise<void> {
+    if (this.isSavingBloqueio) return;
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      this.blockModalError = 'Usuário não autenticado.';
+      return;
+    }
+
+    if (!this.blockForm.data || !this.blockForm.horaInicio || !this.blockForm.horaFim) {
+      this.blockModalError = 'Preencha a data e os horários do bloqueio.';
+      return;
+    }
+
+    if (!this.blockForm.aplicaParaTodos && !this.blockForm.profissionalId) {
+      this.blockModalError = 'Selecione um profissional ou marque o bloqueio para todo o salão.';
+      return;
+    }
+
+    const inicioMinutos = this.timeStringToMinutes(this.blockForm.horaInicio);
+    const fimMinutos = this.timeStringToMinutes(this.blockForm.horaFim);
+
+    if (fimMinutos <= inicioMinutos) {
+      this.blockModalError = 'O horário final deve ser maior que o horário inicial.';
+      return;
+    }
+
+    const profissionalNome = this.blockForm.aplicaParaTodos
+      ? undefined
+      : this.profissionais.find(p => p.id === this.blockForm.profissionalId)?.nome;
+
+    this.isSavingBloqueio = true;
+    this.blockModalError = '';
+
+    try {
+      await this.bloqueioService.criar({
+        salonId: currentUser.uid,
+        aplicaParaTodos: this.blockForm.aplicaParaTodos,
+        profissionalId: this.blockForm.aplicaParaTodos ? null : this.blockForm.profissionalId,
+        profissionalNome: profissionalNome,
+        data: this.blockForm.data,
+        horaInicio: this.blockForm.horaInicio,
+        horaFim: this.blockForm.horaFim,
+        motivo: this.blockForm.motivo?.trim() || undefined
+      });
+
+      await this.carregarAgendamentos();
+      this.closeBlockModal();
+    } catch (error) {
+      console.error('Erro ao salvar bloqueio:', error);
+      this.blockModalError = 'Não foi possível salvar o bloqueio. Tente novamente.';
+    } finally {
+      this.isSavingBloqueio = false;
+    }
   }
 }
