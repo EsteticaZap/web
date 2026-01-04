@@ -530,11 +530,12 @@
             <div class="quick-actions-card">
               <h3>Ações Rápidas</h3>
               <div class="action-buttons">
-                <button class="action-btn send-reminder">
+                <button class="action-btn send-reminder" type="button" [disabled]="isSendingReminder" (click)="enviarLembretesDoDia()">
                   <div class="action-icon">
-                    <i class="fa fa-bell"></i>
+                    <i class="fa" [ngClass]="{'fa-bell': !isSendingReminder, 'fa-spinner fa-spin': isSendingReminder}"></i>
                   </div>
-                  <span>Enviar Lembrete</span>
+                  <span *ngIf="!isSendingReminder">Enviar Lembrete</span>
+                  <span *ngIf="isSendingReminder">Enviando...</span>
                 </button>
                 <button class="action-btn block-time" (click)="openBlockModal(modalDay || currentDay)">
                   <div class="action-icon">
@@ -542,6 +543,14 @@
                   </div>
                   <span>Bloquear Horário</span>
                 </button>
+              </div>
+              <div *ngIf="reminderSuccess" class="action-feedback success">
+                <i class="fa fa-check-circle"></i>
+                {{ reminderSuccess }}
+              </div>
+              <div *ngIf="reminderError" class="action-feedback error">
+                <i class="fa fa-exclamation-circle"></i>
+                {{ reminderError }}
               </div>
             </div>
           </div>
