@@ -590,7 +590,7 @@ export class AgendarPublicoComponent implements OnInit {
   }
 
   private isMobile(): boolean {
-    return window.innerWidth <= 768;
+    return typeof window !== 'undefined' && window.innerWidth <= 768;
   }
 
   private scrollToElement(target?: ElementRef<HTMLElement>, block: ScrollLogicalPosition = 'start'): void {
