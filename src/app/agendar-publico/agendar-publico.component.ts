@@ -76,6 +76,7 @@ export class AgendarPublicoComponent implements OnInit {
   private router = inject(Router);
   private clienteService = inject(ClienteService);
   private profissionalService = inject(ProfissionalService);
+  private readonly fallbackIntervalo = 30;
 
   salonId: string = '';
   salao: SalaoData | null = null;
@@ -113,6 +114,11 @@ export class AgendarPublicoComponent implements OnInit {
   isSaving = false;
   successMessage = '';
 
+  private parseNumber(value: any, fallback: number): number {
+    const parsed = Number(value);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.salonId = params['salonId'];
@@ -138,6 +144,12 @@ export class AgendarPublicoComponent implements OnInit {
       }
 
       this.salao = salonSnap.data() as SalaoData;
+      const cfg = this.salao.configuracoes;
+      if (cfg) {
+        cfg.intervaloAgendamento = this.parseNumber(cfg.intervaloAgendamento, this.fallbackIntervalo);
+        cfg.antecedenciaMinima = this.parseNumber(cfg.antecedenciaMinima, 1);
+        cfg.antecedenciaMaxima = this.parseNumber(cfg.antecedenciaMaxima, 30);
+      }
 
       // Buscar serviços ativos do salão
       const servicosRef = collection(this.firestore, 'servicos');
@@ -337,7 +349,10 @@ export class AgendarPublicoComponent implements OnInit {
     const slots: string[] = [];
     const [horaInicio, minInicio] = horario.inicio.split(':').map(Number);
     const [horaFim, minFim] = horario.fim.split(':').map(Number);
-    const intervaloMinutos = this.salao.configuracoes.intervaloAgendamento;
+    const intervaloMinutos = this.parseNumber(
+      this.salao.configuracoes.intervaloAgendamento,
+      this.fallbackIntervalo
+    );
 
     let currentTime = horaInicio * 60 + minInicio;
     const endTime = horaFim * 60 + minFim;
