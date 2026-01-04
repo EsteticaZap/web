@@ -120,6 +120,8 @@
                 [(ngModel)]="config.telefone"
                 (input)="formatPhone($event, 'telefone')"
                 placeholder="(00) 0000-0000"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 maxlength="15" />
             </div>
             <div class="form-group">
@@ -130,6 +132,8 @@
                 [(ngModel)]="config.whatsapp"
                 (input)="formatPhone($event, 'whatsapp')"
                 placeholder="(00) 00000-0000"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 maxlength="15" />
             </div>
           </div>

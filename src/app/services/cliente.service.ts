@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { sanitizePhone } from '../utils/phone-utils';
 import { 
   Firestore, 
   collection, 
@@ -239,6 +240,6 @@ export class ClienteService {
    * Normaliza o telefone removendo caracteres especiais
    */
   private normalizarTelefone(telefone: string): string {
-    return telefone.replace(/\D/g, '');
+    return sanitizePhone(telefone);
   }
 }

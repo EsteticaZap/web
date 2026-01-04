@@ -7,6 +7,7 @@ import { Servico } from '../onboarding/onboarding.component';
 import { ClienteService } from '../services/cliente.service';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
+import { formatPhoneMask } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -445,15 +446,8 @@ export class AgendarPublicoComponent implements OnInit {
 
   formatPhone(event: Event): void {
     const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/\D/g, '');
-    
-    if (value.length <= 10) {
-      value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    } else {
-      value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    }
-    
-    this.clienteTelefone = value;
+    const formatted = formatPhoneMask(input.value);
+    this.clienteTelefone = formatted;
   }
 
   // ==================== FINALIZAR ====================

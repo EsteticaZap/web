@@ -5,6 +5,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { ClienteService, Cliente as ClienteFirestore } from '../services/cliente.service';
 import { AuthService } from '../services/auth.service';
 import { Timestamp } from '@angular/fire/firestore';
+import { formatPhoneMask, sanitizePhone } from '../utils/phone-utils';
 
 interface Cliente {
   id: string;
@@ -189,17 +190,18 @@ export class ClientesComponent implements OnInit {
    * Formatar telefone para exibição
    */
   private formatarTelefone(telefone: string): string {
-    // Remove caracteres não numéricos
-    const nums = telefone.replace(/\D/g, '');
-    
-    // Formata (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-    if (nums.length === 11) {
-      return `(${nums.substring(0, 2)}) ${nums.substring(2, 7)}-${nums.substring(7)}`;
-    } else if (nums.length === 10) {
-      return `(${nums.substring(0, 2)}) ${nums.substring(2, 6)}-${nums.substring(6)}`;
-    }
-    
-    return telefone;
+    const formatted = formatPhoneMask(telefone);
+    return formatted || telefone;
+  }
+
+  onTelefoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const formatted = formatPhoneMask(input.value);
+    this.formTelefone = formatted;
+  }
+
+  private getTelefoneLimpo(): string {
+    return sanitizePhone(this.formTelefone);
   }
 
   get filteredClientes(): Cliente[] {
@@ -273,7 +275,7 @@ export class ClientesComponent implements OnInit {
   openEditClienteModal(cliente: Cliente): void {
     this.editingCliente = cliente;
     this.formNome = cliente.nome;
-    this.formTelefone = cliente.telefone;
+    this.formTelefone = formatPhoneMask(cliente.telefone);
     this.formEmail = cliente.email || '';
     this.formAniversario = cliente.aniversario ? new Date(cliente.aniversario) : null;
     this.formObservacoes = cliente.observacoes || '';
@@ -336,7 +338,9 @@ export class ClientesComponent implements OnInit {
   }
 
   async saveCliente(): Promise<void> {
-    if (!this.formNome.trim() || !this.formTelefone.trim()) {
+    const telefoneSanitizado = this.getTelefoneLimpo();
+
+    if (!this.formNome.trim() || !telefoneSanitizado) {
       return;
     }
 
@@ -351,7 +355,7 @@ export class ClientesComponent implements OnInit {
         // Atualizar cliente existente
         await this.clienteService.atualizarCliente(this.editingCliente.id, {
           nome: this.formNome,
-          telefone: this.formTelefone,
+          telefone: telefoneSanitizado,
           email: this.formEmail,
           avatar: this.formAvatar,
           aniversario: this.formAniversario,
@@ -364,7 +368,7 @@ export class ClientesComponent implements OnInit {
         await this.clienteService.criarCliente({
           salonId: currentUser.uid,
           nome: this.formNome,
-          telefone: this.formTelefone,
+          telefone: telefoneSanitizado,
           email: this.formEmail,
           avatar: this.formAvatar,
           dataCadastro: new Date(),

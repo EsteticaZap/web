@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
+import { formatPhoneMask } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -376,15 +377,8 @@ export class OnboardingComponent implements OnInit {
 
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/\D/g, '');
-    
-    if (value.length <= 10) {
-      value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    } else {
-      value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    }
-    
-    this.data[field] = value;
+    const formatted = formatPhoneMask(input.value);
+    this.data[field] = formatted;
   }
 
   formatCep(event: Event): void {
