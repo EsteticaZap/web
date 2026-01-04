@@ -61,6 +61,7 @@ interface OnboardingData {
   styleUrls: ['./onboarding.component.css']
 })
 export class OnboardingComponent implements OnInit {
+  private readonly MAX_IMAGE_BYTES = 950 * 1024; // Mantém margem para o limite de 1MB do Firestore
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private profissionalService = inject(ProfissionalService);
@@ -288,14 +289,21 @@ export class OnboardingComponent implements OnInit {
       }
 
       this.selectedFile = file;
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewUrl = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-      
-      this.errorMessage = '';
+
+      this.compressImage(file, 800, 0.7)
+        .then(compressed => {
+          if (this.isImageTooLarge(compressed)) {
+            this.previewUrl = '';
+            this.errorMessage = 'A imagem precisa ter no máximo 950KB. Escolha um arquivo menor.';
+            return;
+          }
+          this.previewUrl = compressed;
+          this.errorMessage = '';
+        })
+        .catch(error => {
+          console.error('Erro ao processar imagem do salão:', error);
+          this.errorMessage = 'Erro ao processar imagem. Tente novamente com outro arquivo.';
+        });
     }
   }
 
@@ -327,6 +335,12 @@ export class OnboardingComponent implements OnInit {
       const fotoBase64 = this.getPhotoBase64();
       if (fotoBase64) {
         this.data.fotoSalao = fotoBase64;
+      }
+
+      if (this.data.fotoSalao && this.isImageTooLarge(this.data.fotoSalao)) {
+        this.errorMessage = 'A imagem do salão ainda está grande demais após compressão. Use um arquivo menor (até 950KB).';
+        this.isSaving = false;
+        return;
       }
 
       const userDocRef = doc(this.firestore, 'users', currentUser.uid);
@@ -573,6 +587,11 @@ export class OnboardingComponent implements OnInit {
       return;
     }
 
+    if (this.isImageTooLarge(this.previewUrlProfissional)) {
+      this.errorMessage = 'A foto do profissional ainda está grande demais após compressão. Use um arquivo menor (até 950KB).';
+      return;
+    }
+
     this.errorMessage = '';
 
     // Adicionar a foto em base64
@@ -620,6 +639,13 @@ export class OnboardingComponent implements OnInit {
       try {
         // Comprimir imagem antes de converter para base64
         const compressedBase64 = await this.compressImage(file, 800, 0.7);
+
+        if (this.isImageTooLarge(compressedBase64)) {
+          this.previewUrlProfissional = '';
+          this.errorMessage = 'A foto do profissional precisa ter no máximo 950KB após compressão.';
+          return;
+        }
+
         this.previewUrlProfissional = compressedBase64;
         this.errorMessage = '';
       } catch (error) {
@@ -637,6 +663,11 @@ export class OnboardingComponent implements OnInit {
    */
   private compressImage(file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> {
     return new Promise((resolve, reject) => {
+      if (!this.isBrowser) {
+        reject(new Error('Compressão de imagem disponível apenas no navegador'));
+        return;
+      }
+
       const reader = new FileReader();
 
       reader.onload = (e) => {
@@ -681,6 +712,15 @@ export class OnboardingComponent implements OnInit {
   removePhotoProfissional(): void {
     this.selectedFileProfissional = null;
     this.previewUrlProfissional = '';
+  }
+
+  private isImageTooLarge(base64: string): boolean {
+    return this.getBase64Size(base64) > this.MAX_IMAGE_BYTES;
+  }
+
+  private getBase64Size(base64: string): number {
+    const content = base64.split(',')[1] || base64;
+    return Math.ceil((content.length * 3) / 4);
   }
 
   adicionarInteresse(): void {
