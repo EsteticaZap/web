@@ -361,6 +361,7 @@ export class AgendarPublicoComponent implements OnInit {
       const horas = Math.floor(currentTime / 60);
       const minutos = currentTime % 60;
       const timeStr = `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+      const horarioFimCandidato = currentTime + this.duracaoTotal;
 
       // Verificar se o horário está no intervalo de almoço
       if (horario.temIntervalo) {
@@ -370,26 +371,38 @@ export class AgendarPublicoComponent implements OnInit {
         const intervaloFim = intervaloFimHora * 60 + intervaloFimMin;
 
         // Se o agendamento cair no intervalo ou atravessar ele, pular
-        if (currentTime < intervaloFim && (currentTime + this.duracaoTotal) > intervaloIni) {
+        if (currentTime < intervaloFim && horarioFimCandidato > intervaloIni) {
           currentTime = intervaloFim;
           continue;
         }
       }
 
-      // Verificar conflito com agendamentos existentes
-      const temConflito = agendamentosExistentes.some(agend => {
-        const [agendIniHora, agendIniMin] = agend.horaInicio.split(':').map(Number);
-        const [agendFimHora, agendFimMin] = agend.horaFim.split(':').map(Number);
-        const agendIni = agendIniHora * 60 + agendIniMin;
-        const agendFim = agendFimHora * 60 + agendFimMin;
+      // Verificar conflito com agendamentos existentes considerando o intervalo entre agendamentos
+      const agendamentoEmConflito = agendamentosExistentes
+        .map(agend => {
+          const [agendIniHora, agendIniMin] = agend.horaInicio.split(':').map(Number);
+          const [agendFimHora, agendFimMin] = agend.horaFim.split(':').map(Number);
+          const agendIni = agendIniHora * 60 + agendIniMin;
+          const agendFim = agendFimHora * 60 + agendFimMin;
 
-       return currentTime < agendFim && (currentTime + this.duracaoTotal) > agendIni;
-      });
+          return {
+            agendIni,
+            agendFim,
+            cooldownFim: agendFim + intervaloMinutos
+          };
+        })
+        .find(({ agendIni, agendFim, cooldownFim }) => {
+          // Se o horário proposto encostar em um agendamento existente ou entrar na janela de intervalo após ele, pular
+          return currentTime < cooldownFim && horarioFimCandidato > agendIni;
+        });
 
-      if (!temConflito) {
-        slots.push(timeStr);
+      if (agendamentoEmConflito) {
+        // Avançar diretamente para o fim do intervalo configurado após o agendamento em conflito
+        currentTime = Math.max(currentTime + 1, agendamentoEmConflito.cooldownFim);
+        continue;
       }
 
+      slots.push(timeStr);
       currentTime += intervaloMinutos;
     }
 
