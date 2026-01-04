@@ -70,6 +70,181 @@ app-configuracoes .p-button.btn-rosa.p-disabled {
   box-shadow: none;
 }
 
+app-configuracoes .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+app-configuracoes .btn i {
+  font-size: 0.875rem;
+}
+
+app-configuracoes .btn-primary {
+  background: #e91e63;
+  color: #fff;
+}
+
+app-configuracoes .btn-primary:hover:not(:disabled) {
+  background: #9c27b0;
+}
+
+app-configuracoes .btn-primary:disabled {
+  background: #f8b6cc;
+  cursor: not-allowed;
+}
+
+app-configuracoes .btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+app-configuracoes .btn-secondary:hover {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+app-configuracoes .btn-danger {
+  background: #fff;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+app-configuracoes .btn-danger:hover {
+  background: #ff6b6b;
+  color: #fff;
+}
+
+app-configuracoes .btn-success {
+  background: #e91e63;
+  color: #fff;
+  border: 1px solid #e91e63;
+}
+
+app-configuracoes .btn-success:hover {
+  background: #c2185b;
+  border-color: #c2185b;
+}
+
+app-configuracoes .btn-rosa {
+  background: #e91e63;
+  color: #fff;
+  border: 1px solid #e91e63;
+  box-shadow: 0 10px 24px rgba(233, 30, 99, 0.18);
+}
+
+app-configuracoes .btn-rosa:hover {
+  background: #c2185b;
+  border-color: #c2185b;
+}
+
+app-configuracoes .btn-rosa:disabled {
+  background: #f8b6cc;
+  border-color: #f8b6cc;
+}
+
+app-configuracoes .btn-warning {
+  background: #ffe9c7;
+  color: #b05d00;
+  border: 1px solid #ffb84d;
+}
+
+app-configuracoes .btn-warning:hover {
+  background: #ffd894;
+  border-color: #ff9800;
+  color: #8a4a00;
+}
+
+app-configuracoes .btn-ghost {
+  background: #fff;
+  color: #555;
+  border: 1px solid #e0e0e0;
+}
+
+app-configuracoes .btn-ghost:hover:not(:disabled) {
+  background: #f7f7f7;
+}
+
+app-configuracoes .btn-success.btn-ghost {
+  color: #e91e63;
+  border-color: #f8bbd0;
+  background: #fff5f9;
+}
+
+app-configuracoes .btn-warning.btn-ghost {
+  color: #c77800;
+  border-color: #ffd699;
+  background: #fff9f0;
+}
+
+app-configuracoes .p-button.btn-rosa {
+  background: #e91e63;
+  border-color: #e91e63;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(233, 30, 99, 0.18);
+}
+
+app-configuracoes .p-button.btn-rosa:hover {
+  background: #c2185b;
+  border-color: #c2185b;
+}
+
+app-configuracoes .p-button.btn-rosa:focus {
+  box-shadow: 0 0 0 0.25rem rgba(233, 30, 99, 0.12);
+}
+
+app-configuracoes .p-button.p-button-text.btn-rosa {
+  background: transparent;
+  border-color: transparent;
+  color: #e91e63;
+  box-shadow: none;
+  padding-left: 0;
+}
+
+app-configuracoes .p-button.p-button-text.btn-rosa:hover {
+  background: #ffe8f2;
+  color: #c2185b;
+}
+
+app-configuracoes .p-button.p-button-text.btn-rosa:focus {
+  box-shadow: none;
+}
+
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost,
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost.p-button-danger,
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost.p-button-success {
+  background: #fff5f9;
+  border: 1px solid #f6cadd;
+  color: #c2185b;
+  box-shadow: none;
+}
+
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost:hover,
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost.p-button-danger:hover,
+app-configuracoes .p-button.p-button-text.btn-rosa-ghost.p-button-success:hover {
+  background: #ffe1ed;
+  color: #c2185b;
+}
+
+app-configuracoes .btn-sm {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8rem;
+}
+
+app-configuracoes .btn-lg {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+}
+
 /* Ajustes de responsividade para o toast no mobile */
 @media (max-width: 640px) {
   .p-toast {
