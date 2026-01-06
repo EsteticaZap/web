@@ -96,9 +96,6 @@ export class AgendaComponent implements OnInit {
   isReminderModalOpen = false;
   reminderModalDate: Date | null = null;
   selectedReminderIds: Set<string> = new Set<string>();
-  isReminderModalOpen = false;
-  reminderModalDate: Date | null = null;
-  selectedReminderIds: Set<string> = new Set<string>();
 
   // Profissionais e filtro
   profissionais: Profissional[] = [];

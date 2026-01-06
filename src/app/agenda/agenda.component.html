@@ -615,7 +615,7 @@
               <input
                 type="checkbox"
                 [checked]="isAppointmentSelected(appt.id)"
-                (change)="toggleReminderSelection(appt.id, $event.target.checked)" />
+                (change)="toggleReminderSelection(appt.id, !!$any($event.target).checked)" />
               <div class="reminder-info">
                 <div class="reminder-title">{{ appt.client }} - {{ appt.service }}</div>
                 <div class="reminder-meta">
