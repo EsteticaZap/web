@@ -1,4 +1,3 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +8,6 @@ import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
 import { BloqueioService } from '../services/bloqueio.service';
 import { BloqueioHorario } from '../interfaces/bloqueio.interface';
-import { firstValueFrom } from 'rxjs';
 
 interface ViewOption {
   label: string;
@@ -46,6 +44,7 @@ interface Appointment {
   price: string;
   profissionalId?: string;      // ID do profissional
   profissionalNome?: string;    // Nome do profissional
+  clientPhone?: string;         // Telefone do cliente para lembretes
 }
 
 interface DailySummary {
@@ -74,7 +73,7 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, SelectModule],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css']
 })
@@ -83,7 +82,6 @@ export class AgendaComponent implements OnInit {
   private authService = inject(AuthService);
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
-  private http = inject(HttpClient);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -313,7 +311,8 @@ export class AgendaComponent implements OnInit {
       image: '/girllandpage.png',
       price: price,
       profissionalId: agend.profissionalId,
-      profissionalNome: agend.profissionalNome
+      profissionalNome: agend.profissionalNome,
+      clientPhone: agend.clienteTelefone
     };
   }
 
@@ -830,9 +829,36 @@ export class AgendaComponent implements OnInit {
       }));
   }
 
-  private async enviarLembrete(appointmentId: string): Promise<void> {
-    const url = `http://localhost:3000/enviar-lembrete/${appointmentId}`;
-    await firstValueFrom(this.http.post(url, {}));
+  private buildReminderMessage(appt: Appointment): string {
+    const salonName = this.authService.userData()?.configuracoes?.nomeSalao || 'seu salão';
+    const dateLabel = new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long'
+    }).format(appt.date);
+
+    return `Olá, ${appt.client}! Aqui é do ${salonName}.` +
+      ` Você tem um horário de ${appt.service} em ${dateLabel} às ${appt.startTime}.` +
+      ' Confirme sua presença ou fale conosco se precisar ajustar.';
+  }
+
+  private abrirWhatsApp(appt: Appointment): void {
+    if (!this.isBrowser) {
+      this.reminderError = 'Abertura do WhatsApp disponível apenas no navegador.';
+      return;
+    }
+
+    const rawPhone = appt.clientPhone?.replace(/\D/g, '') || '';
+    const normalizedPhone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`;
+
+    if (!normalizedPhone || normalizedPhone.length < 12) {
+      this.reminderError = 'Não encontramos um telefone válido para este cliente.';
+      return;
+    }
+
+    const message = this.buildReminderMessage(appt);
+    const whatsappUrl = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   }
 
   async enviarLembreteSelecionado(appointmentId: string | null): Promise<void> {
@@ -849,8 +875,19 @@ export class AgendaComponent implements OnInit {
     this.reminderSuccess = '';
 
     try {
-      await this.enviarLembrete(appointmentId);
-      this.reminderSuccess = 'Lembrete enviado com sucesso.';
+      const appointment = this.appointments.find(appt => appt.id === appointmentId);
+
+      if (!appointment) {
+        this.reminderError = 'Agendamento não encontrado.';
+        this.isSendingReminder = false;
+        return;
+      }
+
+      this.abrirWhatsApp(appointment);
+
+      if (!this.reminderError) {
+        this.reminderSuccess = 'Template de lembrete aberto no WhatsApp Web.';
+      }
     } catch (error) {
       console.error('Erro ao enviar lembrete:', error);
       this.reminderError = 'Não foi possível enviar o lembrete. Tente novamente.';
