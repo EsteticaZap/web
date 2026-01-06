@@ -1,3 +1,4 @@
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +9,7 @@ import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
 import { BloqueioService } from '../services/bloqueio.service';
 import { BloqueioHorario } from '../interfaces/bloqueio.interface';
+import { firstValueFrom } from 'rxjs';
 
 interface ViewOption {
   label: string;
@@ -72,7 +74,7 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, HttpClientModule],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css']
 })
@@ -81,6 +83,7 @@ export class AgendaComponent implements OnInit {
   private authService = inject(AuthService);
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
+  private http = inject(HttpClient);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -143,6 +146,9 @@ export class AgendaComponent implements OnInit {
     profissionalId: null as string | null,
     motivo: ''
   };
+  isSendingReminder = false;
+  reminderSuccess = '';
+  reminderError = '';
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -794,6 +800,36 @@ export class AgendaComponent implements OnInit {
       this.blockModalError = 'Não foi possível salvar o bloqueio. Tente novamente.';
     } finally {
       this.isSavingBloqueio = false;
+    }
+  }
+
+  async enviarLembretesDoDia(): Promise<void> {
+    if (this.isSendingReminder) return;
+
+    const appointments = this.getDailyAppointments(this.modalDay || this.currentDay)
+      .filter(appt => appt.status !== 'blocked' && appt.id);
+
+    if (appointments.length === 0) {
+      this.reminderError = 'Nenhum agendamento disponível para enviar lembrete.';
+      this.reminderSuccess = '';
+      return;
+    }
+
+    this.isSendingReminder = true;
+    this.reminderError = '';
+    this.reminderSuccess = '';
+
+    try {
+      for (const appt of appointments) {
+        const url = `http://localhost:3000/enviar-lembrete/${appt.id}`;
+        await firstValueFrom(this.http.post(url, {}));
+      }
+      this.reminderSuccess = 'Lembretes enviados com sucesso.';
+    } catch (error) {
+      console.error('Erro ao enviar lembretes:', error);
+      this.reminderError = 'Não foi possível enviar os lembretes. Tente novamente.';
+    } finally {
+      this.isSendingReminder = false;
     }
   }
 }
