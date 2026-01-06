@@ -26,7 +26,12 @@
       </p>
       <p *ngIf="salao.configuracoes?.endereco" class="salon-address">
         <i class="fa fa-map-marker-alt"></i>
-        {{ salao.configuracoes?.endereco }}, {{ salao.configuracoes?.cidade }} - {{ salao.configuracoes?.estado }}
+        {{ salao.configuracoes?.endereco }}
+        {{ salao.configuracoes?.numero ? ', ' + salao.configuracoes?.numero : '' }}
+        {{ salao.configuracoes?.complemento ? ' - ' + salao.configuracoes?.complemento : '' }}
+        {{ salao.configuracoes?.bairro ? ' - ' + salao.configuracoes?.bairro : '' }}
+        {{ salao.configuracoes?.cidade ? ', ' + salao.configuracoes?.cidade : '' }}
+        {{ salao.configuracoes?.estado ? ' - ' + salao.configuracoes?.estado : '' }}
       </p>
     </div>
   </div>

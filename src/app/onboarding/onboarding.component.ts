@@ -23,6 +23,7 @@ export interface Servico {
   valor: number;
   duracao: number; // em minutos
   descricao?: string;
+  foto?: string;
   ativo: boolean;
   userId?: string;
   createdAt?: any;
@@ -35,6 +36,9 @@ interface OnboardingData {
   whatsapp: string;
   descricao: string;
   endereco: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
   cidade: string;
   estado: string;
   cep: string;
@@ -76,9 +80,12 @@ export class OnboardingComponent implements OnInit {
   isLoading = false;
   isSaving = false;
   errorMessage = '';
+  isCepLoading = false;
 
   selectedFile: File | null = null;
   previewUrl: string = '';
+  selectedFileServico: File | null = null;
+  previewUrlServico: string = '';
 
   // Serviços
   servicos: Servico[] = [];
@@ -87,6 +94,7 @@ export class OnboardingComponent implements OnInit {
     valor: 0,
     duracao: 30,
     descricao: '',
+    foto: '',
     ativo: true
   };
   editandoServico: Servico | null = null;
@@ -127,6 +135,9 @@ export class OnboardingComponent implements OnInit {
     whatsapp: '',
     descricao: '',
     endereco: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
     cidade: '',
     estado: '',
     cep: '',
@@ -234,8 +245,41 @@ export class OnboardingComponent implements OnInit {
           this.errorMessage = 'Por favor, informe o nome do seu salão.';
           return false;
         }
+        if (!this.data.telefone.trim()) {
+          this.errorMessage = 'Informe o telefone do salão.';
+          return false;
+        }
+        if (!this.data.whatsapp.trim()) {
+          this.errorMessage = 'Informe o WhatsApp do salão.';
+          return false;
+        }
+        if (!this.data.descricao.trim()) {
+          this.errorMessage = 'Descreva seu salão para continuar.';
+          return false;
+        }
         break;
       case 1:
+        const cepNum = this.data.cep.replace(/\D/g, '');
+        if (cepNum.length !== 8) {
+          this.errorMessage = 'Informe um CEP válido com 8 dígitos.';
+          return false;
+        }
+        if (!this.data.endereco.trim()) {
+          this.errorMessage = 'Informe o nome da rua/avenida.';
+          return false;
+        }
+        if (!this.data.numero.trim()) {
+          this.errorMessage = 'Informe o número do endereço.';
+          return false;
+        }
+        if (!this.data.cidade.trim()) {
+          this.errorMessage = 'Informe a cidade.';
+          return false;
+        }
+        if (!this.data.estado.trim()) {
+          this.errorMessage = 'Informe o estado.';
+          return false;
+        }
         break;
       case 2:
         const temDiaAtivo = Object.values(this.data.horariosFuncionamento).some(h => h.ativo);
@@ -245,7 +289,10 @@ export class OnboardingComponent implements OnInit {
         }
         break;
       case 3:
-        // Serviços (opcional)
+        if (this.servicos.length === 0) {
+          this.errorMessage = 'Cadastre pelo menos um serviço.';
+          return false;
+        }
         break;
       case 4:
         // Validar profissionais
@@ -348,17 +395,20 @@ export class OnboardingComponent implements OnInit {
         displayName: this.data.nomeSalao,
         fotoSalao: this.data.fotoSalao || null,
         onboardingCompleted: true,
-        configuracoes: {
-          nomeSalao: this.data.nomeSalao,
-          telefone: this.data.telefone,
-          whatsapp: this.data.whatsapp,
-          descricao: this.data.descricao,
-          endereco: this.data.endereco,
-          cidade: this.data.cidade,
-          estado: this.data.estado,
-          cep: this.data.cep,
-          horariosFuncionamento: this.data.horariosFuncionamento,
-          intervaloAgendamento: this.data.intervaloAgendamento,
+          configuracoes: {
+            nomeSalao: this.data.nomeSalao,
+            telefone: this.data.telefone,
+            whatsapp: this.data.whatsapp,
+            descricao: this.data.descricao,
+            endereco: this.data.endereco,
+            numero: this.data.numero,
+            complemento: this.data.complemento,
+            bairro: this.data.bairro,
+            cidade: this.data.cidade,
+            estado: this.data.estado,
+            cep: this.data.cep,
+            horariosFuncionamento: this.data.horariosFuncionamento,
+            intervaloAgendamento: this.data.intervaloAgendamento,
           antecedenciaMinima: this.data.antecedenciaMinima,
           antecedenciaMaxima: this.data.antecedenciaMaxima
         },
@@ -400,6 +450,10 @@ export class OnboardingComponent implements OnInit {
     let value = input.value.replace(/\D/g, '');
     value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
     this.data.cep = value;
+
+    if (value.replace(/\D/g, '').length === 8) {
+      this.buscarEnderecoPorCep(value.replace(/\D/g, ''));
+    }
   }
 
   skipOnboarding(): void {
@@ -424,14 +478,19 @@ export class OnboardingComponent implements OnInit {
       valor: 0,
       duracao: 30,
       descricao: '',
+      foto: '',
       ativo: true
     };
     this.editandoServico = null;
     this.mostrarFormServico = true;
+    this.previewUrlServico = '';
+    this.selectedFileServico = null;
   }
 
   editarServico(servico: Servico, index: number): void {
     this.novoServico = { ...servico };
+    this.previewUrlServico = servico.foto || '';
+    this.selectedFileServico = null;
     this.editandoServico = servico;
     this.mostrarFormServico = true;
   }
@@ -444,8 +503,11 @@ export class OnboardingComponent implements OnInit {
       valor: 0,
       duracao: 30,
       descricao: '',
+      foto: '',
       ativo: true
     };
+    this.previewUrlServico = '';
+    this.selectedFileServico = null;
   }
 
   salvarServico(): void {
@@ -454,12 +516,21 @@ export class OnboardingComponent implements OnInit {
       return;
     }
 
-    if (this.novoServico.valor <= 0) {
-      this.errorMessage = 'Informe um valor válido para o serviço.';
+    if (!this.previewUrlServico) {
+      this.errorMessage = 'Adicione uma imagem para o serviço.';
       return;
     }
 
+    if (this.isImageTooLarge(this.previewUrlServico)) {
+      this.errorMessage = 'A imagem do serviço precisa ter no máximo 950KB após compressão.';
+      return;
+    }
+
+    this.novoServico.valor = Number(this.novoServico.valor) || 0;
+    this.novoServico.duracao = Number(this.novoServico.duracao) || 0;
+
     this.errorMessage = '';
+    this.novoServico.foto = this.previewUrlServico;
 
     if (this.editandoServico) {
       // Editar serviço existente
@@ -479,8 +550,9 @@ export class OnboardingComponent implements OnInit {
     this.servicos.splice(index, 1);
   }
 
-  formatarValor(valor: number): string {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  formatarValor(valor: number | null | undefined): string {
+    const safeValor = typeof valor === 'number' && !isNaN(valor) ? valor : 0;
+    return safeValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   formatarDuracao(minutos: number): string {
@@ -760,6 +832,41 @@ export class OnboardingComponent implements OnInit {
     this.novoProfissional.interesses.splice(index, 1);
   }
 
+  async onFileSelectedServico(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+
+      if (!file.type.startsWith('image/')) {
+        this.errorMessage = 'Por favor, selecione apenas arquivos de imagem.';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.errorMessage = 'A imagem deve ter no máximo 5MB.';
+        return;
+      }
+
+      this.selectedFileServico = file;
+
+      try {
+        const compressedBase64 = await this.compressImage(file, 800, 0.7);
+
+        if (this.isImageTooLarge(compressedBase64)) {
+          this.previewUrlServico = '';
+          this.errorMessage = 'A imagem do serviço precisa ter no máximo 950KB após compressão.';
+          return;
+        }
+
+        this.previewUrlServico = compressedBase64;
+        this.errorMessage = '';
+      } catch (error) {
+        console.error('Erro ao processar imagem do serviço:', error);
+        this.errorMessage = 'Erro ao processar imagem. Tente novamente.';
+      }
+    }
+  }
+
   async salvarProfissionaisNoFirestore(): Promise<void> {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
@@ -775,6 +882,40 @@ export class OnboardingComponent implements OnInit {
         ativo: profissional.ativo,
         ordem: profissional.ordem
       });
+    }
+  }
+
+  removePhotoServico(): void {
+    this.selectedFileServico = null;
+    this.previewUrlServico = '';
+  }
+
+  private async buscarEnderecoPorCep(cep: string): Promise<void> {
+    if (!this.isBrowser) return;
+
+    this.isCepLoading = true;
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) {
+        throw new Error('Erro ao consultar CEP');
+      }
+
+      const data = await response.json();
+      if (data.erro) {
+        this.errorMessage = 'CEP não encontrado. Verifique e tente novamente.';
+        return;
+      }
+
+      this.data.endereco = data.logradouro || '';
+      this.data.cidade = data.localidade || '';
+      this.data.estado = data.uf || '';
+      this.data.bairro = data.bairro || '';
+      this.errorMessage = '';
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      this.errorMessage = 'Não foi possível preencher o endereço automaticamente. Preencha manualmente.';
+    } finally {
+      this.isCepLoading = false;
     }
   }
 }
