@@ -183,17 +183,11 @@
         <div class="quick-actions-card">
           <h3>Ações Rápidas</h3>
           <div class="quick-action-field">
-            <label for="quick-actions-select-daily">Selecione o cliente</label>
-            <select
-              id="quick-actions-select-daily"
-              [(ngModel)]="selectedReminderAppointmentId"
-              [disabled]="isSendingReminder || getReminderOptions(currentDay).length === 0">
-              <option [ngValue]="null">Selecione um agendamento</option>
-              <option *ngFor="let option of getReminderOptions(currentDay)" [ngValue]="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-            <small *ngIf="getReminderOptions(currentDay).length === 0" class="quick-action-helper">
+            <label>Lembretes do dia</label>
+            <small class="quick-action-helper">
+              Visualize todos os atendimentos futuros deste dia e envie lembretes em lote.
+            </small>
+            <small *ngIf="getPendingReminderAppointments(currentDay).length === 0" class="quick-action-helper">
               Nenhum agendamento disponível neste dia.
             </small>
           </div>
@@ -201,8 +195,8 @@
             <button
               class="action-btn send-reminder"
               type="button"
-              [disabled]="!selectedReminderAppointmentId || isSendingReminder"
-              (click)="enviarLembreteSelecionado(selectedReminderAppointmentId)">
+              [disabled]="isSendingReminder || getPendingReminderAppointments(currentDay).length === 0"
+              (click)="openReminderModal(currentDay)">
               <div class="action-icon">
                 <i class="fa" [ngClass]="{'fa-bell': !isSendingReminder, 'fa-spinner fa-spin': isSendingReminder}"></i>
               </div>
@@ -558,17 +552,11 @@
           <div class="quick-actions-card">
             <h3>Ações Rápidas</h3>
             <div class="quick-action-field">
-              <label for="quick-actions-select-modal">Selecione o cliente</label>
-              <select
-                id="quick-actions-select-modal"
-                [(ngModel)]="selectedModalReminderAppointmentId"
-                [disabled]="isSendingReminder || getReminderOptions(modalDay || currentDay).length === 0">
-                <option [ngValue]="null">Selecione um agendamento</option>
-                <option *ngFor="let option of getReminderOptions(modalDay || currentDay)" [ngValue]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-              <small *ngIf="getReminderOptions(modalDay || currentDay).length === 0" class="quick-action-helper">
+              <label>Lembretes do dia</label>
+              <small class="quick-action-helper">
+                Visualize todos os atendimentos futuros deste dia e envie lembretes em lote.
+              </small>
+              <small *ngIf="getPendingReminderAppointments(modalDay || currentDay).length === 0" class="quick-action-helper">
                 Nenhum agendamento disponível neste dia.
               </small>
             </div>
@@ -576,8 +564,8 @@
               <button
                 class="action-btn send-reminder"
                 type="button"
-                [disabled]="!selectedModalReminderAppointmentId || isSendingReminder"
-                (click)="enviarLembreteSelecionado(selectedModalReminderAppointmentId)">
+                [disabled]="isSendingReminder || getPendingReminderAppointments(modalDay || currentDay).length === 0"
+                (click)="openReminderModal(modalDay || currentDay)">
                 <div class="action-icon">
                   <i class="fa" [ngClass]="{'fa-bell': !isSendingReminder, 'fa-spinner fa-spin': isSendingReminder}"></i>
                 </div>
@@ -602,6 +590,69 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Enviar Lembretes -->
+  <div *ngIf="isReminderModalOpen" class="agenda-modal-overlay" (click)="closeReminderModal()">
+    <div class="agenda-modal reminder-modal" (click)="$event.stopPropagation()">
+      <div class="agenda-modal-header">
+        <div class="modal-date-info">
+          <span class="modal-day-name">Lembretes</span>
+          <h4>{{ formatDateLabel(reminderModalDate || currentDay) }}</h4>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-close" type="button" (click)="closeReminderModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="agenda-modal-body reminder-modal-body">
+        <ng-container *ngIf="getPendingReminderAppointments(reminderModalDate || currentDay) as reminderAppointments">
+          <div *ngIf="reminderAppointments.length; else noReminderAppointments" class="reminder-list">
+            <label class="reminder-item" *ngFor="let appt of reminderAppointments">
+              <input
+                type="checkbox"
+                [checked]="isAppointmentSelected(appt.id)"
+                (change)="toggleReminderSelection(appt.id, $event.target.checked)" />
+              <div class="reminder-info">
+                <div class="reminder-title">{{ appt.client }} - {{ appt.service }}</div>
+                <div class="reminder-meta">
+                  {{ appt.startTime }} - {{ appt.endTime }}
+                  <span *ngIf="appt.profissionalNome">• {{ appt.profissionalNome }}</span>
+                </div>
+              </div>
+            </label>
+          </div>
+          <ng-template #noReminderAppointments>
+            <div class="no-appointments reminder-empty">
+              <i class="fa fa-calendar-times"></i>
+              <p>Nenhum atendimento disponível para lembrete.</p>
+            </div>
+          </ng-template>
+        </ng-container>
+
+        <div *ngIf="reminderError" class="action-feedback error">
+          <i class="fa fa-exclamation-circle"></i>
+          {{ reminderError }}
+        </div>
+        <div *ngIf="reminderSuccess" class="action-feedback success">
+          <i class="fa fa-check-circle"></i>
+          {{ reminderSuccess }}
+        </div>
+      </div>
+      <div class="block-modal-actions reminder-modal-actions">
+        <button class="btn-secondary" type="button" (click)="closeReminderModal()">Cancelar</button>
+        <button
+          class="btn-primary"
+          type="button"
+          [disabled]="isSendingReminder || selectedReminderIds.size === 0"
+          (click)="enviarLembretesSelecionados()">
+          <i *ngIf="isSendingReminder" class="fa fa-spinner fa-spin"></i>
+          <span *ngIf="!isSendingReminder">Enviar lembretes</span>
+          <span *ngIf="isSendingReminder">Enviando...</span>
+        </button>
       </div>
     </div>
   </div>

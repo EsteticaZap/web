@@ -1225,6 +1225,61 @@
   background: #fafafa;
 }
 
+.reminder-modal .agenda-modal-body {
+  max-height: 60vh;
+}
+
+.reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reminder-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.reminder-item input[type="checkbox"] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+}
+
+.reminder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reminder-title {
+  font-weight: 600;
+  color: #424242;
+}
+
+.reminder-meta {
+  font-size: 14px;
+  color: #616161;
+}
+
+.reminder-empty {
+  text-align: center;
+  color: #757575;
+}
+
+.reminder-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
 .agenda-modal.block-modal {
   max-width: 520px;
 }
