@@ -146,6 +146,8 @@ export class AgendaComponent implements OnInit {
     profissionalId: null as string | null,
     motivo: ''
   };
+  selectedReminderAppointmentId: string | null = null;
+  selectedModalReminderAppointmentId: string | null = null;
   isSendingReminder = false;
   reminderSuccess = '';
   reminderError = '';
@@ -256,6 +258,10 @@ export class AgendaComponent implements OnInit {
       const bloqueioAppointments = this.bloqueios.map(bloqueio => this.convertBloqueioToAppointment(bloqueio));
 
       this.appointments = this.sortAppointments([...agendamentoAppointments, ...bloqueioAppointments]);
+      this.selectedReminderAppointmentId = null;
+      this.selectedModalReminderAppointmentId = null;
+      this.reminderSuccess = '';
+      this.reminderError = '';
 
       console.log('Appointments convertidos:', this.appointments.length);
 
@@ -463,6 +469,10 @@ export class AgendaComponent implements OnInit {
     newDay.setDate(newDay.getDate() - 1);
     this.currentDay = newDay;
     this.modalDay = newDay;
+    this.selectedReminderAppointmentId = null;
+    this.selectedModalReminderAppointmentId = null;
+    this.reminderSuccess = '';
+    this.reminderError = '';
   }
 
   nextDay(): void {
@@ -470,6 +480,10 @@ export class AgendaComponent implements OnInit {
     newDay.setDate(newDay.getDate() + 1);
     this.currentDay = newDay;
     this.modalDay = newDay;
+    this.selectedReminderAppointmentId = null;
+    this.selectedModalReminderAppointmentId = null;
+    this.reminderSuccess = '';
+    this.reminderError = '';
   }
 
   getDailyAppointments(date: Date = this.currentDay): Appointment[] {
@@ -681,6 +695,9 @@ export class AgendaComponent implements OnInit {
     this.modalDay = new Date(day.date);
     this.currentDay = new Date(day.date);
     this.isDayModalOpen = true;
+    this.selectedModalReminderAppointmentId = null;
+    this.reminderSuccess = '';
+    this.reminderError = '';
   }
 
   /**
@@ -689,6 +706,7 @@ export class AgendaComponent implements OnInit {
   closeDayModal(): void {
     this.isDayModalOpen = false;
     this.modalDay = null;
+    this.selectedModalReminderAppointmentId = null;
   }
 
   /**
@@ -803,14 +821,25 @@ export class AgendaComponent implements OnInit {
     }
   }
 
-  async enviarLembretesDoDia(): Promise<void> {
+  getReminderOptions(date: Date = this.currentDay): { label: string; value: string }[] {
+    return this.getDailyAppointments(date)
+      .filter(appt => appt.status !== 'blocked' && !!appt.id)
+      .map(appt => ({
+        label: `${appt.client} - ${appt.startTime}`,
+        value: appt.id
+      }));
+  }
+
+  private async enviarLembrete(appointmentId: string): Promise<void> {
+    const url = `http://localhost:3000/enviar-lembrete/${appointmentId}`;
+    await firstValueFrom(this.http.post(url, {}));
+  }
+
+  async enviarLembreteSelecionado(appointmentId: string | null): Promise<void> {
     if (this.isSendingReminder) return;
 
-    const appointments = this.getDailyAppointments(this.modalDay || this.currentDay)
-      .filter(appt => appt.status !== 'blocked' && appt.id);
-
-    if (appointments.length === 0) {
-      this.reminderError = 'Nenhum agendamento disponível para enviar lembrete.';
+    if (!appointmentId) {
+      this.reminderError = 'Selecione um agendamento para enviar o lembrete.';
       this.reminderSuccess = '';
       return;
     }
@@ -820,14 +849,11 @@ export class AgendaComponent implements OnInit {
     this.reminderSuccess = '';
 
     try {
-      for (const appt of appointments) {
-        const url = `http://localhost:3000/enviar-lembrete/${appt.id}`;
-        await firstValueFrom(this.http.post(url, {}));
-      }
-      this.reminderSuccess = 'Lembretes enviados com sucesso.';
+      await this.enviarLembrete(appointmentId);
+      this.reminderSuccess = 'Lembrete enviado com sucesso.';
     } catch (error) {
-      console.error('Erro ao enviar lembretes:', error);
-      this.reminderError = 'Não foi possível enviar os lembretes. Tente novamente.';
+      console.error('Erro ao enviar lembrete:', error);
+      this.reminderError = 'Não foi possível enviar o lembrete. Tente novamente.';
     } finally {
       this.isSendingReminder = false;
     }
