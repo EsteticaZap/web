@@ -2,3 +2,8 @@
 <main class="layout-content">
   <router-outlet></router-outlet>
 </main>
+
+<app-onboarding 
+  [(visible)]="showOnboarding" 
+  (onComplete)="onOnboardingComplete()">
+</app-onboarding>

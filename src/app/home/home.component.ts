@@ -2,10 +2,9 @@ import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, O
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { OnboardingComponent } from '../onboarding/onboarding.component';
 import { AuthService } from '../services/auth.service';
 import { ClienteService } from '../services/cliente.service';
-import { Firestore, doc, getDoc, collection, query, where, getDocs, orderBy } from '@angular/fire/firestore';
+import { Firestore, collection, query, where, getDocs, orderBy } from '@angular/fire/firestore';
 import { Chart, registerables } from 'chart.js';
 import { SelectModule } from 'primeng/select';
 
@@ -34,7 +33,6 @@ interface Agendamento {
     CommonModule,
     RouterModule,
     FormsModule,
-    OnboardingComponent,
     SelectModule
   ],
   templateUrl: './home.component.html',
@@ -49,10 +47,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private clienteService = inject(ClienteService);
+  private dataLoaded = false;
 
-  // Modal de onboarding
-  showOnboarding = false;
-  onboardingChecked = false;
   isLoadingData = true;
 
   userName = 'Usuário';
@@ -90,72 +86,27 @@ export class HomeComponent implements OnInit, AfterViewInit {
     // Usar effect para reagir às mudanças no userData
     effect(() => {
       const userData = this.authService.userData();
-      if (userData && !this.onboardingChecked) {
-        this.checkOnboardingStatus(userData);
+      if (userData) {
+        this.userName = userData.displayName || userData.configuracoes?.nomeSalao || this.userName;
+
+        if (!userData.onboardingCompleted) {
+          this.dataLoaded = false;
+          this.isLoadingData = false;
+          return;
+        }
+
+        if (this.isBrowser && !this.dataLoaded) {
+          this.dataLoaded = true;
+          this.carregarDados();
+        }
+      } else {
+        this.dataLoaded = false;
+        this.isLoadingData = false;
       }
     });
   }
 
   async ngOnInit(): Promise<void> {
-    // Verificar onboarding quando o componente inicializa
-    await this.checkOnboarding();
-    
-    // Carregar dados do Firebase
-    if (this.isBrowser) {
-      await this.carregarDados();
-    }
-  }
-
-  private async checkOnboarding(): Promise<void> {
-    if (!this.isBrowser) return;
-
-    const currentUser = this.authService.currentUser();
-    if (!currentUser) return;
-
-    try {
-      const userDocRef = doc(this.firestore, 'users', currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        this.checkOnboardingStatus(userData);
-        
-        // Atualizar nome do usuário
-        if (userData['displayName']) {
-          this.userName = userData['displayName'];
-        }
-      } else {
-        // Documento não existe, mostrar onboarding
-        this.showOnboarding = true;
-      }
-    } catch (error) {
-      console.error('Erro ao verificar onboarding:', error);
-    }
-    
-    this.onboardingChecked = true;
-  }
-
-  private checkOnboardingStatus(userData: any): void {
-    if (!userData['onboardingCompleted']) {
-      this.showOnboarding = true;
-    } else {
-      this.showOnboarding = false;
-      // Atualizar nome do usuário
-      if (userData['displayName']) {
-        this.userName = userData['displayName'];
-      } else if (userData['configuracoes']?.nomeSalao) {
-        this.userName = userData['configuracoes'].nomeSalao;
-      }
-    }
-    this.onboardingChecked = true;
-  }
-
-  onOnboardingComplete(): void {
-    this.showOnboarding = false;
-    // Recarregar dados do usuário
-    this.checkOnboarding();
-    // Carregar dados após onboarding
-    this.carregarDados();
   }
 
   /**

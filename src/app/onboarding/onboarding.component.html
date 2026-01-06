@@ -76,7 +76,7 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="telefone">Telefone</label>
+            <label for="telefone">Telefone *</label>
             <input 
             type="tel" 
             id="telefone" 
@@ -88,7 +88,7 @@
             maxlength="15" />
           </div>
           <div class="form-group">
-            <label for="whatsapp">WhatsApp</label>
+            <label for="whatsapp">WhatsApp *</label>
             <input 
               type="tel" 
               id="whatsapp" 
@@ -102,7 +102,7 @@
         </div>
 
         <div class="form-group">
-          <label for="descricao">Descrição (opcional)</label>
+          <label for="descricao">Descrição *</label>
           <textarea 
             id="descricao" 
             [(ngModel)]="data.descricao"
@@ -115,21 +115,65 @@
       <div *ngIf="currentStep === 1" class="step-content">
         <div class="step-header">
           <h3>Onde você está?</h3>
-          <p>Informe a localização do seu salão (opcional)</p>
+          <p>Informe a localização do seu salão</p>
+        </div>
+
+        <div class="form-group form-group-small">
+          <label for="cep">CEP *</label>
+          <div class="input-with-status">
+            <input 
+              type="text" 
+              id="cep" 
+              [(ngModel)]="data.cep"
+              (input)="formatCep($event)"
+              placeholder="00000-000"
+              maxlength="9" />
+            <span *ngIf="isCepLoading" class="inline-loading">
+              <i class="fa fa-spinner fa-spin"></i>
+            </span>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="endereco">Endereço</label>
+          <label for="endereco">Rua / Avenida *</label>
           <input 
             type="text" 
             id="endereco" 
             [(ngModel)]="data.endereco"
-            placeholder="Rua, número, bairro" />
+            placeholder="Ex: Rua das Flores" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group form-group-small">
+            <label for="numero">Número *</label>
+            <input 
+              type="text" 
+              id="numero" 
+              [(ngModel)]="data.numero"
+              placeholder="Ex: 123" />
+          </div>
+          <div class="form-group form-group-small">
+            <label for="complemento">Complemento (opcional)</label>
+            <input 
+              type="text" 
+              id="complemento" 
+              [(ngModel)]="data.complemento"
+              placeholder="Apartamento, sala, referência" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bairro">Bairro</label>
+          <input 
+            type="text" 
+            id="bairro" 
+            [(ngModel)]="data.bairro"
+            placeholder="Ex: Centro" />
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="cidade">Cidade</label>
+            <label for="cidade">Cidade *</label>
             <input 
               type="text" 
               id="cidade" 
@@ -137,7 +181,7 @@
               placeholder="Sua cidade" />
           </div>
           <div class="form-group">
-            <label for="estado">Estado</label>
+            <label for="estado">Estado *</label>
             <p-select
               inputId="estado"
               [options]="estadoOptions"
@@ -150,20 +194,9 @@
           </div>
         </div>
 
-        <div class="form-group form-group-small">
-          <label for="cep">CEP</label>
-          <input 
-            type="text" 
-            id="cep" 
-            [(ngModel)]="data.cep"
-            (input)="formatCep($event)"
-            placeholder="00000-000"
-            maxlength="9" />
-        </div>
-
         <div class="info-box">
           <i class="fa fa-info-circle"></i>
-          <p>O endereço ajuda seus clientes a encontrarem seu salão mais facilmente.</p>
+          <p>Preencha o CEP para buscarmos automaticamente rua, cidade e estado.</p>
         </div>
       </div>
 
@@ -233,7 +266,7 @@
       <div *ngIf="currentStep === 3" class="step-content">
         <div class="step-header">
           <h3>Serviços Oferecidos</h3>
-          <p>Adicione os serviços que você oferece no seu salão</p>
+          <p>Cadastre pelo menos um serviço. Apenas a imagem e o nome são obrigatórios.</p>
         </div>
 
         <!-- Lista de Serviços -->
@@ -250,6 +283,9 @@
           <!-- Lista de serviços cadastrados -->
           <div *ngIf="servicos.length > 0" class="servicos-list">
             <div *ngFor="let servico of servicos; let i = index" class="servico-item">
+              <div class="servico-thumb" *ngIf="servico.foto">
+                <img [src]="servico.foto" [alt]="servico.nome" />
+              </div>
               <div class="servico-info">
                 <span class="servico-nome">{{ servico.nome }}</span>
                 <div class="servico-detalhes">
@@ -279,6 +315,28 @@
           <!-- Formulário de Serviço -->
           <div *ngIf="mostrarFormServico" class="servico-form">
             <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
+
+            <div class="form-group">
+              <label>Imagem do Serviço *</label>
+              <div class="photo-upload-servico" (click)="photoServicoInput.click()">
+                <div class="photo-preview-servico" [class.has-photo]="previewUrlServico">
+                  <img *ngIf="previewUrlServico" [src]="previewUrlServico" alt="Imagem do serviço" />
+                  <div *ngIf="!previewUrlServico" class="photo-placeholder-servico">
+                    <i class="fa fa-camera"></i>
+                    <span>Adicionar imagem</span>
+                  </div>
+                </div>
+                <input
+                  #photoServicoInput
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelectedServico($event)"
+                  hidden />
+              </div>
+              <button *ngIf="previewUrlServico" class="btn-remove-photo-inline" (click)="removePhotoServico(); $event.stopPropagation()">
+                <i class="fa fa-times"></i> Remover imagem
+              </button>
+            </div>
             
             <div class="form-group">
               <label for="nomeServico">Nome do Serviço *</label>
@@ -291,7 +349,7 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label for="valorServico">Valor (R$) *</label>
+                <label for="valorServico">Valor (R$) (opcional)</label>
                 <input 
                   type="number" 
                   id="valorServico" 
@@ -301,7 +359,7 @@
                   step="0.01" />
               </div>
               <div class="form-group">
-                <label for="duracaoServico">Duração</label>
+                <label for="duracaoServico">Duração (opcional)</label>
                 <p-select
                   inputId="duracaoServico"
                   [options]="opcoesDuracao"
@@ -506,11 +564,23 @@
             <h4><i class="fa fa-map-marker-alt"></i> Localização</h4>
             <div class="summary-item" *ngIf="data.endereco">
               <span class="label">Endereço:</span>
-              <span class="value">{{ data.endereco }}</span>
+              <span class="value">
+                {{ data.endereco }}
+                {{ data.numero ? ', ' + data.numero : '' }}
+                {{ data.complemento ? ' - ' + data.complemento : '' }}
+              </span>
+            </div>
+            <div class="summary-item" *ngIf="data.bairro">
+              <span class="label">Bairro:</span>
+              <span class="value">{{ data.bairro }}</span>
             </div>
             <div class="summary-item" *ngIf="data.cidade">
               <span class="label">Cidade:</span>
               <span class="value">{{ data.cidade }}{{ data.estado ? ' - ' + data.estado : '' }}</span>
+            </div>
+            <div class="summary-item" *ngIf="data.cep">
+              <span class="label">CEP:</span>
+              <span class="value">{{ data.cep }}</span>
             </div>
           </div>
 

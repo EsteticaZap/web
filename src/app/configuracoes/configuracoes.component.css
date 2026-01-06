@@ -373,6 +373,10 @@
   font-size: 0.8rem;
 }
 
+.form-group-small {
+  max-width: 220px;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -381,6 +385,16 @@
 
 .form-row-3 {
   grid-template-columns: 1fr 1fr 1fr;
+}
+
+.input-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inline-spinner {
+  color: #e91e63;
 }
 
 /* Horários Grid */

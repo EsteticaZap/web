@@ -41,6 +41,9 @@ export interface ConfiguracoesSalao {
   telefone: string;
   whatsapp: string;
   endereco: string;
+  numero: string;
+  complemento: string;
+  bairro: string;
   cidade: string;
   estado: string;
   cep: string;
@@ -95,6 +98,7 @@ export class ConfiguracoesComponent implements OnInit {
 
   isLoading = true;
   isSaving = false;
+  isCepLoading = false;
   successMessage = '';
   errorMessage = '';
   activeTab = 'info'; // info, horarios, servicos, equipe, avancado
@@ -110,6 +114,9 @@ export class ConfiguracoesComponent implements OnInit {
     telefone: '',
     whatsapp: '',
     endereco: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
     cidade: '',
     estado: '',
     cep: '',
@@ -265,6 +272,9 @@ export class ConfiguracoesComponent implements OnInit {
         this.config.telefone = configuracoes.telefone || '';
         this.config.whatsapp = configuracoes.whatsapp || '';
         this.config.endereco = configuracoes.endereco || '';
+        this.config.numero = configuracoes.numero || '';
+        this.config.complemento = configuracoes.complemento || '';
+        this.config.bairro = configuracoes.bairro || '';
         this.config.cidade = configuracoes.cidade || '';
         this.config.estado = configuracoes.estado || '';
         this.config.cep = configuracoes.cep || '';
@@ -430,6 +440,9 @@ export class ConfiguracoesComponent implements OnInit {
           telefone: this.config.telefone,
           whatsapp: this.config.whatsapp,
           endereco: this.config.endereco,
+          numero: this.config.numero,
+          complemento: this.config.complemento,
+          bairro: this.config.bairro,
           cidade: this.config.cidade,
           estado: this.config.estado,
           cep: this.config.cep,
@@ -481,6 +494,10 @@ export class ConfiguracoesComponent implements OnInit {
     let value = input.value.replace(/\D/g, '');
     value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
     this.config.cep = value;
+
+    if (value.replace(/\D/g, '').length === 8) {
+      this.buscarEnderecoPorCep(value.replace(/\D/g, ''));
+    }
   }
 
   // ========== Métodos de Serviços ==========
@@ -503,6 +520,34 @@ export class ConfiguracoesComponent implements OnInit {
       console.error('Erro ao carregar serviços:', error);
     } finally {
       this.isLoadingServicos = false;
+    }
+  }
+
+  private async buscarEnderecoPorCep(cep: string): Promise<void> {
+    if (this.isCepLoading || typeof window === 'undefined') return;
+
+    this.isCepLoading = true;
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!response.ok) {
+        throw new Error('Erro ao consultar CEP');
+      }
+
+      const data = await response.json();
+      if (data.erro) {
+        this.errorMessage = 'CEP não encontrado.';
+        return;
+      }
+
+      this.config.endereco = data.logradouro || this.config.endereco;
+      this.config.cidade = data.localidade || this.config.cidade;
+      this.config.estado = data.uf || this.config.estado;
+      this.config.bairro = data.bairro || this.config.bairro;
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      this.errorMessage = 'Não foi possível preencher o endereço pelo CEP. Preencha manualmente.';
+    } finally {
+      this.isCepLoading = false;
     }
   }
 
