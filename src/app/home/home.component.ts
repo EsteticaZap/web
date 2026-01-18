@@ -8,6 +8,7 @@ import { Firestore, collection, query, where, getDocs, orderBy } from '@angular/
 import { Chart, registerables } from 'chart.js';
 import { SelectModule } from 'primeng/select';
 import { DrawerModule } from 'primeng/drawer';
+import { DatePickerModule } from 'primeng/datepicker';
 
 Chart.register(...registerables);
 
@@ -35,7 +36,8 @@ interface Agendamento {
     RouterModule,
     FormsModule,
     SelectModule,
-    DrawerModule
+    DrawerModule,
+    DatePickerModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -89,8 +91,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   selectedPeriod = 'weekly';
   previousPeriod = 'weekly';
   isCustomDrawerOpen = false;
-  customStartDate = '';
-  customEndDate = '';
+  customStartDate: Date | null = null;
+  customEndDate: Date | null = null;
   customDateError = '';
   private isCustomPeriodApplied = false;
   private barChart: Chart | null = null;
@@ -515,7 +517,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    if (this.customStartDate > this.customEndDate) {
+    if (this.customStartDate.getTime() > this.customEndDate.getTime()) {
       this.customDateError = 'A data de início deve ser menor ou igual à data de fim.';
       return;
     }
@@ -556,8 +558,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
       startDate = new Date(hoje);
       startDate.setDate(startDate.getDate() - 29);
     } else if (this.selectedPeriod === 'custom' && this.customStartDate && this.customEndDate) {
-      startDate = new Date(`${this.customStartDate}T00:00:00`);
-      endDate = new Date(`${this.customEndDate}T00:00:00`);
+      startDate = new Date(this.customStartDate);
+      endDate = new Date(this.customEndDate);
     } else {
       endDate = new Date(hoje);
       startDate = new Date(hoje);
@@ -569,7 +571,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const cursor = new Date(startDate);
 
     while (cursor <= endDate) {
-      const dateIso = cursor.toISOString().split('T')[0];
+      const dateIso = this.formatDateForQuery(cursor);
       dates.push(dateIso);
       labels.push(cursor.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
       cursor.setDate(cursor.getDate() + 1);
@@ -581,5 +583,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
       dates,
       labels
     };
+  }
+
+  private formatDateForQuery(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }
