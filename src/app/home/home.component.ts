@@ -77,8 +77,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
   weeklyRevenue: number[] = [0, 0, 0, 0, 0, 0, 0];
   topServices: { label: string; count: number }[] = [];
   attendanceStats = { showed: 0, noShow: 0 };
-  periodOptions = [{ label: 'Esta Semana', value: 'thisWeek' }];
-  selectedPeriod = this.periodOptions[0].value;
+  periodOptions = [
+    { label: 'Diário', value: 'daily' },
+    { label: 'Semanal', value: 'weekly' },
+    { label: 'Mensal', value: 'monthly' },
+    { label: 'Customizado', value: 'custom' }
+  ];
+  selectedPeriod = 'weekly';
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);

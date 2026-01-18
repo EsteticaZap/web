@@ -2,6 +2,13 @@
   <header class="home-header">
     <h1>Bem-vinda, {{ userName }}!</h1>
     <div class="actions">
+      <p-select
+        class="global-period-select"
+        [options]="periodOptions"
+        [(ngModel)]="selectedPeriod"
+        optionLabel="label"
+        optionValue="value">
+      </p-select>
       <button class="btn-primary"><i class="fa fa-plus"></i> Novo Agendamento</button>
       <i class="fa fa-bell notification"></i>
     </div>
@@ -88,13 +95,6 @@
     <div class="dashboard-card chart-card">
       <header class="chart-header">
         <h2>Faturamento Semanal</h2>
-        <p-select
-          class="period-select"
-          [options]="periodOptions"
-          [(ngModel)]="selectedPeriod"
-          optionLabel="label"
-          optionValue="value">
-        </p-select>
       </header>
 <canvas #barCanvas class="chart-canvas"></canvas>
     </div>
