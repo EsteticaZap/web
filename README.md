@@ -57,3 +57,19 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Script de agendamentos em lote
+
+Para criar vários agendamentos automaticamente no Firestore, utilize o script abaixo:
+
+```bash
+npm run agendar:lote -- --salon-id <ID_DO_SALAO> --data 2025-02-20 --quantidade 10
+```
+
+Parâmetros opcionais:
+- `--hora-inicio` (padrão `09:00`)
+- `--profissional-id` (se omitido, usa o primeiro profissional ativo)
+- `--servicos` (lista de IDs separados por vírgula; se omitido, usa o primeiro serviço ativo)
+- `--intervalo` (minutos entre agendamentos; se omitido, usa a configuração do salão)
+- `--cliente-prefixo` (padrão `Cliente Teste`)
+- `--telefone-base` (padrão `1199990000`, o script incrementa no final)
