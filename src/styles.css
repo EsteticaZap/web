@@ -257,3 +257,48 @@ app-configuracoes .btn-lg {
     right: 1rem;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  select,
+  .p-select {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  select option {
+    background: #1f2937;
+    color: #e5e7eb;
+  }
+
+  .p-select .p-select-label {
+    color: #e5e7eb;
+  }
+
+  .p-select.p-focus {
+    border-color: #f472b6;
+    box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.2);
+  }
+
+  .p-select-panel {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  .p-select-option,
+  .p-select-item {
+    color: #e5e7eb;
+  }
+
+  .p-select-option.p-select-option-selected,
+  .p-select-item.p-highlight {
+    background: #1f2937;
+    color: #f472b6;
+  }
+
+  .p-select-option:hover,
+  .p-select-item:hover {
+    background: #374151;
+  }
+}
