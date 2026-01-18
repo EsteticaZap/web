@@ -336,33 +336,33 @@
   align-items: center;
   margin-bottom: 1rem;
 }
-.chart-card .period-select {
-  min-width: 140px;
+.global-period-select {
+  min-width: 180px;
 }
 
-:host ::ng-deep .period-select .p-select {
+:host ::ng-deep .global-period-select .p-select {
   border: 1px solid #ccc;
   border-radius: 0.375rem;
   background: #fff;
 }
 
-:host ::ng-deep .period-select .p-select-label {
+:host ::ng-deep .global-period-select .p-select-label {
   padding: 0.25rem 0.5rem;
   font-size: 0.9rem;
   color: #333;
 }
 
-:host ::ng-deep .period-select .p-select.p-focus {
+:host ::ng-deep .global-period-select .p-select.p-focus {
   border-color: #e91e63;
   box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.15);
 }
 
-:host ::ng-deep .period-select .p-select-option.p-select-option-selected {
+:host ::ng-deep .global-period-select .p-select-option.p-select-option-selected {
   background: #fce4ec;
   color: #e91e63;
 }
 
-:host ::ng-deep .period-select .p-select-option:hover {
+:host ::ng-deep .global-period-select .p-select-option:hover {
   background: #f5f5f5;
 }
 .chart-card .chart-placeholder {
