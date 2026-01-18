@@ -109,11 +109,15 @@ body {
   color: var(--text-medium);
   font-weight: 500;
   font-size: 0.95rem;
-  transition: color 0.3s ease;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  transition: color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nav-items a:hover {
   color: var(--primary-color);
+  background: var(--gradient-soft);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-login {
