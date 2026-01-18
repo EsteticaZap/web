@@ -2,6 +2,14 @@
   <header class="home-header">
     <h1>Bem-vinda, {{ userName }}!</h1>
     <div class="actions">
+      <p-select
+        class="global-period-select"
+        [options]="periodOptions"
+        [ngModel]="selectedPeriod"
+        (ngModelChange)="onPeriodChange($event)"
+        optionLabel="label"
+        optionValue="value">
+      </p-select>
       <button class="btn-primary"><i class="fa fa-plus"></i> Novo Agendamento</button>
       <i class="fa fa-bell notification"></i>
     </div>
@@ -88,13 +96,6 @@
     <div class="dashboard-card chart-card">
       <header class="chart-header">
         <h2>Faturamento Semanal</h2>
-        <p-select
-          class="period-select"
-          [options]="periodOptions"
-          [(ngModel)]="selectedPeriod"
-          optionLabel="label"
-          optionValue="value">
-        </p-select>
       </header>
 <canvas #barCanvas class="chart-canvas"></canvas>
     </div>
@@ -109,4 +110,26 @@
 <canvas #paymentsCanvas class="chart-canvas"></canvas>
     </div>
   </section>
+
+  <p-drawer
+    [(visible)]="isCustomDrawerOpen"
+    position="right"
+    header="Período customizado"
+    (onHide)="handleCustomDrawerHide()">
+    <div class="custom-period-form">
+      <label>
+        Data de início
+        <input type="date" [(ngModel)]="customStartDate" required />
+      </label>
+      <label>
+        Data de fim
+        <input type="date" [(ngModel)]="customEndDate" required />
+      </label>
+      <p class="error" *ngIf="customDateError">{{ customDateError }}</p>
+      <div class="drawer-actions">
+        <button class="btn-secondary" type="button" (click)="isCustomDrawerOpen = false">Cancelar</button>
+        <button class="btn-primary" type="button" (click)="applyCustomPeriod()">Aplicar</button>
+      </div>
+    </div>
+  </p-drawer>
 </div>
