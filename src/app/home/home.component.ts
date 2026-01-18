@@ -7,6 +7,7 @@ import { ClienteService } from '../services/cliente.service';
 import { Firestore, collection, query, where, getDocs, orderBy } from '@angular/fire/firestore';
 import { Chart, registerables } from 'chart.js';
 import { SelectModule } from 'primeng/select';
+import { DrawerModule } from 'primeng/drawer';
 
 Chart.register(...registerables);
 
@@ -33,7 +34,8 @@ interface Agendamento {
     CommonModule,
     RouterModule,
     FormsModule,
-    SelectModule
+    SelectModule,
+    DrawerModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -77,6 +79,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   weeklyRevenue: number[] = [0, 0, 0, 0, 0, 0, 0];
   topServices: { label: string; count: number }[] = [];
   attendanceStats = { showed: 0, noShow: 0 };
+  chartLabels: string[] = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   periodOptions = [
     { label: 'Diário', value: 'daily' },
     { label: 'Semanal', value: 'weekly' },
@@ -84,6 +87,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { label: 'Customizado', value: 'custom' }
   ];
   selectedPeriod = 'weekly';
+  previousPeriod = 'weekly';
+  isCustomDrawerOpen = false;
+  customStartDate = '';
+  customEndDate = '';
+  customDateError = '';
+  private isCustomPeriodApplied = false;
+  private barChart: Chart | null = null;
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -132,7 +142,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       await Promise.all([
         this.carregarAgendamentosHoje(currentUser.uid),
         this.carregarEstatisticas(currentUser.uid),
-        this.carregarFaturamentoSemanal(currentUser.uid),
+        this.carregarFaturamentoPeriodo(currentUser.uid),
         this.carregarServicosPopulares(currentUser.uid),
         this.carregarTaxaComparecimento(currentUser.uid)
       ]);
@@ -253,45 +263,39 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Carregar faturamento semanal
+   * Carregar faturamento por período
    */
-  async carregarFaturamentoSemanal(salonId: string): Promise<void> {
+  async carregarFaturamentoPeriodo(salonId: string): Promise<void> {
     try {
-      const hoje = new Date();
-      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const revenue: number[] = [0, 0, 0, 0, 0, 0, 0];
-      let totalSemana = 0;
+      const dateRange = this.getDateRange();
+      const totalsByDate = new Map<string, number>();
+      let totalPeriodo = 0;
 
-      // Calcular últimos 7 dias
-      for (let i = 0; i < 7; i++) {
-        const data = new Date(hoje);
-        data.setDate(data.getDate() - i);
-        const dataStr = data.toISOString().split('T')[0];
-        
-        const agendamentosRef = collection(this.firestore, 'agendamentos');
-        const q = query(
-          agendamentosRef,
-          where('salonId', '==', salonId),
-          where('data', '==', dataStr),
-          where('status', 'in', ['confirmado', 'pendente'])
-        );
-        
-        const snapshot = await getDocs(q);
-        const valorDia = snapshot.docs.reduce((sum, doc) => {
-          const agend = doc.data() as Agendamento;
-          return sum + (agend.valorTotal || 0);
-        }, 0);
-        
-        const diaSemana = data.getDay();
-        revenue[diaSemana] = valorDia;
-        totalSemana += valorDia;
-      }
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', salonId),
+        where('data', '>=', dateRange.start),
+        where('data', '<=', dateRange.end),
+        where('status', 'in', ['confirmado', 'pendente'])
+      );
 
-      this.weeklyRevenue = revenue;
-      this.stats.weekRevenue = totalSemana;
+      const snapshot = await getDocs(q);
+      snapshot.docs.forEach(doc => {
+        const agend = doc.data() as Agendamento;
+        const data = agend.data;
+        const valor = agend.valorTotal || 0;
+        totalsByDate.set(data, (totalsByDate.get(data) || 0) + valor);
+        totalPeriodo += valor;
+      });
+
+      this.chartLabels = dateRange.labels;
+      this.weeklyRevenue = dateRange.dates.map(data => totalsByDate.get(data) || 0);
+      this.stats.weekRevenue = totalPeriodo;
+      this.updateBarChart();
 
     } catch (error) {
-      console.error('Erro ao carregar faturamento semanal:', error);
+      console.error('Erro ao carregar faturamento por período:', error);
     }
   }
 
@@ -300,34 +304,27 @@ export class HomeComponent implements OnInit, AfterViewInit {
    */
   async carregarTaxaComparecimento(salonId: string): Promise<void> {
     try {
-      const hoje = new Date();
       let showed = 0;
       let noShow = 0;
+      const dateRange = this.getDateRange();
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', salonId),
+        where('data', '>=', dateRange.start),
+        where('data', '<=', dateRange.end),
+        where('status', 'in', ['confirmado', 'cancelado'])
+      );
 
-      // Considerar últimos 7 dias
-      for (let i = 0; i < 7; i++) {
-        const data = new Date(hoje);
-        data.setDate(data.getDate() - i);
-        const dataStr = data.toISOString().split('T')[0];
-
-        const agendamentosRef = collection(this.firestore, 'agendamentos');
-        const q = query(
-          agendamentosRef,
-          where('salonId', '==', salonId),
-          where('data', '==', dataStr),
-          where('status', 'in', ['confirmado', 'cancelado'])
-        );
-
-        const snapshot = await getDocs(q);
-        snapshot.docs.forEach(doc => {
-          const agend = doc.data() as Agendamento;
-          if (agend.status === 'confirmado') {
-            showed += 1;
-          } else if (agend.status === 'cancelado') {
-            noShow += 1;
-          }
-        });
-      }
+      const snapshot = await getDocs(q);
+      snapshot.docs.forEach(doc => {
+        const agend = doc.data() as Agendamento;
+        if (agend.status === 'confirmado') {
+          showed += 1;
+        } else if (agend.status === 'cancelado') {
+          noShow += 1;
+        }
+      });
 
       this.attendanceStats = { showed, noShow };
     } catch (error) {
@@ -382,10 +379,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (this.barCanvas?.nativeElement) {
       const ctx = this.barCanvas.nativeElement.getContext('2d');
       if (ctx) {
-        new Chart(ctx, {
+        this.barChart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+            labels: this.chartLabels,
             datasets: [
               {
                 label: 'Faturamento (R$)',
@@ -490,5 +487,99 @@ export class HomeComponent implements OnInit, AfterViewInit {
         });
       }
     }
+  }
+
+  onPeriodChange(period: string): void {
+    this.previousPeriod = this.selectedPeriod;
+    this.selectedPeriod = period;
+    if (period === 'custom') {
+      this.isCustomPeriodApplied = false;
+      this.customDateError = '';
+      this.isCustomDrawerOpen = true;
+      return;
+    }
+
+    this.applyPeriodFilters();
+  }
+
+  handleCustomDrawerHide(): void {
+    if (!this.isCustomPeriodApplied) {
+      this.selectedPeriod = this.previousPeriod;
+    }
+    this.customDateError = '';
+  }
+
+  applyCustomPeriod(): void {
+    if (!this.customStartDate || !this.customEndDate) {
+      this.customDateError = 'Informe a data de início e a data de fim.';
+      return;
+    }
+
+    if (this.customStartDate > this.customEndDate) {
+      this.customDateError = 'A data de início deve ser menor ou igual à data de fim.';
+      return;
+    }
+
+    this.customDateError = '';
+    this.selectedPeriod = 'custom';
+    this.isCustomPeriodApplied = true;
+    this.isCustomDrawerOpen = false;
+    this.applyPeriodFilters();
+  }
+
+  private applyPeriodFilters(): void {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) return;
+
+    this.carregarFaturamentoPeriodo(currentUser.uid);
+    this.carregarTaxaComparecimento(currentUser.uid);
+  }
+
+  private updateBarChart(): void {
+    if (!this.barChart) return;
+
+    this.barChart.data.labels = this.chartLabels;
+    this.barChart.data.datasets[0].data = this.weeklyRevenue;
+    this.barChart.update();
+  }
+
+  private getDateRange(): { start: string; end: string; dates: string[]; labels: string[] } {
+    const hoje = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
+    if (this.selectedPeriod === 'daily') {
+      startDate = new Date(hoje);
+      endDate = new Date(hoje);
+    } else if (this.selectedPeriod === 'monthly') {
+      endDate = new Date(hoje);
+      startDate = new Date(hoje);
+      startDate.setDate(startDate.getDate() - 29);
+    } else if (this.selectedPeriod === 'custom' && this.customStartDate && this.customEndDate) {
+      startDate = new Date(`${this.customStartDate}T00:00:00`);
+      endDate = new Date(`${this.customEndDate}T00:00:00`);
+    } else {
+      endDate = new Date(hoje);
+      startDate = new Date(hoje);
+      startDate.setDate(startDate.getDate() - 6);
+    }
+
+    const dates: string[] = [];
+    const labels: string[] = [];
+    const cursor = new Date(startDate);
+
+    while (cursor <= endDate) {
+      const dateIso = cursor.toISOString().split('T')[0];
+      dates.push(dateIso);
+      labels.push(cursor.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return {
+      start: dates[0],
+      end: dates[dates.length - 1],
+      dates,
+      labels
+    };
   }
 }

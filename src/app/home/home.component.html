@@ -5,7 +5,8 @@
       <p-select
         class="global-period-select"
         [options]="periodOptions"
-        [(ngModel)]="selectedPeriod"
+        [ngModel]="selectedPeriod"
+        (ngModelChange)="onPeriodChange($event)"
         optionLabel="label"
         optionValue="value">
       </p-select>
@@ -109,4 +110,26 @@
 <canvas #paymentsCanvas class="chart-canvas"></canvas>
     </div>
   </section>
+
+  <p-drawer
+    [(visible)]="isCustomDrawerOpen"
+    position="right"
+    header="Período customizado"
+    (onHide)="handleCustomDrawerHide()">
+    <div class="custom-period-form">
+      <label>
+        Data de início
+        <input type="date" [(ngModel)]="customStartDate" required />
+      </label>
+      <label>
+        Data de fim
+        <input type="date" [(ngModel)]="customEndDate" required />
+      </label>
+      <p class="error" *ngIf="customDateError">{{ customDateError }}</p>
+      <div class="drawer-actions">
+        <button class="btn-secondary" type="button" (click)="isCustomDrawerOpen = false">Cancelar</button>
+        <button class="btn-primary" type="button" (click)="applyCustomPeriod()">Aplicar</button>
+      </div>
+    </div>
+  </p-drawer>
 </div>
