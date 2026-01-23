@@ -96,6 +96,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   customDateError = '';
   private isCustomPeriodApplied = false;
   private barChart: Chart | null = null;
+  private servicesChart: Chart | null = null;
+  private attendanceChart: Chart | null = null;
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -329,6 +331,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
       });
 
       this.attendanceStats = { showed, noShow };
+      this.updateAttendanceChart();
     } catch (error) {
       console.error('Erro ao carregar taxa de comparecimento:', error);
     }
@@ -339,10 +342,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
    */
   async carregarServicosPopulares(salonId: string): Promise<void> {
     try {
+      const dateRange = this.getDateRange();
       const agendamentosRef = collection(this.firestore, 'agendamentos');
       const q = query(
         agendamentosRef,
-        where('salonId', '==', salonId)
+        where('salonId', '==', salonId),
+        where('data', '>=', dateRange.start),
+        where('data', '<=', dateRange.end),
+        where('status', 'in', ['confirmado', 'pendente'])
       );
       
       const snapshot = await getDocs(q);
@@ -361,6 +368,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         .map(([label, count]) => ({ label, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
+      this.updateServicesChart();
 
     } catch (error) {
       console.error('Erro ao carregar serviços populares:', error);
@@ -418,18 +426,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (this.servicesCanvas?.nativeElement) {
       const servicesCtx = this.servicesCanvas.nativeElement.getContext('2d');
       if (servicesCtx) {
-        const labels = this.topServices.map(s => s.label);
-        const data = this.topServices.map(s => s.count);
-        const colors = ['#e91e63', '#ff6b6b', '#e91e63', '#ff6b6b', '#e91e63'];
-        
-        new Chart(servicesCtx, {
+        const { labels, data, colors } = this.getServicesChartData();
+
+        this.servicesChart = new Chart(servicesCtx, {
           type: 'bar',
           data: {
-            labels: labels.length > 0 ? labels : ['Sem dados'],
+            labels,
             datasets: [
               {
                 label: 'Quantidade',
-                data: data.length > 0 ? data : [0],
+                data,
                 backgroundColor: colors
               }
             ]
@@ -450,18 +456,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (this.paymentsCanvas?.nativeElement) {
       const paymentsCtx = this.paymentsCanvas.nativeElement.getContext('2d');
       if (paymentsCtx) {
-        const showed = this.attendanceStats.showed;
-        const noShow = this.attendanceStats.noShow;
-        const hasData = showed > 0 || noShow > 0;
+        const { data } = this.getAttendanceChartData();
 
-        new Chart(paymentsCtx, {
+        this.attendanceChart = new Chart(paymentsCtx, {
           type: 'bar',
           data: {
             labels: ['Compareceu', 'Cancelou/No-show'],
             datasets: [
               {
                 label: 'Atendimentos',
-                data: hasData ? [showed, noShow] : [0, 0],
+                data,
                 backgroundColor: ['#e91e63', '#ff6b6b']
               }
             ]
@@ -534,6 +538,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (!currentUser) return;
 
     this.carregarFaturamentoPeriodo(currentUser.uid);
+    this.carregarServicosPopulares(currentUser.uid);
     this.carregarTaxaComparecimento(currentUser.uid);
   }
 
@@ -543,6 +548,46 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.barChart.data.labels = this.chartLabels;
     this.barChart.data.datasets[0].data = this.weeklyRevenue;
     this.barChart.update();
+  }
+
+  private updateServicesChart(): void {
+    if (!this.servicesChart) return;
+
+    const { labels, data, colors } = this.getServicesChartData();
+    this.servicesChart.data.labels = labels;
+    this.servicesChart.data.datasets[0].data = data;
+    (this.servicesChart.data.datasets[0].backgroundColor as string[]) = colors;
+    this.servicesChart.update();
+  }
+
+  private getServicesChartData(): { labels: string[]; data: number[]; colors: string[] } {
+    const labels = this.topServices.map(service => service.label);
+    const data = this.topServices.map(service => service.count);
+    const colors = ['#e91e63', '#ff6b6b', '#e91e63', '#ff6b6b', '#e91e63'];
+
+    return {
+      labels: labels.length > 0 ? labels : ['Sem dados'],
+      data: data.length > 0 ? data : [0],
+      colors
+    };
+  }
+
+  private updateAttendanceChart(): void {
+    if (!this.attendanceChart) return;
+
+    const { data } = this.getAttendanceChartData();
+    this.attendanceChart.data.datasets[0].data = data;
+    this.attendanceChart.update();
+  }
+
+  private getAttendanceChartData(): { data: number[] } {
+    const showed = this.attendanceStats.showed;
+    const noShow = this.attendanceStats.noShow;
+    const hasData = showed > 0 || noShow > 0;
+
+    return {
+      data: hasData ? [showed, noShow] : [0, 0]
+    };
   }
 
   private getDateRange(): { start: string; end: string; dates: string[]; labels: string[] } {
