@@ -511,26 +511,27 @@ export class OnboardingComponent implements OnInit {
   }
 
   salvarServico(): void {
-    if (!this.novoServico.nome.trim()) {
-      this.errorMessage = 'Informe o nome do serviço.';
+    this.novoServico.valor = Number(this.novoServico.valor) || 0;
+    this.novoServico.duracao = Number(this.novoServico.duracao) || 0;
+
+    if (this.novoServico.valor <= 0) {
+      this.errorMessage = 'Informe um valor válido para o serviço.';
       return;
     }
 
-    if (!this.previewUrlServico) {
-      this.errorMessage = 'Adicione uma imagem para o serviço.';
+    if (this.novoServico.duracao <= 0) {
+      this.errorMessage = 'Informe a duração do serviço.';
       return;
     }
 
-    if (this.isImageTooLarge(this.previewUrlServico)) {
+    if (this.previewUrlServico && this.isImageTooLarge(this.previewUrlServico)) {
       this.errorMessage = 'A imagem do serviço precisa ter no máximo 950KB após compressão.';
       return;
     }
 
-    this.novoServico.valor = Number(this.novoServico.valor) || 0;
-    this.novoServico.duracao = Number(this.novoServico.duracao) || 0;
-
     this.errorMessage = '';
-    this.novoServico.foto = this.previewUrlServico;
+    this.novoServico.nome = this.novoServico.nome.trim();
+    this.novoServico.foto = this.previewUrlServico || '';
 
     if (this.editandoServico) {
       // Editar serviço existente
@@ -634,28 +635,8 @@ export class OnboardingComponent implements OnInit {
       return;
     }
 
-    if (this.novoProfissional.nome.trim().length < 3) {
-      this.errorMessage = 'Nome deve ter pelo menos 3 caracteres.';
-      return;
-    }
-
-    if (!this.novoProfissional.descricao.trim()) {
-      this.errorMessage = 'Informe uma descrição para o profissional.';
-      return;
-    }
-
-    if (this.novoProfissional.descricao.trim().length < 10) {
-      this.errorMessage = 'Descrição deve ter pelo menos 10 caracteres.';
-      return;
-    }
-
     if (!this.previewUrlProfissional) {
       this.errorMessage = 'Adicione uma foto do profissional.';
-      return;
-    }
-
-    if (this.novoProfissional.interesses.length === 0) {
-      this.errorMessage = 'Adicione pelo menos 1 interesse.';
       return;
     }
 

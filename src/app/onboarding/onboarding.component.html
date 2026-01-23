@@ -266,7 +266,7 @@
       <div *ngIf="currentStep === 3" class="step-content">
         <div class="step-header">
           <h3>Serviços Oferecidos</h3>
-          <p>Cadastre pelo menos um serviço. Apenas a imagem e o nome são obrigatórios.</p>
+          <p>Cadastre pelo menos um serviço. Valor e duração são obrigatórios.</p>
         </div>
 
         <!-- Lista de Serviços -->
@@ -287,7 +287,7 @@
                 <img [src]="servico.foto" [alt]="servico.nome" />
               </div>
               <div class="servico-info">
-                <span class="servico-nome">{{ servico.nome }}</span>
+                <span class="servico-nome">{{ servico.nome || 'Serviço' }}</span>
                 <div class="servico-detalhes">
                   <span class="servico-valor">{{ formatarValor(servico.valor) }}</span>
                   <span class="servico-duracao">
@@ -317,7 +317,7 @@
             <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
 
             <div class="form-group">
-              <label>Imagem do Serviço *</label>
+              <label>Imagem do Serviço (opcional)</label>
               <div class="photo-upload-servico" (click)="photoServicoInput.click()">
                 <div class="photo-preview-servico" [class.has-photo]="previewUrlServico">
                   <img *ngIf="previewUrlServico" [src]="previewUrlServico" alt="Imagem do serviço" />
@@ -339,7 +339,7 @@
             </div>
             
             <div class="form-group">
-              <label for="nomeServico">Nome do Serviço *</label>
+              <label for="nomeServico">Nome do Serviço (opcional)</label>
               <input 
                 type="text" 
                 id="nomeServico" 
@@ -349,7 +349,7 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label for="valorServico">Valor (R$) (opcional)</label>
+                <label for="valorServico">Valor (R$) *</label>
                 <input 
                   type="number" 
                   id="valorServico" 
@@ -359,7 +359,7 @@
                   step="0.01" />
               </div>
               <div class="form-group">
-                <label for="duracaoServico">Duração (opcional)</label>
+                <label for="duracaoServico">Duração *</label>
                 <p-select
                   inputId="duracaoServico"
                   [options]="opcoesDuracao"
@@ -402,7 +402,7 @@
       <div *ngIf="currentStep === 4" class="step-content">
         <div class="step-header">
           <h3>Monte sua Equipe</h3>
-          <p>Cadastre os profissionais do seu salão</p>
+          <p>Cadastre os profissionais do seu salão. Apenas nome e foto são obrigatórios.</p>
         </div>
 
         <!-- Lista de Profissionais -->
@@ -424,7 +424,7 @@
               </div>
               <div class="profissional-info">
                 <h4 class="profissional-nome">{{ prof.nome }}</h4>
-                <p class="profissional-descricao">{{ prof.descricao }}</p>
+                <p *ngIf="prof.descricao" class="profissional-descricao">{{ prof.descricao }}</p>
                 <div class="profissional-interesses" *ngIf="prof.interesses.length > 0">
                   <span *ngFor="let interesse of prof.interesses" class="interesse-chip">
                     <i class="fa fa-heart"></i>
@@ -485,7 +485,7 @@
             </div>
 
             <div class="form-group">
-              <label for="descricaoProfissional">Descrição *</label>
+              <label for="descricaoProfissional">Descrição (opcional)</label>
               <textarea
                 id="descricaoProfissional"
                 [(ngModel)]="novoProfissional.descricao"
@@ -494,7 +494,7 @@
             </div>
 
             <div class="form-group">
-              <label>Hobbies e Interesses *</label>
+              <label>Hobbies e Interesses (opcional)</label>
               <p class="field-help">Adicione interesses para criar conexão com seus clientes</p>
 
               <div class="interesses-input-group">
@@ -604,7 +604,7 @@
                 <img [src]="prof.foto" [alt]="prof.nome" class="profissional-thumb" />
                 <div class="profissional-details">
                   <strong>{{ prof.nome }}</strong>
-                  <p>{{ prof.descricao }}</p>
+                  <p *ngIf="prof.descricao">{{ prof.descricao }}</p>
                 </div>
               </div>
             </div>
