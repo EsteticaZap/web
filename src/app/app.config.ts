@@ -33,7 +33,10 @@ export const appConfig: ApplicationConfig = {
     
     providePrimeNG({
       theme: {
-        preset: Aura
+        preset: Aura,
+        options: {
+          darkModeSelector: 'none'
+        }
       },
       translation: {
         dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
