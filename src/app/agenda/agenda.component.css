@@ -913,8 +913,19 @@
   color: #333;
 }
 
+.action-btn.is-disabled,
+.action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .action-btn:hover {
   background: #fce4ec;
+}
+
+.action-btn.is-disabled:hover,
+.action-btn:disabled:hover {
+  background: #f5f5f5;
 }
 
 .action-icon {

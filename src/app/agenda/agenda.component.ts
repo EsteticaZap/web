@@ -2,6 +2,7 @@ import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -73,7 +74,7 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, TooltipModule],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css']
 })

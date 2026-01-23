@@ -196,6 +196,9 @@
               class="action-btn send-reminder"
               type="button"
               [disabled]="isSendingReminder || isDayInPast(currentDay) || getPendingReminderAppointments(currentDay).length === 0"
+              [class.is-disabled]="isDayInPast(currentDay)"
+              pTooltip="Não é possível enviar lembretes para dias que já passaram."
+              [tooltipDisabled]="!isDayInPast(currentDay)"
               (click)="openReminderModal(currentDay)">
               <div class="action-icon">
                 <i class="fa" [ngClass]="{'fa-bell': !isSendingReminder, 'fa-spinner fa-spin': isSendingReminder}"></i>
@@ -203,7 +206,13 @@
               <span *ngIf="!isSendingReminder">Enviar Lembrete</span>
               <span *ngIf="isSendingReminder">Enviando...</span>
             </button>
-            <button class="action-btn block-time" [disabled]="isDayInPast(currentDay)" (click)="openBlockModal(currentDay)">
+            <button
+              class="action-btn block-time"
+              [disabled]="isDayInPast(currentDay)"
+              [class.is-disabled]="isDayInPast(currentDay)"
+              pTooltip="Não é possível bloquear horários em dias que já passaram."
+              [tooltipDisabled]="!isDayInPast(currentDay)"
+              (click)="openBlockModal(currentDay)">
               <div class="action-icon">
                 <i class="fa fa-ban"></i>
               </div>
@@ -565,6 +574,9 @@
                 class="action-btn send-reminder"
                 type="button"
                 [disabled]="isSendingReminder || isDayInPast(modalDay || currentDay) || getPendingReminderAppointments(modalDay || currentDay).length === 0"
+                [class.is-disabled]="isDayInPast(modalDay || currentDay)"
+                pTooltip="Não é possível enviar lembretes para dias que já passaram."
+                [tooltipDisabled]="!isDayInPast(modalDay || currentDay)"
                 (click)="openReminderModal(modalDay || currentDay)">
                 <div class="action-icon">
                   <i class="fa" [ngClass]="{'fa-bell': !isSendingReminder, 'fa-spinner fa-spin': isSendingReminder}"></i>
@@ -572,7 +584,13 @@
                 <span *ngIf="!isSendingReminder">Enviar Lembrete</span>
                 <span *ngIf="isSendingReminder">Enviando...</span>
                 </button>
-                <button class="action-btn block-time" [disabled]="isDayInPast(modalDay || currentDay)" (click)="openBlockModal(modalDay || currentDay)">
+                <button
+                  class="action-btn block-time"
+                  [disabled]="isDayInPast(modalDay || currentDay)"
+                  [class.is-disabled]="isDayInPast(modalDay || currentDay)"
+                  pTooltip="Não é possível bloquear horários em dias que já passaram."
+                  [tooltipDisabled]="!isDayInPast(modalDay || currentDay)"
+                  (click)="openBlockModal(modalDay || currentDay)">
                   <div class="action-icon">
                     <i class="fa fa-ban"></i>
                   </div>
