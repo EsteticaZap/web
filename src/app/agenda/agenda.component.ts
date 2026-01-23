@@ -806,6 +806,25 @@ export class AgendaComponent implements OnInit {
       return;
     }
 
+    const agendamentoConflitante = this.allAgendamentos.find(agend => {
+      if (agend.status === 'cancelado') return false;
+      if (agend.data !== this.blockForm.data) return false;
+      if (!this.blockForm.aplicaParaTodos && agend.profissionalId !== this.blockForm.profissionalId) {
+        return false;
+      }
+      const agendInicio = this.timeStringToMinutes(agend.horaInicio);
+      const agendFim = this.timeStringToMinutes(agend.horaFim);
+      return inicioMinutos < agendFim && fimMinutos > agendInicio;
+    });
+
+    if (agendamentoConflitante) {
+      const profissionalInfo = agendamentoConflitante.profissionalNome
+        ? ` (${agendamentoConflitante.profissionalNome})`
+        : '';
+      this.blockModalError = `Não é possível bloquear este horário porque já existe um agendamento das ${agendamentoConflitante.horaInicio} às ${agendamentoConflitante.horaFim} para ${agendamentoConflitante.clienteNome}${profissionalInfo}. Cancele ou reagende antes de bloquear.`;
+      return;
+    }
+
     const profissionalNome = this.blockForm.aplicaParaTodos
       ? undefined
       : this.profissionais.find(p => p.id === this.blockForm.profissionalId)?.nome;
