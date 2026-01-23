@@ -2,6 +2,7 @@ import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -73,7 +74,7 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, TooltipModule],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css']
 })
@@ -728,6 +729,12 @@ export class AgendaComponent implements OnInit {
     return hour * 60 + minute;
   }
 
+  isDayInPast(date: Date): boolean {
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    return endOfDay.getTime() < Date.now();
+  }
+
   get blockFormDateLabel(): string {
     if (!this.blockForm.data) return 'Selecione a data';
     const date = new Date(this.blockForm.data + 'T00:00:00');
@@ -790,6 +797,12 @@ export class AgendaComponent implements OnInit {
 
     if (fimMinutos <= inicioMinutos) {
       this.blockModalError = 'O horário final deve ser maior que o horário inicial.';
+      return;
+    }
+
+    const bloqueioFim = new Date(`${this.blockForm.data}T${this.blockForm.horaFim}:00`);
+    if (bloqueioFim.getTime() <= Date.now()) {
+      this.blockModalError = 'Não é possível bloquear horários que já passaram.';
       return;
     }
 
