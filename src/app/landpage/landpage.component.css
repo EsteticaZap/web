@@ -32,6 +32,8 @@
   --shadow-lg: 0 8px 32px rgba(233, 30, 99, 0.16);
 }
 
+/* Modo claro fixo: sem sobrescritas para prefers-color-scheme. */
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text-dark);
@@ -655,41 +657,6 @@ body {
   font-size: 1rem;
   opacity: 0.9;
   color: var(--primary-color);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-page: #0f172a;
-    --bg-surface: #111827;
-    --bg-muted: #1f2937;
-    --navbar-bg: rgba(17, 24, 39, 0.9);
-    --text-dark: #e5e7eb;
-    --text-medium: #cbd5e1;
-    --text-light: #94a3b8;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.75);
-    --gradient-soft: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    --gradient-hero: linear-gradient(135deg, #0f172a 0%, #111827 100%);
-  }
-
-  .hero {
-    background: var(--gradient-hero);
-  }
-
-  .feature-card,
-  .faq-item {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.65);
-  }
-
-  .faq-item .question:hover {
-    background-color: #1f2937;
-  }
-
-  .cta {
-    color: #fdf2f8;
-  }
 }
 
 /* =================================================================
