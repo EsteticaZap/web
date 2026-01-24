@@ -14,9 +14,9 @@
       <span class="brand-text">EstéticaZap</span>
     </div>
     <ul class="nav-items">
-      <li><a href="#features">Como funciona</a></li>
-      <li><a href="#planos">Planos</a></li>
-      <li><a href="#faq">FAQ</a></li>
+      <li><a [routerLink]="['/landpage']" fragment="features">Como funciona</a></li>
+      <li><a [routerLink]="['/landpage']" fragment="planos">Planos</a></li>
+      <li><a [routerLink]="['/landpage']" fragment="faq">FAQ</a></li>
       <li><a routerLink="/login" class="btn-login">Entrar</a></li>
     </ul>
     <a routerLink="/login" class="btn-login mobile-login">Entrar</a>
@@ -190,15 +190,15 @@
         <div class="footer-column">
           <h4>Produto</h4>
           <ul>
-            <li><a href="#features">Recursos</a></li>
-            <li><a href="#planos">Planos</a></li>
+            <li><a [routerLink]="['/landpage']" fragment="features">Recursos</a></li>
+            <li><a [routerLink]="['/landpage']" fragment="planos">Planos</a></li>
             <li><a routerLink="/login">Começar grátis</a></li>
           </ul>
         </div>
         <div class="footer-column">
           <h4>Suporte</h4>
           <ul>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a [routerLink]="['/landpage']" fragment="faq">FAQ</a></li>
             <li><a href="#">Central de ajuda</a></li>
             <li><a href="#">Contato</a></li>
           </ul>
