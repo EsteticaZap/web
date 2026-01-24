@@ -514,6 +514,11 @@ export class OnboardingComponent implements OnInit {
     this.novoServico.valor = Number(this.novoServico.valor) || 0;
     this.novoServico.duracao = Number(this.novoServico.duracao) || 0;
 
+    if (!this.novoServico.nome.trim()) {
+      this.errorMessage = 'Informe o nome do serviço.';
+      return;
+    }
+
     if (this.novoServico.valor <= 0) {
       this.errorMessage = 'Informe um valor válido para o serviço.';
       return;

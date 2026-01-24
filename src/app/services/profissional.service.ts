@@ -216,13 +216,11 @@ export class ProfissionalService {
 
     // Validar descrição
     if (profissional.descricao !== undefined) {
-      if (!profissional.descricao || profissional.descricao.trim() === '') {
-        throw new Error('Descrição do profissional é obrigatória');
-      }
-      if (profissional.descricao.trim().length < 10) {
+      const descricao = profissional.descricao?.trim() ?? '';
+      if (descricao.length > 0 && descricao.length < 10) {
         throw new Error('Descrição deve ter pelo menos 10 caracteres');
       }
-      if (profissional.descricao.trim().length > 500) {
+      if (descricao.length > 500) {
         throw new Error('Descrição deve ter no máximo 500 caracteres');
       }
     }
