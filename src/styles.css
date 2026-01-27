@@ -731,7 +731,7 @@ app-configuracoes .btn-lg {
   }
 
   .modal-daily-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .detail-hero {
@@ -769,7 +769,7 @@ app-configuracoes .btn-lg {
   }
 
   .daily-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .daily-sidebar {

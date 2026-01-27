@@ -425,7 +425,7 @@
   }
 
   .daily-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .daily-sidebar {
