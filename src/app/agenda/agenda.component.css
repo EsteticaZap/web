@@ -207,6 +207,14 @@
   background: #607d8b;
 }
 
+.legend-item .dot.completed {
+  background: #2e7d32;
+}
+
+.legend-item .dot.no-show {
+  background: #6a1b9a;
+}
+
 /* Calendar container */
 .calendar-container {
   background: #fff;
@@ -315,10 +323,24 @@
   border-left-color: #ff6b6b;
 }
 
+.appointment-card.status-completed {
+  background: #e8f5e9;
+  border-left-color: #2e7d32;
+}
+
+.appointment-card.status-no-show {
+  background: #f3e5f5;
+  border-left-color: #6a1b9a;
+}
+
 .appointment-card.status-blocked {
   background: #eceff1;
   border-left-color: #607d8b;
   color: #455a64;
+}
+
+.appointment-card.is-clickable {
+  cursor: pointer;
 }
 
 .appt-avatar {
@@ -579,6 +601,14 @@
   background: #ff6b6b;
 }
 
+.line-dot.status-completed {
+  background: #2e7d32;
+}
+
+.line-dot.status-no-show {
+  background: #6a1b9a;
+}
+
 .line-dot.status-blocked {
   background: #607d8b;
 }
@@ -613,9 +643,29 @@
   border-left-color: #ff6b6b;
 }
 
+.timeline-content.status-completed {
+  background: #e8f5e9;
+  border-left-color: #2e7d32;
+}
+
+.timeline-content.status-no-show {
+  background: #f3e5f5;
+  border-left-color: #6a1b9a;
+}
+
 .timeline-content.status-blocked {
   background: #eceff1;
   border-left-color: #607d8b;
+}
+
+.timeline-content.is-clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timeline-content.is-clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .appt-header {
@@ -689,6 +739,16 @@
 
 .appt-status.status-declined {
   background: #ff6b6b;
+  color: #fff;
+}
+
+.appt-status.status-completed {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.appt-status.status-no-show {
+  background: #6a1b9a;
   color: #fff;
 }
 
@@ -1295,6 +1355,209 @@
   max-width: 520px;
 }
 
+.agenda-modal.appointment-modal {
+  max-width: 720px;
+}
+
+.appointment-modal-body {
+  background: #fff;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #f0f0f0;
+}
+
+.detail-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.detail-client {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.detail-service {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.detail-status {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+}
+
+.detail-status.status-confirmed {
+  background: #fce4ec;
+  color: #ad1457;
+}
+
+.detail-status.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.detail-status.status-declined {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.detail-status.status-completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.detail-status.status-no-show {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.detail-card {
+  background: #fafafa;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #f0f0f0;
+}
+
+.detail-card h5 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #777;
+}
+
+.detail-card p {
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-card small {
+  display: block;
+  margin-top: 0.25rem;
+  color: #777;
+}
+
+.detail-services h5,
+.status-actions h5 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  background: #f9fafc;
+  border: 1px solid #eef0f4;
+}
+
+.service-item small {
+  display: block;
+  color: #777;
+  font-size: 0.75rem;
+}
+
+.service-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.service-price {
+  font-weight: 600;
+  color: #e91e63;
+}
+
+.status-actions {
+  background: #fafafa;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #f0f0f0;
+}
+
+.status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn-status {
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-status.completed {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.btn-status.no-show {
+  background: #6a1b9a;
+  color: #fff;
+}
+
+.btn-status:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .block-modal-body {
   background: #fff;
 }
@@ -1430,6 +1693,15 @@
 
   .modal-daily-content {
     grid-template-columns: 1fr;
+  }
+
+  .detail-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-buttons {
+    flex-direction: column;
   }
 }
 
