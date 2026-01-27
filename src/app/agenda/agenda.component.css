@@ -423,6 +423,14 @@
     padding: 1rem;
     padding-top: calc(60px + 1rem); /* Altura do header mobile + espaçamento */
   }
+
+  .daily-content {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-sidebar {
+    flex-direction: column;
+  }
   
   .agenda-header {
     flex-direction: column;
