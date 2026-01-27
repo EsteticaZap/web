@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
-import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, query, where, getDocs, doc, updateDoc } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
@@ -16,6 +16,7 @@ interface ViewOption {
 }
 
 interface Agendamento {
+  id?: string;
   salonId: string;
   profissionalId?: string;      // Profissional responsável (pode ser undefined para agendamentos legado)
   profissionalNome?: string;    // Nome do profissional (denormalizado)
@@ -25,13 +26,13 @@ interface Agendamento {
   data: string;
   horaInicio: string;
   horaFim: string;
-  status: 'pendente' | 'confirmado' | 'cancelado';
+  status: 'pendente' | 'confirmado' | 'cancelado' | 'realizado' | 'no-show';
   valorTotal: number;
   duracaoTotal: number;
   createdAt: any;
 }
 
-type AppointmentStatus = 'confirmed' | 'pending' | 'declined' | 'blocked';
+type AppointmentStatus = 'confirmed' | 'pending' | 'declined' | 'blocked' | 'completed' | 'no-show';
 
 interface Appointment {
   id: string;
@@ -46,6 +47,7 @@ interface Appointment {
   profissionalId?: string;      // ID do profissional
   profissionalNome?: string;    // Nome do profissional
   clientPhone?: string;         // Telefone do cliente para lembretes
+  services?: { id: string; nome: string; valor: number; duracao: number }[];
 }
 
 interface DailySummary {
@@ -97,6 +99,11 @@ export class AgendaComponent implements OnInit {
   isReminderModalOpen = false;
   reminderModalDate: Date | null = null;
   selectedReminderIds: Set<string> = new Set<string>();
+  isAppointmentModalOpen = false;
+  selectedAppointment: Appointment | null = null;
+  isUpdatingStatus = false;
+  statusUpdateError = '';
+  statusUpdateSuccess = '';
 
   // Profissionais e filtro
   profissionais: Profissional[] = [];
@@ -281,14 +288,7 @@ export class AgendaComponent implements OnInit {
    */
   private convertToAppointment(agend: Agendamento & { id?: string }): Appointment {
     // Converter status
-    let status: AppointmentStatus;
-    if (agend.status === 'confirmado') {
-      status = 'confirmed';
-    } else if (agend.status === 'pendente') {
-      status = 'pending';
-    } else {
-      status = 'declined';
-    }
+    const status = this.mapAgendamentoStatusToAppointmentStatus(agend.status);
 
     // Converter data string (YYYY-MM-DD) para Date
     const [year, month, day] = agend.data.split('-').map(Number);
@@ -314,7 +314,8 @@ export class AgendaComponent implements OnInit {
       price: price,
       profissionalId: agend.profissionalId,
       profissionalNome: agend.profissionalNome,
-      clientPhone: agend.clienteTelefone
+      clientPhone: agend.clienteTelefone,
+      services: agend.servicos
     };
   }
 
@@ -445,13 +446,13 @@ export class AgendaComponent implements OnInit {
 
   getDailySummary(date: Date): DailySummary {
     const dailyAppts = this.getDailyAppointments(date);
-    const confirmed = dailyAppts.filter(a => a.status === 'confirmed').length;
+    const confirmed = dailyAppts.filter(a => a.status === 'confirmed' || a.status === 'completed').length;
     const pending = dailyAppts.filter(a => a.status === 'pending').length;
-    const declined = dailyAppts.filter(a => a.status === 'declined').length;
+    const declined = dailyAppts.filter(a => a.status === 'declined' || a.status === 'no-show').length;
     
     // Calcular faturamento (apenas confirmados e pendentes)
     const revenue = dailyAppts
-      .filter(a => a.status === 'confirmed' || a.status === 'pending')
+      .filter(a => a.status === 'confirmed' || a.status === 'pending' || a.status === 'completed')
       .reduce((sum, appt) => {
         const priceValue = parseFloat(appt.price.replace('R$ ', '').replace('.', '').replace(',', '.'));
         return sum + priceValue;
@@ -590,13 +591,13 @@ export class AgendaComponent implements OnInit {
       .filter(appt => appt.status !== 'blocked')
       .filter(appt => appt.date.getFullYear() === year && appt.date.getMonth() === month);
 
-    const confirmed = monthlyAppts.filter(a => a.status === 'confirmed').length;
+    const confirmed = monthlyAppts.filter(a => a.status === 'confirmed' || a.status === 'completed').length;
     const pending = monthlyAppts.filter(a => a.status === 'pending').length;
-    const declined = monthlyAppts.filter(a => a.status === 'declined').length;
+    const declined = monthlyAppts.filter(a => a.status === 'declined' || a.status === 'no-show').length;
     
     // Calcular faturamento (apenas confirmados e pendentes)
     const revenue = monthlyAppts
-      .filter(a => a.status === 'confirmed' || a.status === 'pending')
+      .filter(a => a.status === 'confirmed' || a.status === 'pending' || a.status === 'completed')
       .reduce((sum, appt) => {
         const priceValue = parseFloat(appt.price.replace('R$ ', '').replace('.', '').replace(',', '.'));
         return sum + priceValue;
@@ -626,7 +627,7 @@ export class AgendaComponent implements OnInit {
   }
 
   getConfirmedCount(appointments: Appointment[]): number {
-    return appointments.filter(a => a.status === 'confirmed').length;
+    return appointments.filter(a => a.status === 'confirmed' || a.status === 'completed').length;
   }
 
   getPendingCount(appointments: Appointment[]): number {
@@ -648,6 +649,8 @@ export class AgendaComponent implements OnInit {
       case 'confirmed': return 'status-confirmed';
       case 'pending': return 'status-pending';
       case 'declined': return 'status-declined';
+      case 'completed': return 'status-completed';
+      case 'no-show': return 'status-no-show';
       case 'blocked': return 'status-blocked';
       default: return '';
     }
@@ -658,6 +661,8 @@ export class AgendaComponent implements OnInit {
       case 'confirmed': return 'Confirmado';
       case 'pending': return 'Pendente';
       case 'declined': return 'Recusado';
+      case 'completed': return 'Realizado';
+      case 'no-show': return 'No-show';
       case 'blocked': return 'Bloqueado';
       default: return '';
     }
@@ -875,6 +880,8 @@ export class AgendaComponent implements OnInit {
       .filter(appt =>
         appt.status !== 'blocked' &&
         appt.status !== 'declined' &&
+        appt.status !== 'completed' &&
+        appt.status !== 'no-show' &&
         !!appt.id &&
         !this.isAppointmentInPast(appt)
       );
@@ -900,6 +907,81 @@ export class AgendaComponent implements OnInit {
     const [endHour, endMinute] = appt.endTime.split(':').map(Number);
     apptEnd.setHours(endHour, endMinute, 0, 0);
     return apptEnd.getTime() <= now.getTime();
+  }
+
+  isPastAppointment(appt: Appointment | null): boolean {
+    if (!appt) return false;
+    return this.isAppointmentInPast(appt);
+  }
+
+  openAppointmentModal(appt: Appointment): void {
+    if (appt.status === 'blocked') return;
+    this.selectedAppointment = { ...appt };
+    this.isAppointmentModalOpen = true;
+    this.statusUpdateError = '';
+    this.statusUpdateSuccess = '';
+  }
+
+  closeAppointmentModal(): void {
+    this.isAppointmentModalOpen = false;
+    this.selectedAppointment = null;
+    this.statusUpdateError = '';
+    this.statusUpdateSuccess = '';
+  }
+
+  private mapAgendamentoStatusToAppointmentStatus(status: Agendamento['status']): AppointmentStatus {
+    switch (status) {
+      case 'confirmado':
+        return 'confirmed';
+      case 'pendente':
+        return 'pending';
+      case 'realizado':
+        return 'completed';
+      case 'no-show':
+        return 'no-show';
+      case 'cancelado':
+      default:
+        return 'declined';
+    }
+  }
+
+  async atualizarStatusAgendamento(novoStatus: 'realizado' | 'no-show'): Promise<void> {
+    if (!this.selectedAppointment?.id || this.isUpdatingStatus) return;
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      this.statusUpdateError = 'Usuário não autenticado.';
+      return;
+    }
+
+    this.isUpdatingStatus = true;
+    this.statusUpdateError = '';
+    this.statusUpdateSuccess = '';
+
+    try {
+      const agendamentoRef = doc(this.firestore, 'agendamentos', this.selectedAppointment.id);
+      await updateDoc(agendamentoRef, { status: novoStatus });
+
+      const updatedStatus = this.mapAgendamentoStatusToAppointmentStatus(novoStatus);
+      this.selectedAppointment = {
+        ...this.selectedAppointment,
+        status: updatedStatus
+      };
+
+      this.allAgendamentos = this.allAgendamentos.map(agend =>
+        agend.id === this.selectedAppointment?.id ? { ...agend, status: novoStatus } : agend
+      );
+
+      this.appointments = this.appointments.map(appt =>
+        appt.id === this.selectedAppointment?.id ? { ...appt, status: updatedStatus } : appt
+      );
+
+      this.statusUpdateSuccess = 'Status atualizado com sucesso.';
+    } catch (error) {
+      console.error('Erro ao atualizar status do agendamento:', error);
+      this.statusUpdateError = 'Não foi possível atualizar o status. Tente novamente.';
+    } finally {
+      this.isUpdatingStatus = false;
+    }
   }
 
   async enviarLembretesSelecionados(): Promise<void> {
