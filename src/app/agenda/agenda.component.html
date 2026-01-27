@@ -62,6 +62,14 @@
           Recusado
         </div>
         <div class="legend-item">
+          <span class="dot completed"></span>
+          Realizado
+        </div>
+        <div class="legend-item">
+          <span class="dot no-show"></span>
+          No-show
+        </div>
+        <div class="legend-item">
           <span class="dot blocked"></span>
           Bloqueado
         </div>
@@ -88,7 +96,11 @@
                   <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
                   <div class="line-vertical"></div>
                 </div>
-                <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                <div
+                  class="timeline-content"
+                  [ngClass]="getStatusClass(appt.status)"
+                  [class.is-clickable]="appt.status !== 'blocked'"
+                  (click)="openAppointmentModal(appt)">
                   <!-- Badge Profissional -->
                   <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
                     <i class="fa fa-user-tie"></i>
@@ -262,6 +274,14 @@
           Recusado
         </div>
         <div class="legend-item">
+          <span class="dot completed"></span>
+          Realizado
+        </div>
+        <div class="legend-item">
+          <span class="dot no-show"></span>
+          No-show
+        </div>
+        <div class="legend-item">
           <span class="dot blocked"></span>
           Bloqueado
         </div>
@@ -287,7 +307,9 @@
               <div
                 *ngFor="let appt of getAppointmentsForSlot(time, dayIndex)"
                 class="appointment-card"
-                [ngClass]="getStatusClass(appt.status)">
+                [ngClass]="getStatusClass(appt.status)"
+                [class.is-clickable]="appt.status !== 'blocked'"
+                (click)="openAppointmentModal(appt)">
 
                 <!-- Badge Profissional -->
                 <div *ngIf="appt.profissionalNome" class="professional-badge-small" [style.background-color]="getProfissionalColor(appt.profissionalId)">
@@ -343,6 +365,14 @@
         <div class="legend-item">
           <span class="dot declined"></span>
           Recusado
+        </div>
+        <div class="legend-item">
+          <span class="dot completed"></span>
+          Realizado
+        </div>
+        <div class="legend-item">
+          <span class="dot no-show"></span>
+          No-show
         </div>
         <div class="legend-item">
           <span class="dot blocked"></span>
@@ -466,7 +496,11 @@
                       <div class="line-dot" [ngClass]="getStatusClass(appt.status)"></div>
                       <div class="line-vertical"></div>
                     </div>
-                    <div class="timeline-content" [ngClass]="getStatusClass(appt.status)">
+                    <div
+                      class="timeline-content"
+                      [ngClass]="getStatusClass(appt.status)"
+                      [class.is-clickable]="appt.status !== 'blocked'"
+                      (click)="openAppointmentModal(appt)">
                       <!-- Badge Profissional -->
                       <div *ngIf="appt.profissionalNome" class="professional-badge" [style.background-color]="getProfissionalColor(appt.profissionalId)">
                         <i class="fa fa-user-tie"></i>
@@ -605,6 +639,103 @@
                 <i class="fa fa-exclamation-circle"></i>
                 {{ reminderError }}
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalhe do Agendamento -->
+  <div *ngIf="isAppointmentModalOpen" class="agenda-modal-overlay" (click)="closeAppointmentModal()">
+    <div class="agenda-modal appointment-modal" (click)="$event.stopPropagation()">
+      <div class="agenda-modal-header">
+        <div class="modal-date-info">
+          <span class="modal-day-name">Detalhes do agendamento</span>
+          <h4>{{ selectedAppointment?.client }}</h4>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-close" type="button" (click)="closeAppointmentModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="agenda-modal-body appointment-modal-body" *ngIf="selectedAppointment as appt">
+        <div class="appointment-details">
+          <div class="detail-hero">
+            <div class="detail-avatar">
+              <img [src]="appt.image" [alt]="appt.client" />
+            </div>
+            <div class="detail-summary">
+              <span class="detail-client">{{ appt.client }}</span>
+              <span class="detail-service">{{ appt.service }}</span>
+              <span class="appt-status detail-status" [ngClass]="getStatusClass(appt.status)">
+                {{ getStatusLabel(appt.status) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-card">
+              <h5>Cliente</h5>
+              <p>{{ appt.client }}</p>
+              <small *ngIf="appt.clientPhone">Telefone: {{ appt.clientPhone }}</small>
+            </div>
+            <div class="detail-card">
+              <h5>Profissional</h5>
+              <p>{{ appt.profissionalNome || 'Não atribuído' }}</p>
+            </div>
+            <div class="detail-card">
+              <h5>Data e horário</h5>
+              <p>{{ formatDateLabel(appt.date) }}</p>
+              <small>{{ appt.startTime }} - {{ appt.endTime }}</small>
+            </div>
+            <div class="detail-card">
+              <h5>Valor total</h5>
+              <p>{{ appt.price }}</p>
+            </div>
+          </div>
+
+          <div class="detail-services" *ngIf="appt.services?.length">
+            <h5>Serviços solicitados</h5>
+            <div class="services-list">
+              <div class="service-item" *ngFor="let service of appt.services">
+                <div>
+                  <span class="service-name">{{ service.nome }}</span>
+                  <small>{{ service.duracao }} min</small>
+                </div>
+                <span class="service-price">R$ {{ service.valor.toFixed(2).replace('.', ',') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-actions" *ngIf="isPastAppointment(appt)">
+            <h5>Atualizar status</h5>
+            <div class="status-buttons">
+              <button
+                class="btn-status completed"
+                type="button"
+                [disabled]="isUpdatingStatus || appt.status === 'completed'"
+                (click)="atualizarStatusAgendamento('realizado')">
+                <i class="fa fa-check-circle"></i>
+                Marcar como realizado
+              </button>
+              <button
+                class="btn-status no-show"
+                type="button"
+                [disabled]="isUpdatingStatus || appt.status === 'no-show'"
+                (click)="atualizarStatusAgendamento('no-show')">
+                <i class="fa fa-user-times"></i>
+                Marcar como no-show
+              </button>
+            </div>
+            <div *ngIf="statusUpdateSuccess" class="action-feedback success">
+              <i class="fa fa-check-circle"></i>
+              {{ statusUpdateSuccess }}
+            </div>
+            <div *ngIf="statusUpdateError" class="action-feedback error">
+              <i class="fa fa-exclamation-circle"></i>
+              {{ statusUpdateError }}
             </div>
           </div>
         </div>

@@ -207,6 +207,14 @@
   background: #607d8b;
 }
 
+.legend-item .dot.completed {
+  background: #2e7d32;
+}
+
+.legend-item .dot.no-show {
+  background: #6a1b9a;
+}
+
 /* Calendar container */
 .calendar-container {
   background: #fff;
@@ -315,10 +323,24 @@
   border-left-color: #ff6b6b;
 }
 
+.appointment-card.status-completed {
+  background: #e8f5e9;
+  border-left-color: #2e7d32;
+}
+
+.appointment-card.status-no-show {
+  background: #f3e5f5;
+  border-left-color: #6a1b9a;
+}
+
 .appointment-card.status-blocked {
   background: #eceff1;
   border-left-color: #607d8b;
   color: #455a64;
+}
+
+.appointment-card.is-clickable {
+  cursor: pointer;
 }
 
 .appt-avatar {
@@ -400,6 +422,14 @@
     margin-left: 0;
     padding: 1rem;
     padding-top: calc(60px + 1rem); /* Altura do header mobile + espaçamento */
+  }
+
+  .daily-content {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-sidebar {
+    flex-direction: column;
   }
   
   .agenda-header {
@@ -579,6 +609,14 @@
   background: #ff6b6b;
 }
 
+.line-dot.status-completed {
+  background: #2e7d32;
+}
+
+.line-dot.status-no-show {
+  background: #6a1b9a;
+}
+
 .line-dot.status-blocked {
   background: #607d8b;
 }
@@ -613,9 +651,29 @@
   border-left-color: #ff6b6b;
 }
 
+.timeline-content.status-completed {
+  background: #e8f5e9;
+  border-left-color: #2e7d32;
+}
+
+.timeline-content.status-no-show {
+  background: #f3e5f5;
+  border-left-color: #6a1b9a;
+}
+
 .timeline-content.status-blocked {
   background: #eceff1;
   border-left-color: #607d8b;
+}
+
+.timeline-content.is-clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.timeline-content.is-clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
 .appt-header {
@@ -689,6 +747,16 @@
 
 .appt-status.status-declined {
   background: #ff6b6b;
+  color: #fff;
+}
+
+.appt-status.status-completed {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.appt-status.status-no-show {
+  background: #6a1b9a;
   color: #fff;
 }
 
@@ -1148,378 +1216,4 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-/* Modal Detalhe do Dia */
-.agenda-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  z-index: 9999;
-  backdrop-filter: blur(2px);
-  animation: fadeIn 0.2s ease;
-}
-
-.agenda-modal {
-  background: #fff;
-  border-radius: 0.75rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  max-width: 1100px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.agenda-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(90deg, #fff, #fff7fb);
-}
-
-.modal-date-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.modal-date-info h4 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #333;
-}
-
-.modal-day-name {
-  font-size: 0.8rem;
-  color: #9c9c9c;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.modal-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: #f5f5f5;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: #ff6b6b;
-  color: #fff;
-}
-
-.agenda-modal-body {
-  padding: 1rem 1.5rem 1.5rem;
-  overflow-y: auto;
-  background: #fafafa;
-}
-
-.reminder-modal .agenda-modal-body {
-  max-height: 60vh;
-}
-
-.reminder-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.reminder-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #fafafa;
-  cursor: pointer;
-}
-
-.reminder-item input[type="checkbox"] {
-  margin-top: 4px;
-  width: 18px;
-  height: 18px;
-}
-
-.reminder-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.reminder-title {
-  font-weight: 600;
-  color: #424242;
-}
-
-.reminder-meta {
-  font-size: 14px;
-  color: #616161;
-}
-
-.reminder-empty {
-  text-align: center;
-  color: #757575;
-}
-
-.reminder-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 0 24px 24px;
-}
-
-.agenda-modal.block-modal {
-  max-width: 520px;
-}
-
-.block-modal-body {
-  background: #fff;
-}
-
-.block-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.block-form-grid .form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.block-form-grid .form-group.full-width {
-  grid-column: span 2;
-}
-
-.block-form-grid label {
-  font-size: 0.85rem;
-  color: #444;
-  margin-bottom: 0.35rem;
-  display: inline-flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.block-form-grid input,
-.block-form-grid select,
-.block-form-grid textarea {
-  width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.block-form-grid textarea {
-  resize: vertical;
-  min-height: 70px;
-}
-
-.block-form-grid input:focus,
-.block-form-grid select:focus,
-.block-form-grid textarea:focus {
-  outline: none;
-  border-color: #e91e63;
-  box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.15);
-}
-
-.block-form-grid .hint {
-  display: block;
-  margin-top: 0.35rem;
-  font-size: 0.75rem;
-  color: #777;
-}
-
-.block-form-grid .checkbox {
-  font-weight: 600;
-}
-
-.block-form-grid .checkbox input {
-  width: auto;
-}
-
-.block-error {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: #ffebee;
-  border-radius: 0.5rem;
-  color: #c62828;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid #ffcdd2;
-}
-
-.block-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-}
-
-.block-modal-actions .btn-primary,
-.block-modal-actions .btn-secondary {
-  padding: 0.75rem 1.1rem;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: transform 0.1s ease, box-shadow 0.2s ease;
-}
-
-.block-modal-actions .btn-primary {
-  background: #e91e63;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.25);
-}
-
-.block-modal-actions .btn-primary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.block-modal-actions .btn-secondary {
-  background: #f5f5f5;
-  color: #555;
-  border: 1px solid #e0e0e0;
-}
-
-.block-modal-actions .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.block-modal-actions .btn-secondary:hover {
-  transform: translateY(-1px);
-}
-
-.modal-daily-content {
-  grid-template-columns: 1fr 320px;
-}
-
-@media (max-width: 768px) {
-  .agenda-modal-body {
-    padding: 1rem;
-  }
-
-  .modal-daily-content {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .block-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .block-form-grid .form-group.full-width {
-    grid-column: span 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Responsive Monthly */
-@media (max-width: 1024px) {
-  .monthly-content {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .month-nav-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .calendar-day {
-    min-height: 60px;
-    padding: 0.25rem;
-  }
-  
-  .day-number {
-    font-size: 0.75rem;
-  }
-  
-  .appt-bar {
-    height: 4px;
-  }
-}
-
-/* Responsive Daily View */
-@media (max-width: 1024px) {
-  .daily-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .daily-sidebar {
-    flex-direction: row;
-  }
-  
-  .daily-sidebar > * {
-    flex: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .daily-sidebar {
-    flex-direction: column;
-  }
-  
-  .day-nav-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .timeline-content {
-    padding: 0.75rem;
-  }
-  
-  .appt-footer {
-    gap: 0.5rem;
-  }
-  
-  .appt-price {
-    margin-left: 0;
-    width: 100%;
-    text-align: right;
-    margin-top: 0.5rem;
-  }
-  
-  .lunch-break {
-    margin-left: 0;
-  }
 }
