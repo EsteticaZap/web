@@ -237,9 +237,6 @@ export class ProfissionalService {
       if (!Array.isArray(profissional.interesses)) {
         throw new Error('Interesses devem ser um array');
       }
-      if (profissional.interesses.length < 1) {
-        throw new Error('Adicione pelo menos 1 interesse');
-      }
       if (profissional.interesses.length > 10) {
         throw new Error('Máximo de 10 interesses permitidos');
       }
