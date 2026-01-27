@@ -765,7 +765,7 @@ app-configuracoes .btn-lg {
 
 @media (max-width: 1024px) {
   .monthly-content {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .daily-content {
