@@ -804,16 +804,6 @@ export class ConfiguracoesComponent implements OnInit {
       return;
     }
 
-    if (this.novoProfissional.interesses.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Adicione pelo menos 1 interesse.',
-        life: 3000
-      });
-      return;
-    }
-
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
 
