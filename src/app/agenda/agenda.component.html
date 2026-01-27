@@ -669,7 +669,7 @@
             <div class="detail-summary">
               <span class="detail-client">{{ appt.client }}</span>
               <span class="detail-service">{{ appt.service }}</span>
-              <span class="detail-status" [ngClass]="getStatusClass(appt.status)">
+              <span class="appt-status detail-status" [ngClass]="getStatusClass(appt.status)">
                 {{ getStatusLabel(appt.status) }}
               </span>
             </div>
