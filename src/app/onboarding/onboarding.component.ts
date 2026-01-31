@@ -2,6 +2,8 @@ import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFOR
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { Profissional } from '../interfaces/profissional.interface';
@@ -60,15 +62,17 @@ interface OnboardingData {
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, ToastModule],
   templateUrl: './onboarding.component.html',
-  styleUrls: ['./onboarding.component.css']
+  styleUrls: ['./onboarding.component.css'],
+  providers: [MessageService]
 })
 export class OnboardingComponent implements OnInit {
   private readonly MAX_IMAGE_BYTES = 950 * 1024; // Mantém margem para o limite de 1MB do Firestore
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private profissionalService = inject(ProfissionalService);
+  private messageService = inject(MessageService);
   private isBrowser: boolean;
 
   @Input() visible: boolean = false;
@@ -902,7 +906,13 @@ export class OnboardingComponent implements OnInit {
 
       const data = await response.json();
       if (data.erro) {
-        this.errorMessage = 'CEP não encontrado. Verifique e tente novamente.';
+        this.limparEndereco();
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'CEP inválido',
+          detail: 'CEP não encontrado. Verifique e tente novamente.',
+          life: 4000
+        });
         return;
       }
 
@@ -913,9 +923,22 @@ export class OnboardingComponent implements OnInit {
       this.errorMessage = '';
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      this.errorMessage = 'Não foi possível preencher o endereço automaticamente. Preencha manualmente.';
+      this.limparEndereco();
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Falha ao buscar CEP',
+        detail: 'Não foi possível buscar o endereço. Verifique o CEP e tente novamente.',
+        life: 4000
+      });
     } finally {
       this.isCepLoading = false;
     }
+  }
+
+  private limparEndereco(): void {
+    this.data.endereco = '';
+    this.data.cidade = '';
+    this.data.estado = '';
+    this.data.bairro = '';
   }
 }

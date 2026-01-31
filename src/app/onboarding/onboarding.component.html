@@ -1,5 +1,6 @@
 <!-- Modal Overlay -->
 <div class="modal-overlay" *ngIf="visible" (click)="onOverlayClick($event)">
+  <p-toast position="top-right"></p-toast>
   <div class="modal-container" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="modal-header">
@@ -140,6 +141,7 @@
             type="text" 
             id="endereco" 
             [(ngModel)]="data.endereco"
+            [disabled]="true"
             placeholder="Ex: Rua das Flores" />
         </div>
 
@@ -168,6 +170,7 @@
             type="text" 
             id="bairro" 
             [(ngModel)]="data.bairro"
+            [disabled]="true"
             placeholder="Ex: Centro" />
         </div>
 
@@ -178,6 +181,7 @@
               type="text" 
               id="cidade" 
               [(ngModel)]="data.cidade"
+              [disabled]="true"
               placeholder="Sua cidade" />
           </div>
           <div class="form-group">
@@ -186,6 +190,7 @@
               inputId="estado"
               [options]="estadoOptions"
               [(ngModel)]="data.estado"
+              [disabled]="true"
               optionLabel="label"
               optionValue="value"
               placeholder="Selecione"
