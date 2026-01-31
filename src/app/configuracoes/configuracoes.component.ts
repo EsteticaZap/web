@@ -18,7 +18,7 @@ import { Servico } from '../onboarding/onboarding.component';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
 import { SelectModule } from 'primeng/select';
-import { formatPhoneMask } from '../utils/phone-utils';
+import { sanitizePhone } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -485,9 +485,9 @@ export class ConfiguracoesComponent implements OnInit {
 
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
-    const formatted = formatPhoneMask(input.value);
-    input.value = formatted;
-    this.config[field] = formatted;
+    const digits = sanitizePhone(input.value);
+    input.value = digits;
+    this.config[field] = digits;
   }
 
   formatCep(event: Event): void {

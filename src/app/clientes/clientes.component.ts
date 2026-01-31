@@ -196,9 +196,9 @@ export class ClientesComponent implements OnInit {
 
   onTelefoneInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const formatted = formatPhoneMask(input.value);
-    input.value = formatted;
-    this.formTelefone = formatted;
+    const digits = sanitizePhone(input.value);
+    input.value = digits;
+    this.formTelefone = digits;
   }
 
   private getTelefoneLimpo(): string {
