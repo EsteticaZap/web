@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFORM_ID, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
@@ -6,7 +6,7 @@ import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
-import { formatPhoneMask } from '../utils/phone-utils';
+import { sanitizePhone } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -74,6 +74,7 @@ export class OnboardingComponent implements OnInit {
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onComplete = new EventEmitter<void>();
+  @ViewChild('modalContent') modalContent?: ElementRef<HTMLDivElement>;
 
   currentStep = 0;
   totalSteps = 6;
@@ -220,6 +221,7 @@ export class OnboardingComponent implements OnInit {
       if (this.currentStep < this.totalSteps - 1) {
         this.currentStep++;
         this.errorMessage = '';
+        this.scrollToTop();
       }
     }
   }
@@ -228,6 +230,7 @@ export class OnboardingComponent implements OnInit {
     if (this.currentStep > 0) {
       this.currentStep--;
       this.errorMessage = '';
+      this.scrollToTop();
     }
   }
 
@@ -235,7 +238,17 @@ export class OnboardingComponent implements OnInit {
     if (index <= this.currentStep) {
       this.currentStep = index;
       this.errorMessage = '';
+      this.scrollToTop();
     }
+  }
+
+  private scrollToTop(): void {
+    if (!this.isBrowser) return;
+    const container = this.modalContent?.nativeElement;
+    if (!container) return;
+    requestAnimationFrame(() => {
+      container.scrollTop = 0;
+    });
   }
 
   validateCurrentStep(): boolean {
@@ -441,8 +454,9 @@ export class OnboardingComponent implements OnInit {
 
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
-    const formatted = formatPhoneMask(input.value);
-    this.data[field] = formatted;
+    const digits = sanitizePhone(input.value);
+    input.value = digits;
+    this.data[field] = digits;
   }
 
   formatCep(event: Event): void {
