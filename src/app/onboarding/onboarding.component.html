@@ -31,11 +31,6 @@
 
     <!-- Content -->
     <div class="modal-content" #modalContent>
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="alert alert-error">
-        <i class="fa fa-exclamation-circle"></i>
-        {{ errorMessage }}
-      </div>
 
       <!-- Step 1: Informações do Salão -->
       <div *ngIf="currentStep === 0" class="step-content">

@@ -13,6 +13,19 @@
   animation: fadeIn 0.3s ease;
 }
 
+:host ::ng-deep .p-toast {
+  width: min(92vw, 360px);
+}
+
+@media (max-width: 600px) {
+  :host ::ng-deep .p-toast {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    top: 1rem !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
