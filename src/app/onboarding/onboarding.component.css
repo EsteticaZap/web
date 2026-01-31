@@ -999,14 +999,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1rem;
   z-index: 11000;
 }
 
 .inline-modal {
   width: 100%;
-  max-width: 560px;
-  max-height: 92vh;
+  max-width: 720px;
+  max-height: 95vh;
   overflow-y: auto;
   background: #fff;
   border-radius: 16px;
