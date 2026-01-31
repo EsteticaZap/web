@@ -15,7 +15,7 @@
 
 :host ::ng-deep .p-toast {
   width: min(92vw, 360px);
-  z-index: 12000;
+  z-index: 12000 !important;
 }
 
 @media (max-width: 600px) {
