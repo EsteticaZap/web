@@ -328,6 +328,21 @@ export class OnboardingComponent implements OnInit {
     return true;
   }
 
+  private validateAllSteps(): boolean {
+    const originalStep = this.currentStep;
+
+    for (let step = 0; step < this.totalSteps - 1; step++) {
+      this.currentStep = step;
+      if (!this.validateCurrentStep()) {
+        this.scrollToTop();
+        return false;
+      }
+    }
+
+    this.currentStep = originalStep;
+    return true;
+  }
+
   getHorario(dia: string): HorarioTrabalho {
     return (this.data.horariosFuncionamento as any)[dia];
   }
@@ -387,7 +402,7 @@ export class OnboardingComponent implements OnInit {
   }
 
   async finalizarOnboarding(): Promise<void> {
-    if (!this.validateCurrentStep()) return;
+    if (!this.validateAllSteps()) return;
 
     this.isSaving = true;
 
