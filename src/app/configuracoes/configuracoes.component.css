@@ -1074,12 +1074,13 @@
 :host ::ng-deep .p-dialog {
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 92vh;
 }
 
 :host ::ng-deep .p-dialog-content {
   flex: 1 1 auto;
-  max-height: calc(90vh - 160px);
+  min-height: 0;
+  max-height: calc(92vh - 12rem);
   overflow-y: auto;
 }
 

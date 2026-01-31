@@ -197,6 +197,7 @@ export class ClientesComponent implements OnInit {
   onTelefoneInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const formatted = formatPhoneMask(input.value);
+    input.value = formatted;
     this.formTelefone = formatted;
   }
 

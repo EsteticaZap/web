@@ -486,6 +486,7 @@ export class ConfiguracoesComponent implements OnInit {
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
     const formatted = formatPhoneMask(input.value);
+    input.value = formatted;
     this.config[field] = formatted;
   }
 
