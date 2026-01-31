@@ -13,6 +13,19 @@
   animation: fadeIn 0.3s ease;
 }
 
+:host ::ng-deep .p-toast {
+  width: min(92vw, 360px);
+}
+
+@media (max-width: 600px) {
+  :host ::ng-deep .p-toast {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    top: 1rem !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -28,13 +41,14 @@
   border-radius: 16px;
   width: 92%;
   max-width: 760px;
-  max-height: 90vh;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
 @keyframes slideUp {
@@ -147,8 +161,8 @@
 .modal-content {
   padding: 1.5rem 2rem;
   overflow-y: auto;
-  flex: 1;
-  max-height: calc(90vh - 280px);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Alert */
@@ -300,6 +314,15 @@
   font-family: inherit;
 }
 
+.form-group input[type="text"]:disabled,
+.form-group input[type="tel"]:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background: #f1f1f1;
+  color: #888;
+  cursor: not-allowed;
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
@@ -314,6 +337,13 @@
   border-radius: 8px;
   background: #fff;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host ::ng-deep .form-control-select.p-disabled {
+  background: #f1f1f1;
+  border-color: #ddd;
+  color: #888;
+  opacity: 1;
 }
 
 :host ::ng-deep .form-control-select .p-select:hover {
@@ -976,7 +1006,7 @@
 .inline-modal {
   width: 100%;
   max-width: 560px;
-  max-height: 85vh;
+  max-height: 92vh;
   overflow-y: auto;
   background: #fff;
   border-radius: 16px;
@@ -1001,33 +1031,9 @@
   border-top: none;
 }
 
-/* ========== CORREÇÃO DE LAYOUT PARA FORMULÁRIO DE PROFISSIONAL ========== */
-
-/* Limitar altura do formulário de profissional para evitar scroll no modal */
+/* Permitir que o modal inline controle o scroll */
 .profissional-form {
-  max-height: 50vh;
-  overflow-y: auto;
-  padding-right: 8px;
   margin-top: 20px;
-}
-
-/* Estilo da scrollbar do formulário */
-.profissional-form::-webkit-scrollbar {
-  width: 6px;
-}
-
-.profissional-form::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.profissional-form::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.profissional-form::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 
 /* Garantir que step-content tenha altura máxima apropriada */
