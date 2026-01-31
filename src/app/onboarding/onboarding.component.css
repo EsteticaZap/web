@@ -28,13 +28,14 @@
   border-radius: 16px;
   width: 92%;
   max-width: 760px;
-  max-height: 90vh;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
 @keyframes slideUp {
@@ -147,8 +148,8 @@
 .modal-content {
   padding: 1.5rem 2rem;
   overflow-y: auto;
-  flex: 1;
-  max-height: calc(90vh - 280px);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Alert */
