@@ -1,6 +1,7 @@
 <p-toast position="top-right"></p-toast>
 <!-- Modal Overlay -->
 <div class="modal-overlay" *ngIf="visible" (click)="onOverlayClick($event)">
+  <p-toast position="top-right"></p-toast>
   <div class="modal-container" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="modal-header">
