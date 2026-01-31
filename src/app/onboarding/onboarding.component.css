@@ -314,6 +314,15 @@
   font-family: inherit;
 }
 
+.form-group input[type="text"]:disabled,
+.form-group input[type="tel"]:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background: #f1f1f1;
+  color: #888;
+  cursor: not-allowed;
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
@@ -328,6 +337,13 @@
   border-radius: 8px;
   background: #fff;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host ::ng-deep .form-control-select.p-disabled {
+  background: #f1f1f1;
+  border-color: #ddd;
+  color: #888;
+  opacity: 1;
 }
 
 :host ::ng-deep .form-control-select .p-select:hover {
