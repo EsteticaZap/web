@@ -98,6 +98,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private barChart: Chart | null = null;
   private servicesChart: Chart | null = null;
   private attendanceChart: Chart | null = null;
+  isDownloadingExcel = false;
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -126,6 +127,49 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit(): Promise<void> {
+  }
+
+  async downloadExcelReport(): Promise<void> {
+    if (!this.isBrowser || this.isDownloadingExcel) {
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      console.error('Usuário não autenticado');
+      return;
+    }
+
+    try {
+      this.isDownloadingExcel = true;
+      const response = await fetch(
+        `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio-excel`,
+        {
+          headers: {
+            accept: 'application/vnd.ms-excel'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Falha ao gerar o relatório em Excel.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `relatorio-${timestamp}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar Excel:', error);
+    } finally {
+      this.isDownloadingExcel = false;
+    }
   }
 
   /**
