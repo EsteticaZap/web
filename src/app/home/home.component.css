@@ -27,6 +27,24 @@
   gap: 1rem;
 }
 
+.excel-button {
+  background: #1d6f42;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.excel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-primary {
   background: #e91e63;
   color: #fff;

@@ -10,6 +10,14 @@
         optionLabel="label"
         optionValue="value">
       </p-select>
+      <button
+        class="excel-button"
+        type="button"
+        [disabled]="isDownloadingExcel"
+        (click)="downloadExcelReport()">
+        <i class="fa fa-file-excel"></i>
+        {{ isDownloadingExcel ? 'Gerando...' : 'Gerar Excel' }}
+      </button>
       <i class="fa fa-bell notification"></i>
     </div>
   </header>
