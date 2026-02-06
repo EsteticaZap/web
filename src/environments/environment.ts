@@ -10,7 +10,8 @@ export const environment = {
     measurementId: "G-V8VC63YCB4"
   },
   stripe: {
-    publishableKey: "pk_test_51SfUZUFpxJbrhzIBE8oVq6xMytwPWpdOUaRHIeDNsioMgIJvvUju4YkRbMewti2HlpBBJeWZsxmb8uBvzLktUL76001oqh2gOh",
-    priceId: "price_1SlKnYFpxJbrhzIBrg5wUMyK"
+    publishableKey: "pk_live_51SfUZEFlsKI9o8glOAQUxBw6xYHtPzRelVczPd4C57wCYO5VoOqyHLIe8VAlX4xfQJg7PlZiePTdlamld6tX3f7T00k9mHdhdL",
+    priceId: "price_1SxuZnFlsKI9o8glPOJRGTt5",
+    productId: "prod_Tvm89rUTROaJzD"
   }
 };
