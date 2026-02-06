@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 interface CheckoutSessionResponse {
-  sessionId: string;
+  sessionId?: string;
+  checkoutUrl?: string;
 }
 
 interface RetrievedSession {
@@ -93,15 +94,28 @@ export class StripeCheckoutService {
     });
 
     const { data, rawText } = await this.safeParseJson(response);
-    if (!response.ok || !data?.sessionId) {
-      const mensagemErro =
-        data?.error ||
-        (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
-        'Não foi possível criar a sessão de pagamento. Por favor, tente novamente.';
-      throw new Error(mensagemErro);
+    const checkoutUrl = data?.url ?? data?.checkoutUrl;
+    const sessionId = data?.sessionId;
+
+    if (response.ok) {
+      if (checkoutUrl) {
+        return { checkoutUrl };
+      }
+
+      if (sessionId) {
+        return { sessionId };
+      }
+
+      if (rawText && /^https?:\/\//i.test(rawText.trim())) {
+        return { checkoutUrl: rawText.trim() };
+      }
     }
 
-    return data as CheckoutSessionResponse;
+    const mensagemErro =
+      data?.error ||
+      (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
+      'Não foi possível criar a sessão de pagamento. Por favor, tente novamente.';
+    throw new Error(mensagemErro);
   }
 
   async redirecionarParaCheckout(sessionId: string): Promise<void> {
@@ -110,6 +124,13 @@ export class StripeCheckoutService {
     if (error?.message) {
       throw new Error(error.message);
     }
+  }
+
+  redirecionarParaCheckoutUrl(checkoutUrl: string): void {
+    if (typeof window === 'undefined') {
+      throw new Error('O checkout só pode ser iniciado no navegador.');
+    }
+    window.location.href = checkoutUrl;
   }
 
   async buscarSessao(sessionId: string): Promise<RetrievedSession> {
