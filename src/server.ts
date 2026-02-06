@@ -139,9 +139,18 @@ app.get('/api/relatorio/:salonId', async (req: Request, res: Response) => {
       });
     }
 
-    const buffer = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get('content-type') || 'application/pdf';
+    if (!contentType.toLowerCase().includes('application/pdf')) {
+      const payload = await response.text();
+      return res.status(502).json({
+        error: 'Resposta inválida do serviço de relatório (conteúdo não é PDF).',
+        details: payload?.slice(0, 500) || null,
+      });
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
     res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', 'attachment; filename="relatorio.pdf"');
     return res.send(buffer);
   } catch (error) {
     console.error('Erro ao gerar relatório em PDF:', error);
