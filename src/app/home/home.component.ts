@@ -187,7 +187,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     try {
       this.isDownloadingPdf = true;
       const response = await fetch(
-        `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio`,
+        `/api/relatorio/${currentUser.uid}`,
         {
           headers: {
             accept: 'application/pdf'
