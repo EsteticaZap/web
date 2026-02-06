@@ -20,6 +20,18 @@ async function createStripeCheckoutSession(body, secretKey) {
 
 module.exports = async function (context, req) {
   try {
+    if (req.method === 'OPTIONS') {
+      context.res = {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      };
+      return;
+    }
+
     const stripeSecretKey = process.env['STRIPE_SECRET_KEY'];
     const defaultPriceId = process.env['STRIPE_PRICE_ID'];
 
@@ -27,6 +39,7 @@ module.exports = async function (context, req) {
       context.log.error('Stripe secret key não configurada (STRIPE_SECRET_KEY).');
       return (context.res = {
         status: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: { error: 'Stripe secret key não configurada.' },
       });
     }
@@ -39,6 +52,7 @@ module.exports = async function (context, req) {
     if (!priceId || !successUrl || !cancelUrl) {
       return (context.res = {
         status: 400,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         body: { error: 'Dados insuficientes para criar a sessão de checkout.' },
       });
     }
@@ -59,14 +73,20 @@ module.exports = async function (context, req) {
 
     context.res = {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: { sessionId: session.id },
     };
   } catch (error) {
     context.log.error('Erro ao criar sessão de checkout:', error);
     context.res = {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: { error: error?.message || 'Erro ao criar sessão de pagamento.' },
     };
   }
