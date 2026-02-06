@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, OnInit, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -9,6 +10,7 @@ import { Chart, registerables } from 'chart.js';
 import { SelectModule } from 'primeng/select';
 import { DrawerModule } from 'primeng/drawer';
 import { DatePickerModule } from 'primeng/datepicker';
+import { RelatorioService } from '../services/relatorio.service';
 
 Chart.register(...registerables);
 
@@ -51,6 +53,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private clienteService = inject(ClienteService);
+  private relatorioService = inject(RelatorioService);
   private dataLoaded = false;
 
   isLoadingData = true;
@@ -186,27 +189,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     try {
       this.isDownloadingPdf = true;
-      const response = await fetch(
-        `/api/relatorio/${currentUser.uid}`,
-        {
-          headers: {
-            accept: 'application/pdf'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        const errorPayload = await response.json().catch(() => null);
-        const message = errorPayload?.error || 'Falha ao gerar o relatório em PDF.';
-        throw new Error(message);
-      }
+      const response = await this.relatorioService.baixarRelatorioPdf(currentUser.uid);
 
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.toLowerCase().includes('application/pdf')) {
         throw new Error('Falha ao carregar o documento PDF.');
       }
 
-      const blob = await response.blob();
+      const blob = response.body;
+      if (!blob) {
+        throw new Error('Falha ao carregar o documento PDF.');
+      }
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       const timestamp = new Date().toISOString().split('T')[0];
@@ -217,7 +210,27 @@ export class HomeComponent implements OnInit, AfterViewInit {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao baixar PDF.';
+      let errorMessage = 'Erro ao baixar PDF.';
+
+      if (error instanceof HttpErrorResponse) {
+        const payload = error.error;
+        if (payload instanceof Blob) {
+          const payloadText = await payload.text();
+          try {
+            const parsedPayload = JSON.parse(payloadText) as { error?: string };
+            errorMessage = parsedPayload.error || errorMessage;
+          } catch {
+            errorMessage = payloadText || errorMessage;
+          }
+        } else if (payload && typeof payload === 'object' && 'error' in payload) {
+          errorMessage = (payload as { error?: string }).error || errorMessage;
+        } else if (typeof payload === 'string') {
+          errorMessage = payload || errorMessage;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       console.error('Erro ao baixar PDF:', error);
       window.alert(errorMessage);
     } finally {
