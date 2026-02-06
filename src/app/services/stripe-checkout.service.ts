@@ -72,41 +72,22 @@ export class StripeCheckoutService {
     return stripe;
   }
 
-  private buildSuccessUrl(): string {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/planos?session_id={CHECKOUT_SESSION_ID}`;
-  }
-
-  private buildCancelUrl(): string {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/planos?cancelado=1`;
-  }
-
-  async criarSessaoCheckout(customerEmail?: string): Promise<CheckoutSessionResponse> {
+  async criarSessaoCheckout(salonId: string, customerEmail?: string): Promise<CheckoutSessionResponse> {
     if (typeof window === 'undefined') {
       throw new Error('O checkout só pode ser iniciado no navegador.');
     }
 
-    if (!environment.stripe?.priceId) {
-      throw new Error('Preço do Stripe não configurado.');
+    if (!salonId) {
+      throw new Error('Identificador do salão não encontrado.');
     }
 
-    const successUrl = this.buildSuccessUrl();
-    const cancelUrl = this.buildCancelUrl();
-
-    if (!successUrl || !cancelUrl) {
-      throw new Error('URLs de retorno do Stripe não puderam ser definidas.');
-    }
-
-    const response = await fetch('/api/create-checkout-session', {
+    const response = await fetch('https://esteticazap-webhook.onrender.com/stripe/checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        priceId: environment.stripe.priceId,
-        successUrl,
-        cancelUrl,
+        salonId,
         customerEmail
       })
     });
