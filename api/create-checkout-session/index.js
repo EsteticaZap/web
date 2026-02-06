@@ -1,5 +1,18 @@
 const STRIPE_API_BASE = 'https://api.stripe.com/v1';
 
+async function parseJsonResponse(response) {
+  const text = await response.text();
+  if (!text.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error('Resposta inválida do Stripe.');
+  }
+}
+
 async function createStripeCheckoutSession(body, secretKey) {
   const response = await fetch(`${STRIPE_API_BASE}/checkout/sessions`, {
     method: 'POST',
@@ -10,12 +23,29 @@ async function createStripeCheckoutSession(body, secretKey) {
     body,
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse(response);
   if (!response.ok) {
     throw new Error(data?.error?.message || 'Erro ao criar sessão de pagamento.');
   }
 
   return data;
+}
+
+function parseRequestBody(req) {
+  if (req?.body && typeof req.body === 'object') {
+    return req.body;
+  }
+
+  const rawBody = typeof req?.body === 'string' ? req.body : req?.rawBody;
+  if (!rawBody || typeof rawBody !== 'string') {
+    return {};
+  }
+
+  try {
+    return JSON.parse(rawBody);
+  } catch {
+    return {};
+  }
 }
 
 module.exports = async function (context, req) {
@@ -44,10 +74,11 @@ module.exports = async function (context, req) {
       });
     }
 
-    const priceId = req.body?.priceId || defaultPriceId;
-    const successUrl = req.body?.successUrl;
-    const cancelUrl = req.body?.cancelUrl;
-    const customerEmail = req.body?.customerEmail;
+    const body = parseRequestBody(req);
+    const priceId = body?.priceId || defaultPriceId;
+    const successUrl = body?.successUrl;
+    const cancelUrl = body?.cancelUrl;
+    const customerEmail = body?.customerEmail;
 
     if (!priceId || !successUrl || !cancelUrl) {
       return (context.res = {
