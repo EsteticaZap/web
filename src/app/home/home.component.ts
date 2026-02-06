@@ -99,6 +99,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private servicesChart: Chart | null = null;
   private attendanceChart: Chart | null = null;
   isDownloadingExcel = false;
+  isDownloadingPdf = false;
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -169,6 +170,58 @@ export class HomeComponent implements OnInit, AfterViewInit {
       console.error('Erro ao baixar Excel:', error);
     } finally {
       this.isDownloadingExcel = false;
+    }
+  }
+
+  async downloadPdfReport(): Promise<void> {
+    if (!this.isBrowser || this.isDownloadingPdf) {
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      console.error('Usuário não autenticado');
+      return;
+    }
+
+    try {
+      this.isDownloadingPdf = true;
+      const response = await fetch(
+        `/api/relatorio/${currentUser.uid}`,
+        {
+          headers: {
+            accept: 'application/pdf'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        const message = errorPayload?.error || 'Falha ao gerar o relatório em PDF.';
+        throw new Error(message);
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.toLowerCase().includes('application/pdf')) {
+        throw new Error('Falha ao carregar o documento PDF.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `relatorio-${timestamp}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao baixar PDF.';
+      console.error('Erro ao baixar PDF:', error);
+      window.alert(errorMessage);
+    } finally {
+      this.isDownloadingPdf = false;
     }
   }
 

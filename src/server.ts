@@ -116,6 +116,48 @@ app.get('/api/checkout-session/:id', async (req: Request, res: Response) => {
   }
 });
 
+app.get('/api/relatorio/:salonId', async (req: Request, res: Response) => {
+  try {
+    const salonId = req.params['salonId'];
+    if (!salonId) {
+      return res.status(400).json({ error: 'Salão inválido.' });
+    }
+
+    const response = await fetch(
+      `https://esteticazap-webhook.onrender.com/saloes/${salonId}/relatorio`,
+      {
+        headers: {
+          accept: 'application/pdf',
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({
+        error: errorText || 'Falha ao gerar o relatório em PDF.',
+      });
+    }
+
+    const contentType = response.headers.get('content-type') || 'application/pdf';
+    if (!contentType.toLowerCase().includes('application/pdf')) {
+      const payload = await response.text();
+      return res.status(502).json({
+        error: 'Resposta inválida do serviço de relatório (conteúdo não é PDF).',
+        details: payload?.slice(0, 500) || null,
+      });
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', 'attachment; filename="relatorio.pdf"');
+    return res.send(buffer);
+  } catch (error) {
+    console.error('Erro ao gerar relatório em PDF:', error);
+    return res.status(500).json({ error: 'Erro ao gerar relatório em PDF.' });
+  }
+});
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
