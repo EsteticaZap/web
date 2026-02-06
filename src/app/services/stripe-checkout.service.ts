@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 interface CheckoutSessionResponse {
-  sessionId: string;
+  sessionId?: string;
+  checkoutUrl?: string;
 }
 
 interface RetrievedSession {
@@ -72,55 +73,49 @@ export class StripeCheckoutService {
     return stripe;
   }
 
-  private buildSuccessUrl(): string {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/planos?session_id={CHECKOUT_SESSION_ID}`;
-  }
-
-  private buildCancelUrl(): string {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/planos?cancelado=1`;
-  }
-
-  async criarSessaoCheckout(customerEmail?: string): Promise<CheckoutSessionResponse> {
+  async criarSessaoCheckout(salonId: string, customerEmail?: string): Promise<CheckoutSessionResponse> {
     if (typeof window === 'undefined') {
       throw new Error('O checkout só pode ser iniciado no navegador.');
     }
 
-    if (!environment.stripe?.priceId) {
-      throw new Error('Preço do Stripe não configurado.');
+    if (!salonId) {
+      throw new Error('Identificador do salão não encontrado.');
     }
 
-    const successUrl = this.buildSuccessUrl();
-    const cancelUrl = this.buildCancelUrl();
-
-    if (!successUrl || !cancelUrl) {
-      throw new Error('URLs de retorno do Stripe não puderam ser definidas.');
-    }
-
-    const response = await fetch('/api/create-checkout-session', {
+    const response = await fetch('https://esteticazap-webhook.onrender.com/stripe/checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        priceId: environment.stripe.priceId,
-        successUrl,
-        cancelUrl,
+        salonId,
         customerEmail
       })
     });
 
     const { data, rawText } = await this.safeParseJson(response);
-    if (!response.ok || !data?.sessionId) {
-      const mensagemErro =
-        data?.error ||
-        (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
-        'Não foi possível criar a sessão de pagamento. Por favor, tente novamente.';
-      throw new Error(mensagemErro);
+    const checkoutUrl = data?.url ?? data?.checkoutUrl;
+    const sessionId = data?.sessionId;
+
+    if (response.ok) {
+      if (checkoutUrl) {
+        return { checkoutUrl };
+      }
+
+      if (sessionId) {
+        return { sessionId };
+      }
+
+      if (rawText && /^https?:\/\//i.test(rawText.trim())) {
+        return { checkoutUrl: rawText.trim() };
+      }
     }
 
-    return data as CheckoutSessionResponse;
+    const mensagemErro =
+      data?.error ||
+      (rawText ? 'Resposta do servidor não pôde ser interpretada.' : 'Resposta do servidor vazia.') ||
+      'Não foi possível criar a sessão de pagamento. Por favor, tente novamente.';
+    throw new Error(mensagemErro);
   }
 
   async redirecionarParaCheckout(sessionId: string): Promise<void> {
@@ -129,6 +124,13 @@ export class StripeCheckoutService {
     if (error?.message) {
       throw new Error(error.message);
     }
+  }
+
+  redirecionarParaCheckoutUrl(checkoutUrl: string): void {
+    if (typeof window === 'undefined') {
+      throw new Error('O checkout só pode ser iniciado no navegador.');
+    }
+    window.location.href = checkoutUrl;
   }
 
   async buscarSessao(sessionId: string): Promise<RetrievedSession> {

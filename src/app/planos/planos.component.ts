@@ -71,8 +71,17 @@ export class PlanosComponent implements OnInit {
     this.isLoadingPagamento = true;
 
     try {
-      const userEmail = this.authService.currentUser()?.email || undefined;
-      const { sessionId } = await this.stripeCheckoutService.criarSessaoCheckout(userEmail);
+      const currentUser = this.authService.currentUser();
+      const salonId = currentUser?.uid || '';
+      const userEmail = currentUser?.email || undefined;
+      const { sessionId, checkoutUrl } = await this.stripeCheckoutService.criarSessaoCheckout(salonId, userEmail);
+      if (checkoutUrl) {
+        this.stripeCheckoutService.redirecionarParaCheckoutUrl(checkoutUrl);
+        return;
+      }
+      if (!sessionId) {
+        throw new Error('Sessão de checkout não retornada.');
+      }
       await this.stripeCheckoutService.redirecionarParaCheckout(sessionId);
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
