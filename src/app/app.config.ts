@@ -7,6 +7,7 @@ import localePt from '@angular/common/locales/pt';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { providePrimeNG } from 'primeng/config';
+import { provideHttpClient } from '@angular/common/http';
 import Aura from '@primeng/themes/aura';
 
 // Firebase
@@ -30,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
+    provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     
     // Firebase providers
