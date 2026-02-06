@@ -10,7 +10,7 @@ export class RelatorioService {
 
   async baixarRelatorioPdf(salonId: string): Promise<HttpResponse<Blob>> {
     return firstValueFrom(
-      this.http.get(`/api/relatorio/${salonId}`, {
+      this.http.get(`https://esteticazap-webhook.onrender.com/saloes/${salonId}/relatorio`, {
         observe: 'response',
         responseType: 'blob',
         headers: {
