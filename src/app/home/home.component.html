@@ -18,6 +18,14 @@
         <i class="fa fa-file-excel"></i>
         {{ isDownloadingExcel ? 'Gerando...' : 'Gerar Excel' }}
       </button>
+      <button
+        class="pdf-button"
+        type="button"
+        [disabled]="isDownloadingPdf"
+        (click)="downloadPdfReport()">
+        <i class="fa fa-file-pdf"></i>
+        {{ isDownloadingPdf ? 'Gerando...' : 'Gerar PDF' }}
+      </button>
       <i class="fa fa-bell notification"></i>
     </div>
   </header>
