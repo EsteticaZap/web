@@ -2,6 +2,8 @@ import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { Firestore, collection, query, where, getDocs, doc, updateDoc } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
@@ -76,15 +78,17 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, TooltipModule],
+  imports: [CommonModule, FormsModule, SelectModule, TooltipModule, ConfirmDialogModule],
   templateUrl: './agenda.component.html',
-  styleUrls: ['./agenda.component.css']
+  styleUrls: ['./agenda.component.css'],
+  providers: [ConfirmationService]
 })
 export class AgendaComponent implements OnInit {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
+  private confirmationService = inject(ConfirmationService);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -1000,7 +1004,17 @@ export class AgendaComponent implements OnInit {
   async cancelarAgendamento(): Promise<void> {
     if (!this.selectedAppointment?.id || this.isCancellingAppointment) return;
 
-    const confirmacao = window.confirm('Tem certeza que deseja cancelar este agendamento?');
+    const confirmacao = await new Promise<boolean>((resolve) => {
+      this.confirmationService.confirm({
+        message: 'Tem certeza que deseja cancelar este agendamento?',
+        header: 'Confirmar cancelamento',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sim, cancelar',
+        rejectLabel: 'Não',
+        accept: () => resolve(true),
+        reject: () => resolve(false)
+      });
+    });
     if (!confirmacao) return;
 
     this.isCancellingAppointment = true;
