@@ -1,4 +1,6 @@
 <div class="agenda-page">
+  <p-toast position="top-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
   <!-- Header -->
   <header class="agenda-header">
     <div class="header-left">
@@ -732,6 +734,32 @@
             <div *ngIf="statusUpdateError" class="action-feedback error">
               <i class="fa fa-exclamation-circle"></i>
               {{ statusUpdateError }}
+            </div>
+          </div>
+
+          <div class="status-actions" *ngIf="canCancelAppointment(appt)">
+            <h5>Cancelar agendamento</h5>
+            <p class="status-description">
+              O cancelamento será enviado para o cliente pelo backend.
+            </p>
+            <div class="status-buttons">
+              <button
+                class="btn-status cancel"
+                type="button"
+                [disabled]="isCancellingAppointment"
+                (click)="cancelarAgendamento()">
+                <i class="fa" [ngClass]="{ 'fa-times-circle': !isCancellingAppointment, 'fa-spinner fa-spin': isCancellingAppointment }"></i>
+                <span *ngIf="!isCancellingAppointment">Cancelar agendamento</span>
+                <span *ngIf="isCancellingAppointment">Cancelando...</span>
+              </button>
+            </div>
+            <div *ngIf="cancelAppointmentSuccess" class="action-feedback success">
+              <i class="fa fa-check-circle"></i>
+              {{ cancelAppointmentSuccess }}
+            </div>
+            <div *ngIf="cancelAppointmentError" class="action-feedback error">
+              <i class="fa fa-exclamation-circle"></i>
+              {{ cancelAppointmentError }}
             </div>
           </div>
         </div>
