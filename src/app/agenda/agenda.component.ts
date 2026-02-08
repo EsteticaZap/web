@@ -1000,6 +1000,9 @@ export class AgendaComponent implements OnInit {
   async cancelarAgendamento(): Promise<void> {
     if (!this.selectedAppointment?.id || this.isCancellingAppointment) return;
 
+    const confirmacao = window.confirm('Tem certeza que deseja cancelar este agendamento?');
+    if (!confirmacao) return;
+
     this.isCancellingAppointment = true;
     this.cancelAppointmentError = '';
     this.cancelAppointmentSuccess = '';
