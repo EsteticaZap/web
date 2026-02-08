@@ -565,6 +565,12 @@ app-configuracoes .btn-lg {
   border: 1px solid #f0f0f0;
 }
 
+.status-description {
+  margin: 0 0 0.75rem;
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .status-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -589,6 +595,11 @@ app-configuracoes .btn-lg {
 
 .btn-status.no-show {
   background: #6a1b9a;
+  color: #fff;
+}
+
+.btn-status.cancel {
+  background: #ff6b6b;
   color: #fff;
 }
 

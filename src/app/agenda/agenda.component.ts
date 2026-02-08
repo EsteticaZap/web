@@ -2,6 +2,8 @@ import { Component, Inject, PLATFORM_ID, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { Firestore, collection, query, where, getDocs, doc, updateDoc } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
@@ -76,15 +78,17 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, TooltipModule],
+  imports: [CommonModule, FormsModule, SelectModule, TooltipModule, ConfirmDialogModule],
   templateUrl: './agenda.component.html',
-  styleUrls: ['./agenda.component.css']
+  styleUrls: ['./agenda.component.css'],
+  providers: [ConfirmationService]
 })
 export class AgendaComponent implements OnInit {
   private firestore = inject(Firestore);
   private authService = inject(AuthService);
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
+  private confirmationService = inject(ConfirmationService);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -104,6 +108,9 @@ export class AgendaComponent implements OnInit {
   isUpdatingStatus = false;
   statusUpdateError = '';
   statusUpdateSuccess = '';
+  isCancellingAppointment = false;
+  cancelAppointmentError = '';
+  cancelAppointmentSuccess = '';
 
   // Profissionais e filtro
   profissionais: Profissional[] = [];
@@ -660,7 +667,7 @@ export class AgendaComponent implements OnInit {
     switch (status) {
       case 'confirmed': return 'Confirmado';
       case 'pending': return 'Pendente';
-      case 'declined': return 'Recusado';
+      case 'declined': return 'Cancelado';
       case 'completed': return 'Realizado';
       case 'no-show': return 'No-show';
       case 'blocked': return 'Bloqueado';
@@ -920,6 +927,8 @@ export class AgendaComponent implements OnInit {
     this.isAppointmentModalOpen = true;
     this.statusUpdateError = '';
     this.statusUpdateSuccess = '';
+    this.cancelAppointmentError = '';
+    this.cancelAppointmentSuccess = '';
   }
 
   closeAppointmentModal(): void {
@@ -927,6 +936,8 @@ export class AgendaComponent implements OnInit {
     this.selectedAppointment = null;
     this.statusUpdateError = '';
     this.statusUpdateSuccess = '';
+    this.cancelAppointmentError = '';
+    this.cancelAppointmentSuccess = '';
   }
 
   private mapAgendamentoStatusToAppointmentStatus(status: Agendamento['status']): AppointmentStatus {
@@ -981,6 +992,70 @@ export class AgendaComponent implements OnInit {
       this.statusUpdateError = 'Não foi possível atualizar o status. Tente novamente.';
     } finally {
       this.isUpdatingStatus = false;
+    }
+  }
+
+  canCancelAppointment(appt: Appointment | null): boolean {
+    if (!appt) return false;
+    if (this.isAppointmentInPast(appt)) return false;
+    return appt.status === 'confirmed' || appt.status === 'pending';
+  }
+
+  async cancelarAgendamento(): Promise<void> {
+    if (!this.selectedAppointment?.id || this.isCancellingAppointment) return;
+
+    const confirmacao = await new Promise<boolean>((resolve) => {
+      this.confirmationService.confirm({
+        message: 'Tem certeza que deseja cancelar este agendamento?',
+        header: 'Confirmar cancelamento',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sim, cancelar',
+        rejectLabel: 'Não',
+        accept: () => resolve(true),
+        reject: () => resolve(false)
+      });
+    });
+    if (!confirmacao) return;
+
+    this.isCancellingAppointment = true;
+    this.cancelAppointmentError = '';
+    this.cancelAppointmentSuccess = '';
+
+    try {
+      const response = await fetch(`https://esteticazap-webhook.onrender.com/agenda/${this.selectedAppointment.id}/cancelar`, {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+        body: ''
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || 'Falha ao cancelar agendamento.');
+      }
+
+      const agendamentoRef = doc(this.firestore, 'agendamentos', this.selectedAppointment.id);
+      await updateDoc(agendamentoRef, { status: 'cancelado' });
+
+      const updatedStatus = this.mapAgendamentoStatusToAppointmentStatus('cancelado');
+      this.selectedAppointment = {
+        ...this.selectedAppointment,
+        status: updatedStatus
+      };
+
+      this.allAgendamentos = this.allAgendamentos.map(agend =>
+        agend.id === this.selectedAppointment?.id ? { ...agend, status: 'cancelado' } : agend
+      );
+
+      this.appointments = this.appointments.map(appt =>
+        appt.id === this.selectedAppointment?.id ? { ...appt, status: updatedStatus } : appt
+      );
+
+      this.cancelAppointmentSuccess = 'Agendamento cancelado e enviado para o cliente.';
+    } catch (error) {
+      console.error('Erro ao cancelar agendamento:', error);
+      this.cancelAppointmentError = 'Não foi possível cancelar o agendamento. Tente novamente.';
+    } finally {
+      this.isCancellingAppointment = false;
     }
   }
 
