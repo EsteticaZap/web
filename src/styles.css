@@ -565,6 +565,12 @@ app-configuracoes .btn-lg {
   border: 1px solid #f0f0f0;
 }
 
+.status-description {
+  margin: 0 0 0.75rem;
+  color: #666;
+  font-size: 0.85rem;
+}
+
 .status-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -592,9 +598,23 @@ app-configuracoes .btn-lg {
   color: #fff;
 }
 
+.btn-status.cancel {
+  background: #ff6b6b;
+  color: #fff;
+}
+
 .btn-status:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Ensure PrimeNG confirm dialog overlays appointment modal */
+.p-dialog-mask {
+  z-index: 12000 !important;
+}
+
+.p-confirm-dialog {
+  z-index: 12001 !important;
 }
 
 .block-modal-body {
