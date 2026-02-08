@@ -3,7 +3,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { Firestore, collection, query, where, getDocs, doc, updateDoc } from '@angular/fire/firestore';
 import { AuthService } from '../services/auth.service';
@@ -78,10 +79,10 @@ interface MonthlySummary {
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, TooltipModule, ConfirmDialogModule],
+  imports: [CommonModule, FormsModule, SelectModule, TooltipModule, ConfirmDialogModule, ToastModule],
   templateUrl: './agenda.component.html',
   styleUrls: ['./agenda.component.css'],
-  providers: [ConfirmationService]
+  providers: [ConfirmationService, MessageService]
 })
 export class AgendaComponent implements OnInit {
   private firestore = inject(Firestore);
@@ -89,6 +90,7 @@ export class AgendaComponent implements OnInit {
   private profissionalService = inject(ProfissionalService);
   private bloqueioService = inject(BloqueioService);
   private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
 
   isBrowser: boolean;
   currentView = 'daily';
@@ -1050,7 +1052,14 @@ export class AgendaComponent implements OnInit {
         appt.id === this.selectedAppointment?.id ? { ...appt, status: updatedStatus } : appt
       );
 
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Agendamento cancelado',
+        detail: 'O agendamento foi cancelado e o cliente será notificado.'
+      });
+
       this.cancelAppointmentSuccess = 'Agendamento cancelado e enviado para o cliente.';
+      this.closeAppointmentModal();
     } catch (error) {
       console.error('Erro ao cancelar agendamento:', error);
       this.cancelAppointmentError = 'Não foi possível cancelar o agendamento. Tente novamente.';
