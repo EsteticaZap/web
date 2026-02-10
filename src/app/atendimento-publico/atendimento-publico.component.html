@@ -1,0 +1,120 @@
+<section class="booking-container">
+  <header class="salon-header">
+    <div class="salon-photo" *ngIf="salao?.fotoSalao; else salonFallback">
+      <img [src]="salao?.fotoSalao" alt="Foto do salão" />
+    </div>
+    <ng-template #salonFallback>
+      <div class="salon-photo fallback">
+        <i class="fa fa-spa" aria-hidden="true"></i>
+      </div>
+    </ng-template>
+    <div class="salon-info">
+      <h1>{{ salao?.configuracoes?.nomeSalao || salao?.displayName || 'Seu atendimento' }}</h1>
+      <p class="salon-description">Acompanhe as informações do seu agendamento.</p>
+      <p class="salon-address" *ngIf="salao?.configuracoes?.cidade">
+        <i class="fa fa-map-marker-alt" aria-hidden="true"></i>
+        {{ salao?.configuracoes?.endereco || '' }}
+        {{ salao?.configuracoes?.numero || '' }}
+        <span *ngIf="salao?.configuracoes?.bairro">- {{ salao?.configuracoes?.bairro }}</span>
+        <span *ngIf="salao?.configuracoes?.cidade">
+          {{ salao?.configuracoes?.cidade }} - {{ salao?.configuracoes?.estado }}
+        </span>
+      </p>
+    </div>
+  </header>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Carregando agendamento...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="error-container">
+    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+    <h2>Ops!</h2>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <p-confirmDialog></p-confirmDialog>
+
+    <div *ngIf="!isLoading && agendamento" class="atendimento-wrapper">
+      <div class="atendimento-card">
+        <div class="status-pill" [ngClass]="statusClass">
+          {{ statusLabel }}
+        </div>
+
+        <div class="countdown">
+          <div>
+            <span class="label">Tempo até o agendamento</span>
+            <strong class="countdown-time">
+              {{ remainingTime.days }}d {{ remainingTime.hours }}h {{ remainingTime.minutes }}m {{ remainingTime.seconds }}s
+            </strong>
+          </div>
+          <p *ngIf="isPast" class="countdown-note">Atendimento já realizado. O cronômetro chegou a zero.</p>
+        </div>
+
+      <div class="info-grid">
+        <div>
+          <span class="label">Cliente</span>
+          <strong>{{ agendamento.clienteNome }}</strong>
+        </div>
+        <div *ngIf="agendamento.clienteTelefone">
+          <span class="label">Telefone</span>
+          <strong>{{ agendamento.clienteTelefone }}</strong>
+        </div>
+        <div>
+          <span class="label">Profissional</span>
+          <strong>{{ agendamento.profissionalNome || 'A definir' }}</strong>
+        </div>
+        <div>
+          <span class="label">Data</span>
+          <strong>{{ agendamento.data }}</strong>
+        </div>
+        <div>
+          <span class="label">Horário</span>
+          <strong>{{ agendamento.horaInicio }} - {{ agendamento.horaFim }}</strong>
+        </div>
+        <div>
+          <span class="label">Valor total</span>
+          <strong>R$ {{ agendamento.valorTotal | number: '1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <div class="servicos">
+        <h3>Serviços</h3>
+        <ul>
+          <li *ngFor="let servico of agendamento.servicos">
+            <span>{{ servico.nome }}</span>
+            <span>R$ {{ servico.valor | number: '1.2-2' }}</span>
+          </li>
+        </ul>
+      </div>
+
+      <div *ngIf="successMessage" class="alert success">
+        {{ successMessage }}
+      </div>
+      <div *ngIf="agendamento.status === 'cancelado'" class="alert error">
+        Este agendamento foi cancelado. Para atender novamente, faça um novo agendamento.
+      </div>
+      <div *ngIf="errorMessage" class="alert error">
+        {{ errorMessage }}
+      </div>
+
+      <div class="actions" *ngIf="!shouldDisableActions">
+        <button
+          class="btn confirm"
+          (click)="confirmarAgendamento()"
+          [disabled]="isProcessing || agendamento.status !== 'pendente' || shouldDisableActions"
+        >
+          {{ isProcessing ? 'Processando...' : 'Confirmar agendamento' }}
+        </button>
+        <button
+          class="btn cancel"
+          (click)="cancelarAgendamento()"
+          [disabled]="isProcessing || agendamento.status === 'cancelado' || shouldDisableActions"
+        >
+          {{ isProcessing ? 'Processando...' : 'Cancelar agendamento' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
