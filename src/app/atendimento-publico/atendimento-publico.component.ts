@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
@@ -36,7 +36,7 @@ interface SalaoPublico {
   templateUrl: './atendimento-publico.component.html',
   styleUrls: ['./atendimento-publico.component.css']
 })
-export class AtendimentoPublicoComponent implements OnInit {
+export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
   private firestore = inject(Firestore);
   private route = inject(ActivatedRoute);
 
@@ -47,6 +47,8 @@ export class AtendimentoPublicoComponent implements OnInit {
   isProcessing = false;
   errorMessage = '';
   successMessage = '';
+  now = new Date();
+  private nowInterval?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -59,6 +61,16 @@ export class AtendimentoPublicoComponent implements OnInit {
 
       this.carregarAgendamento();
     });
+
+    this.nowInterval = setInterval(() => {
+      this.now = new Date();
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.nowInterval) {
+      clearInterval(this.nowInterval);
+    }
   }
 
   get statusLabel(): string {
@@ -77,6 +89,35 @@ export class AtendimentoPublicoComponent implements OnInit {
     if (!this.agendamento) return '';
 
     return `status-${this.agendamento.status}`;
+  }
+
+  get isPast(): boolean {
+    const date = this.getAgendamentoDate();
+    if (!date) return false;
+    return date.getTime() <= this.now.getTime();
+  }
+
+  get shouldDisableActions(): boolean {
+    if (!this.agendamento) return true;
+    return this.isPast || this.agendamento.status === 'cancelado';
+  }
+
+  get remainingTime(): { days: number; hours: number; minutes: number } {
+    const date = this.getAgendamentoDate();
+    if (!date) {
+      return { days: 0, hours: 0, minutes: 0 };
+    }
+
+    const diff = date.getTime() - this.now.getTime();
+    if (diff <= 0) {
+      return { days: 0, hours: 0, minutes: 0 };
+    }
+
+    const totalMinutes = Math.floor(diff / 60000);
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    const minutes = totalMinutes % 60;
+    return { days, hours, minutes };
   }
 
   async carregarAgendamento(): Promise<void> {
@@ -119,7 +160,12 @@ export class AtendimentoPublicoComponent implements OnInit {
   }
 
   async confirmarAgendamento(): Promise<void> {
-    if (!this.agendamento || this.agendamento.status !== 'pendente') {
+    if (!this.agendamento || this.agendamento.status !== 'pendente' || this.shouldDisableActions) {
+      return;
+    }
+
+    const confirmed = window.confirm('Deseja confirmar este agendamento?');
+    if (!confirmed) {
       return;
     }
 
@@ -127,7 +173,12 @@ export class AtendimentoPublicoComponent implements OnInit {
   }
 
   async cancelarAgendamento(): Promise<void> {
-    if (!this.agendamento || this.agendamento.status === 'cancelado') {
+    if (!this.agendamento || this.agendamento.status === 'cancelado' || this.shouldDisableActions) {
+      return;
+    }
+
+    const confirmed = window.confirm('Tem certeza que deseja cancelar este agendamento?');
+    if (!confirmed) {
       return;
     }
 
@@ -171,5 +222,17 @@ export class AtendimentoPublicoComponent implements OnInit {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  private getAgendamentoDate(): Date | null {
+    if (!this.agendamento?.data || !this.agendamento?.horaInicio) {
+      return null;
+    }
+
+    const date = new Date(`${this.agendamento.data}T${this.agendamento.horaInicio}`);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    return date;
   }
 }

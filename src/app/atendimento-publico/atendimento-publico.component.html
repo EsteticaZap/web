@@ -34,11 +34,19 @@
     <p>{{ errorMessage }}</p>
   </div>
 
-  <div *ngIf="!isLoading && agendamento" class="atendimento-wrapper">
-    <div class="atendimento-card">
-      <div class="status-pill" [ngClass]="statusClass">
-        {{ statusLabel }}
-      </div>
+    <div *ngIf="!isLoading && agendamento" class="atendimento-wrapper">
+      <div class="atendimento-card">
+        <div class="status-pill" [ngClass]="statusClass">
+          {{ statusLabel }}
+        </div>
+
+        <div class="countdown">
+          <div>
+            <span class="label">Tempo restante</span>
+            <strong>{{ remainingTime.days }}d {{ remainingTime.hours }}h {{ remainingTime.minutes }}m</strong>
+          </div>
+          <p *ngIf="isPast" class="countdown-note">Atendimento já realizado. O cronômetro chegou a zero.</p>
+        </div>
 
       <div class="info-grid">
         <div>
@@ -80,22 +88,25 @@
       <div *ngIf="successMessage" class="alert success">
         {{ successMessage }}
       </div>
+      <div *ngIf="agendamento.status === 'cancelado'" class="alert error">
+        Este agendamento foi cancelado. Para atender novamente, faça um novo agendamento.
+      </div>
       <div *ngIf="errorMessage" class="alert error">
         {{ errorMessage }}
       </div>
 
-      <div class="actions">
+      <div class="actions" *ngIf="!shouldDisableActions">
         <button
           class="btn confirm"
           (click)="confirmarAgendamento()"
-          [disabled]="isProcessing || agendamento.status !== 'pendente'"
+          [disabled]="isProcessing || agendamento.status !== 'pendente' || shouldDisableActions"
         >
           {{ isProcessing ? 'Processando...' : 'Confirmar agendamento' }}
         </button>
         <button
           class="btn cancel"
           (click)="cancelarAgendamento()"
-          [disabled]="isProcessing || agendamento.status === 'cancelado'"
+          [disabled]="isProcessing || agendamento.status === 'cancelado' || shouldDisableActions"
         >
           {{ isProcessing ? 'Processando...' : 'Cancelar agendamento' }}
         </button>
