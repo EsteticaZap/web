@@ -20,6 +20,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client
   },
   {
+    path: 'agendamento/:agendamentoId',
+    renderMode: RenderMode.Client
+  },
+  {
     path: 'clientes',
     renderMode: RenderMode.Client
   },
