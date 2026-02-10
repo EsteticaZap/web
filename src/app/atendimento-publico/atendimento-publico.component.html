@@ -34,6 +34,8 @@
     <p>{{ errorMessage }}</p>
   </div>
 
+  <p-confirmDialog></p-confirmDialog>
+
     <div *ngIf="!isLoading && agendamento" class="atendimento-wrapper">
       <div class="atendimento-card">
         <div class="status-pill" [ngClass]="statusClass">
@@ -42,8 +44,10 @@
 
         <div class="countdown">
           <div>
-            <span class="label">Tempo restante</span>
-            <strong>{{ remainingTime.days }}d {{ remainingTime.hours }}h {{ remainingTime.minutes }}m</strong>
+            <span class="label">Tempo até o agendamento</span>
+            <strong class="countdown-time">
+              {{ remainingTime.days }}d {{ remainingTime.hours }}h {{ remainingTime.minutes }}m {{ remainingTime.seconds }}s
+            </strong>
           </div>
           <p *ngIf="isPast" class="countdown-note">Atendimento já realizado. O cronômetro chegou a zero.</p>
         </div>
