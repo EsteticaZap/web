@@ -17,6 +17,10 @@ export const publicRoutes: Routes = [
     path: 'agendar/:salonId',
     loadComponent: () => import('./agendar-publico/agendar-publico.component').then(m => m.AgendarPublicoComponent)
   },
+  {
+    path: 'agendamento/:agendamentoId',
+    loadComponent: () => import('./atendimento-publico/atendimento-publico.component').then(m => m.AtendimentoPublicoComponent)
+  },
   { path: '', redirectTo: '/landpage', pathMatch: 'full' }
 ];
 
