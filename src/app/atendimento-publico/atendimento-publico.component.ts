@@ -2,6 +2,8 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 interface AgendamentoDetalhe {
   salonId: string;
@@ -32,13 +34,15 @@ interface SalaoPublico {
 @Component({
   selector: 'app-atendimento-publico',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmDialogModule],
   templateUrl: './atendimento-publico.component.html',
-  styleUrls: ['./atendimento-publico.component.css']
+  styleUrls: ['./atendimento-publico.component.css'],
+  providers: [ConfirmationService]
 })
 export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
   private firestore = inject(Firestore);
   private route = inject(ActivatedRoute);
+  private confirmationService = inject(ConfirmationService);
 
   agendamentoId = '';
   agendamento: AgendamentoDetalhe | null = null;
@@ -64,7 +68,7 @@ export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
 
     this.nowInterval = setInterval(() => {
       this.now = new Date();
-    }, 60000);
+    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -102,22 +106,34 @@ export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
     return this.isPast || this.agendamento.status === 'cancelado';
   }
 
-  get remainingTime(): { days: number; hours: number; minutes: number } {
+  get remainingTime(): { days: number; hours: number; minutes: number; seconds: number } {
     const date = this.getAgendamentoDate();
     if (!date) {
-      return { days: 0, hours: 0, minutes: 0 };
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
 
     const diff = date.getTime() - this.now.getTime();
     if (diff <= 0) {
-      return { days: 0, hours: 0, minutes: 0 };
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
 
-    const totalMinutes = Math.floor(diff / 60000);
-    const days = Math.floor(totalMinutes / (60 * 24));
-    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-    const minutes = totalMinutes % 60;
-    return { days, hours, minutes };
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / (60 * 60 * 24));
+    const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { days, hours, minutes, seconds };
+  }
+
+  get remainingTimeLabel(): string {
+    const { days, hours, minutes, seconds } = this.remainingTime;
+    const parts = [
+      `${days}d`,
+      `${hours}h`,
+      `${minutes}m`,
+      `${seconds.toString().padStart(2, '0')}s`
+    ];
+    return parts.join(' ');
   }
 
   async carregarAgendamento(): Promise<void> {
@@ -164,12 +180,18 @@ export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmed = window.confirm('Deseja confirmar este agendamento?');
-    if (!confirmed) {
-      return;
-    }
-
-    await this.atualizarStatus('confirmar', 'confirmado');
+    this.confirmationService.confirm({
+      message: 'Deseja confirmar este agendamento?',
+      header: 'Confirmar agendamento',
+      icon: 'pi pi-check-circle',
+      acceptLabel: 'Confirmar agendamento',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        void this.atualizarStatus('confirmar', 'confirmado');
+      }
+    });
   }
 
   async cancelarAgendamento(): Promise<void> {
@@ -177,12 +199,18 @@ export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmed = window.confirm('Tem certeza que deseja cancelar este agendamento?');
-    if (!confirmed) {
-      return;
-    }
-
-    await this.atualizarStatus('cancelar', 'cancelado');
+    this.confirmationService.confirm({
+      message: 'Tem certeza que deseja cancelar este agendamento?',
+      header: 'Cancelar agendamento',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Cancelar agendamento',
+      rejectLabel: 'Voltar',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        void this.atualizarStatus('cancelar', 'cancelado');
+      }
+    });
   }
 
   private async atualizarStatus(acao: 'confirmar' | 'cancelar', novoStatus: AgendamentoDetalhe['status']): Promise<void> {

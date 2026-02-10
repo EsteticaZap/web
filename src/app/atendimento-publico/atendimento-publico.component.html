@@ -1,4 +1,5 @@
 <section class="booking-container">
+  <p-confirmDialog></p-confirmDialog>
   <header class="salon-header">
     <div class="salon-photo" *ngIf="salao?.fotoSalao; else salonFallback">
       <img [src]="salao?.fotoSalao" alt="Foto do salão" />
@@ -41,9 +42,10 @@
         </div>
 
         <div class="countdown">
-          <div>
-            <span class="label">Tempo restante</span>
-            <strong>{{ remainingTime.days }}d {{ remainingTime.hours }}h {{ remainingTime.minutes }}m</strong>
+          <div class="countdown-content">
+            <span class="label">Tempo até o agendamento</span>
+            <strong class="countdown-value">{{ remainingTimeLabel }}</strong>
+            <span class="countdown-subtitle">Atualiza em tempo real</span>
           </div>
           <p *ngIf="isPast" class="countdown-note">Atendimento já realizado. O cronômetro chegou a zero.</p>
         </div>
