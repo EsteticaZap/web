@@ -50,6 +50,8 @@
   overflow: hidden;
   position: relative;
   min-height: 0;
+  box-sizing: border-box;
+  max-width: min(760px, 100%);
 }
 
 @keyframes slideUp {
@@ -162,6 +164,7 @@
 .modal-content {
   padding: 1.5rem 2rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -950,9 +953,15 @@
 
 /* Responsive */
 @media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0;
+  }
+
   .modal-container {
-    width: 95%;
+    width: 100%;
+    max-width: 100%;
     max-height: 95vh;
+    border-radius: 0;
   }
 
   .modal-header {
@@ -967,6 +976,12 @@
     padding: 0.75rem 1rem;
   }
 
+  .steps {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
   .step-icon {
     width: 32px;
     height: 32px;
@@ -979,6 +994,36 @@
 
   .modal-content {
     padding: 1rem 1.5rem;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .summary-item .label {
+    width: auto;
+  }
+
+  .servico-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .servico-detalhes {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .servico-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .photo-preview-servico {
+    width: 100%;
+    max-width: 240px;
   }
 
   .modal-footer {
