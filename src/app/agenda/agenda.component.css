@@ -776,6 +776,41 @@
   color: #607d8b;
 }
 
+
+.remove-block-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #ef9a9a;
+  background: #fff;
+  color: #c62828;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-block-btn:hover:not(:disabled) {
+  background: #ffebee;
+  border-color: #e57373;
+}
+
+.remove-block-btn:disabled,
+.remove-block-btn.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.remove-block-btn--compact {
+  margin-top: 0.4rem;
+  margin-left: 0;
+  width: 100%;
+  justify-content: center;
+}
+
 /* Lunch Break */
 .lunch-break {
   display: flex;

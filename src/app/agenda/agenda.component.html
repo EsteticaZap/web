@@ -130,6 +130,18 @@
                     <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
                     <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
                     <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
+                    <button
+                      *ngIf="appt.status === 'blocked'"
+                      type="button"
+                      class="remove-block-btn"
+                      [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                      [class.is-disabled]="!canRemoveBloqueio(appt)"
+                      pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                      [tooltipDisabled]="canRemoveBloqueio(appt)"
+                      (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                      <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                      {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -326,6 +338,18 @@
                   <div class="appt-client">{{ appt.status === 'blocked' ? 'Horário bloqueado' : appt.client }}</div>
                   <div class="appt-service">{{ appt.service }}</div>
                   <div class="appt-time">{{ appt.startTime }} - {{ appt.endTime }}</div>
+                  <button
+                    *ngIf="appt.status === 'blocked'"
+                    type="button"
+                    class="remove-block-btn remove-block-btn--compact"
+                    [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                    [class.is-disabled]="!canRemoveBloqueio(appt)"
+                    pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                    [tooltipDisabled]="canRemoveBloqueio(appt)"
+                    (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                    <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                    {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                  </button>
                 </div>
               </div>
             </td>
@@ -530,6 +554,18 @@
                         <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
                         <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
                         <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
+                        <button
+                          *ngIf="appt.status === 'blocked'"
+                          type="button"
+                          class="remove-block-btn"
+                          [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                          [class.is-disabled]="!canRemoveBloqueio(appt)"
+                          pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                          [tooltipDisabled]="canRemoveBloqueio(appt)"
+                          (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                          <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                          {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                        </button>
                       </div>
                     </div>
                   </div>

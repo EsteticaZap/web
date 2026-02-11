@@ -100,6 +100,7 @@ export class AgendaComponent implements OnInit {
   modalDay: Date | null = null;
   isBlockModalOpen = false;
   isSavingBloqueio = false;
+  isRemovingBloqueioId: string | null = null;
   blockModalError = '';
   bloqueios: BloqueioHorario[] = [];
   isReminderModalOpen = false;
@@ -674,6 +675,75 @@ export class AgendaComponent implements OnInit {
       case 'no-show': return 'No-show';
       case 'blocked': return 'Bloqueado';
       default: return '';
+    }
+  }
+
+
+
+  private getAppointmentDateTime(appt: Appointment, time: string): Date {
+    const dateTime = new Date(appt.date);
+    const [hour, minute] = time.split(':').map(Number);
+    dateTime.setHours(hour, minute, 0, 0);
+    return dateTime;
+  }
+
+  canRemoveBloqueio(appt: Appointment): boolean {
+    if (appt.status !== 'blocked' || !appt.id) return false;
+
+    const inicioBloqueio = this.getAppointmentDateTime(appt, appt.startTime);
+    return inicioBloqueio.getTime() > Date.now();
+  }
+
+  isRemovingBloqueio(appt: Appointment): boolean {
+    return !!appt.id && this.isRemovingBloqueioId === appt.id;
+  }
+
+  async confirmarRemocaoBloqueio(appt: Appointment): Promise<void> {
+    if (!appt.id || appt.status !== 'blocked' || this.isRemovingBloqueio(appt)) return;
+
+    if (!this.canRemoveBloqueio(appt)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Remoção indisponível',
+        detail: 'Só é possível remover bloqueios que ainda não iniciaram.'
+      });
+      return;
+    }
+
+    const confirmacao = await new Promise<boolean>((resolve) => {
+      this.confirmationService.confirm({
+        message: 'Deseja realmente remover este bloqueio de horário?',
+        header: 'Confirmar remoção de bloqueio',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Sim, remover',
+        rejectLabel: 'Não',
+        accept: () => resolve(true),
+        reject: () => resolve(false)
+      });
+    });
+
+    if (!confirmacao) return;
+
+    this.isRemovingBloqueioId = appt.id;
+
+    try {
+      await this.bloqueioService.remover(appt.id);
+      await this.carregarAgendamentos();
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Bloqueio removido',
+        detail: 'O bloqueio foi removido com sucesso.'
+      });
+    } catch (error) {
+      console.error('Erro ao remover bloqueio:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro ao remover bloqueio',
+        detail: 'Não foi possível remover o bloqueio. Tente novamente.'
+      });
+    } finally {
+      this.isRemovingBloqueioId = null;
     }
   }
 
