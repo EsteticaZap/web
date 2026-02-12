@@ -173,7 +173,7 @@
               id="endereco" 
               [(ngModel)]="config.endereco"
               placeholder="Ex: Rua das Flores"
-              readonly />
+              [disabled]="true" />
           </div>
 
           <div class="form-row form-row-3">
@@ -200,7 +200,7 @@
                 id="bairro" 
                 [(ngModel)]="config.bairro"
                 placeholder="Ex: Centro"
-                readonly />
+                [disabled]="true" />
             </div>
           </div>
 
@@ -212,7 +212,7 @@
                 id="cidade" 
                 [(ngModel)]="config.cidade"
                 placeholder="Sua cidade"
-                readonly />
+                [disabled]="true" />
             </div>
             <div class="form-group">
               <label for="estado">Estado</label>

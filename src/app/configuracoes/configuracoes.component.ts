@@ -498,15 +498,8 @@ export class ConfiguracoesComponent implements OnInit {
     this.config.cep = value;
 
     const cepLimpo = value.replace(/\D/g, '');
-
-    if (cepLimpo.length === 8 && cepLimpo !== this.ultimoCepBuscado) {
-      this.ultimoCepBuscado = cepLimpo;
+    if (cepLimpo.length === 8) {
       this.buscarEnderecoPorCep(cepLimpo);
-      return;
-    }
-
-    if (cepLimpo.length < 8) {
-      this.ultimoCepBuscado = '';
     }
   }
 
