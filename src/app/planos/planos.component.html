@@ -121,6 +121,32 @@
   </div>
 </div>
 
+<!-- Modal de Assinatura Confirmada -->
+<div class="modal-overlay" *ngIf="mostrarModalAssinaturaSucesso" (click)="fecharModalAssinaturaSucesso()">
+  <div class="modal-content modal-sucesso" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Assinatura realizada com sucesso!</h2>
+      <button class="btn-fechar" (click)="fecharModalAssinaturaSucesso()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="mensagem-sucesso-assinatura">
+        <i class="pi pi-check-circle"></i>
+        Sua assinatura foi feita com sucesso. Logo logo seu plano será ativado.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-confirmar" (click)="fecharModalAssinaturaSucesso()">
+        Entendi
+      </button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Modal de Pagamento -->
 <div class="modal-overlay" *ngIf="mostrarModalPagamento" (click)="fecharModalPagamento()">
   <div class="modal-content" (click)="$event.stopPropagation()">
