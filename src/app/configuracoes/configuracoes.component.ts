@@ -99,6 +99,7 @@ export class ConfiguracoesComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isCepLoading = false;
+  private ultimoCepBuscado = '';
   successMessage = '';
   errorMessage = '';
   activeTab = 'info'; // info, horarios, servicos, equipe, avancado
@@ -496,8 +497,16 @@ export class ConfiguracoesComponent implements OnInit {
     value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
     this.config.cep = value;
 
-    if (value.replace(/\D/g, '').length === 8) {
-      this.buscarEnderecoPorCep(value.replace(/\D/g, ''));
+    const cepLimpo = value.replace(/\D/g, '');
+
+    if (cepLimpo.length === 8 && cepLimpo !== this.ultimoCepBuscado) {
+      this.ultimoCepBuscado = cepLimpo;
+      this.buscarEnderecoPorCep(cepLimpo);
+      return;
+    }
+
+    if (cepLimpo.length < 8) {
+      this.ultimoCepBuscado = '';
     }
   }
 
