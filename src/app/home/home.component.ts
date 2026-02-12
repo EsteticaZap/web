@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, OnInit, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { ClienteService } from '../services/cliente.service';
@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { DrawerModule } from 'primeng/drawer';
 import { DatePickerModule } from 'primeng/datepicker';
 import { RelatorioService } from '../services/relatorio.service';
+import { firstValueFrom } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -54,9 +55,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private firestore = inject(Firestore);
   private clienteService = inject(ClienteService);
   private relatorioService = inject(RelatorioService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private dataLoaded = false;
 
   isLoadingData = true;
+  mostrarModalAssinaturaSucesso = false;
 
   userName = 'Usuário';
   nextAppointment: {
@@ -131,6 +135,34 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.processarFlagAssinaturaSucesso();
+  }
+
+  fecharModalAssinaturaSucesso(): void {
+    this.mostrarModalAssinaturaSucesso = false;
+  }
+
+  private async processarFlagAssinaturaSucesso(): Promise<void> {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const params = await firstValueFrom(this.route.queryParamMap);
+    const assinaturaSucesso =
+      params.get('subscription_sucess') === 'true'
+      || params.get('subscription_success') === 'true';
+
+    if (!assinaturaSucesso) {
+      return;
+    }
+
+    this.mostrarModalAssinaturaSucesso = true;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 
   async downloadExcelReport(): Promise<void> {

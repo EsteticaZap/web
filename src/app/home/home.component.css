@@ -741,3 +741,67 @@
     font-size: 1.25rem;
   }
 }
+
+.assinatura-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.assinatura-modal-content {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 0.875rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.assinatura-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.assinatura-modal-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.assinatura-modal-close {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.assinatura-modal-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.assinatura-modal-body p {
+  margin: 0;
+  display: flex;
+  gap: 0.625rem;
+  line-height: 1.6;
+  color: #0f172a;
+}
+
+.assinatura-modal-body i {
+  margin-top: 0.2rem;
+  color: #16a34a;
+}
+
+.assinatura-modal-footer {
+  padding: 0 1.5rem 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+}

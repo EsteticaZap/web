@@ -126,6 +126,27 @@
     </div>
   </section>
 
+
+<div class="assinatura-modal-overlay" *ngIf="mostrarModalAssinaturaSucesso" (click)="fecharModalAssinaturaSucesso()">
+  <div class="assinatura-modal-content" (click)="$event.stopPropagation()">
+    <div class="assinatura-modal-header">
+      <h2>Assinatura realizada com sucesso!</h2>
+      <button class="assinatura-modal-close" type="button" (click)="fecharModalAssinaturaSucesso()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="assinatura-modal-body">
+      <p>
+        <i class="pi pi-check-circle"></i>
+        Sua assinatura foi feita com sucesso. Logo logo seu plano será ativado.
+      </p>
+    </div>
+    <div class="assinatura-modal-footer">
+      <button class="btn-primary" type="button" (click)="fecharModalAssinaturaSucesso()">Entendi</button>
+    </div>
+  </div>
+</div>
+
   <p-drawer
     [(visible)]="isCustomDrawerOpen"
     position="right"
