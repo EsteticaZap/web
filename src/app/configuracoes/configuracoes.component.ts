@@ -99,6 +99,7 @@ export class ConfiguracoesComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isCepLoading = false;
+  private ultimoCepBuscado = '';
   successMessage = '';
   errorMessage = '';
   activeTab = 'info'; // info, horarios, servicos, equipe, avancado
