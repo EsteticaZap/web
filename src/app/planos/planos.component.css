@@ -546,3 +546,22 @@
     font-size: 1.25rem;
   }
 }
+
+.modal-sucesso .modal-body {
+  padding-top: 1.25rem;
+}
+
+.mensagem-sucesso-assinatura {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #0f172a;
+  line-height: 1.6;
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+}
+
+.mensagem-sucesso-assinatura i {
+  color: #16a34a;
+  margin-top: 0.15rem;
+}

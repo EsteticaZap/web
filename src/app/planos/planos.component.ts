@@ -28,6 +28,7 @@ export class PlanosComponent implements OnInit {
   mensagemErro?: string;
   mensagemSucesso?: string;
   erroModalPagamento?: string;
+  mostrarModalAssinaturaSucesso: boolean = false;
   isBrowser = typeof window !== 'undefined';
 
   ngOnInit(): void {
@@ -64,6 +65,10 @@ export class PlanosComponent implements OnInit {
   fecharModalPagamento(): void {
     this.mostrarModalPagamento = false;
     this.erroModalPagamento = undefined;
+  }
+
+  fecharModalAssinaturaSucesso(): void {
+    this.mostrarModalAssinaturaSucesso = false;
   }
 
   async confirmarPagamento(): Promise<void> {
@@ -115,8 +120,11 @@ export class PlanosComponent implements OnInit {
     const params = await firstValueFrom(this.route.queryParamMap);
     const sessionId = params.get('session_id');
     const cancelado = params.get('cancelado');
+    const assinaturaSucesso =
+      params.get('subscription_sucess') === 'true'
+      || params.get('subscription_success') === 'true';
 
-    if (!sessionId && !cancelado) {
+    if (!sessionId && !cancelado && !assinaturaSucesso) {
       return;
     }
 
@@ -130,6 +138,12 @@ export class PlanosComponent implements OnInit {
 
     if (cancelado) {
       this.mensagemErro = 'Pagamento cancelado. Nenhuma cobrança foi realizada.';
+      limparParametros();
+      return;
+    }
+
+    if (assinaturaSucesso) {
+      this.mostrarModalAssinaturaSucesso = true;
       limparParametros();
       return;
     }
