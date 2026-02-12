@@ -399,6 +399,27 @@
   min-height: 100px;
 }
 
+
+.form-group input:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background: #f3f4f6;
+  border-color: #d9dbe1;
+  color: #8a8f98;
+  cursor: not-allowed;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-disabled {
+  background: #f3f4f6;
+  border-color: #d9dbe1;
+  opacity: 1;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-disabled .p-select-label,
+:host ::ng-deep .form-control-select .p-select.p-disabled .p-select-dropdown {
+  color: #8a8f98;
+}
+
 .form-hint {
   display: block;
   font-size: 0.75rem;
