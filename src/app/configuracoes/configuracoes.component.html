@@ -172,7 +172,8 @@
               type="text" 
               id="endereco" 
               [(ngModel)]="config.endereco"
-              placeholder="Ex: Rua das Flores" />
+              placeholder="Ex: Rua das Flores"
+              [disabled]="true" />
           </div>
 
           <div class="form-row form-row-3">
@@ -198,7 +199,8 @@
                 type="text" 
                 id="bairro" 
                 [(ngModel)]="config.bairro"
-                placeholder="Ex: Centro" />
+                placeholder="Ex: Centro"
+                [disabled]="true" />
             </div>
           </div>
 
@@ -209,7 +211,8 @@
                 type="text" 
                 id="cidade" 
                 [(ngModel)]="config.cidade"
-                placeholder="Sua cidade" />
+                placeholder="Sua cidade"
+                [disabled]="true" />
             </div>
             <div class="form-group">
               <label for="estado">Estado</label>
@@ -220,7 +223,8 @@
                 optionLabel="label"
               optionValue="value"
               placeholder="Selecione"
-              styleClass="form-control-select">
+              styleClass="form-control-select"
+              [disabled]="true">
             </p-select>
             </div>
           </div>
