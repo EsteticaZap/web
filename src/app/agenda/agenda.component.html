@@ -743,7 +743,7 @@
             </div>
           </div>
 
-          <div class="status-actions" *ngIf="isPastAppointment(appt)">
+          <div class="status-actions" *ngIf="canUpdateAppointmentStatus(appt)">
             <h5>Atualizar status</h5>
             <div class="status-buttons">
               <button

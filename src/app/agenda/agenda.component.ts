@@ -993,6 +993,19 @@ export class AgendaComponent implements OnInit {
     return this.isAppointmentInPast(appt);
   }
 
+  private isStatusUpdatable(appt: Appointment): boolean {
+    // Regra: somente agendamentos confirmados ou pendentes podem ser marcados
+    // como realizado/no-show. Cancelados, no-show, realizados e bloqueados não.
+    return appt.status === 'confirmed' || appt.status === 'pending';
+  }
+
+  canUpdateAppointmentStatus(appt: Appointment | null): boolean {
+    if (!appt) return false;
+    if (!this.isAppointmentInPast(appt)) return false;
+
+    return this.isStatusUpdatable(appt);
+  }
+
   openAppointmentModal(appt: Appointment): void {
     if (appt.status === 'blocked') return;
     this.selectedAppointment = { ...appt };
@@ -1030,6 +1043,12 @@ export class AgendaComponent implements OnInit {
 
   async atualizarStatusAgendamento(novoStatus: 'realizado' | 'no-show'): Promise<void> {
     if (!this.selectedAppointment?.id || this.isUpdatingStatus) return;
+
+    if (!this.canUpdateAppointmentStatus(this.selectedAppointment) || !this.isStatusUpdatable(this.selectedAppointment)) {
+      this.statusUpdateError = 'Não é possível atualizar o status deste agendamento.';
+      return;
+    }
+
     const currentUser = this.authService.currentUser();
     if (!currentUser) {
       this.statusUpdateError = 'Usuário não autenticado.';
