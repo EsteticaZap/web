@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 interface CheckoutSessionResponse {
   sessionId?: string;
@@ -17,6 +18,7 @@ interface RetrievedSession {
   providedIn: 'root'
 })
 export class StripeCheckoutService {
+  private authService = inject(AuthService);
   private stripeLoader: Promise<StripeInstance | null> | null = null;
 
   private async safeParseJson(response: Response): Promise<{ data: any; rawText: string }> {
@@ -82,10 +84,12 @@ export class StripeCheckoutService {
       throw new Error('Identificador do salão não encontrado.');
     }
 
+    const authorization = await this.authService.getAuthorizationHeader();
     const response = await fetch('https://esteticazap-webhook.onrender.com/stripe/checkout-session', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {})
       },
       body: JSON.stringify({
         salonId,

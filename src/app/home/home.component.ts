@@ -178,11 +178,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     try {
       this.isDownloadingExcel = true;
+      const authorization = await this.authService.getAuthorizationHeader();
       const response = await fetch(
         `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio-excel`,
         {
           headers: {
-            accept: 'application/vnd.ms-excel'
+            accept: 'application/vnd.ms-excel',
+            ...(authorization ? { Authorization: authorization } : {})
           }
         }
       );

@@ -123,11 +123,13 @@ app.get('/api/relatorio/:salonId', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Salão inválido.' });
     }
 
+    const authorization = req.header('authorization');
     const response = await fetch(
       `https://esteticazap-webhook.onrender.com/saloes/${salonId}/relatorio`,
       {
         headers: {
           accept: 'application/pdf',
+          ...(authorization ? { Authorization: authorization } : {}),
         },
       },
     );
