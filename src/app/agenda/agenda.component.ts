@@ -1113,9 +1113,13 @@ export class AgendaComponent implements OnInit {
     this.cancelAppointmentSuccess = '';
 
     try {
+      const authorization = await this.authService.getAuthorizationHeader();
       const response = await fetch(`https://esteticazap-webhook.onrender.com/agenda/${this.selectedAppointment.id}/cancelar`, {
         method: 'POST',
-        headers: { accept: 'application/json' },
+        headers: {
+          accept: 'application/json',
+          ...(authorization ? { Authorization: authorization } : {})
+        },
         body: ''
       });
 

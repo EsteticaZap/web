@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Firestore, doc, getDoc, updateDoc } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 
@@ -42,6 +43,7 @@ interface SalaoPublico {
 export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
   private firestore = inject(Firestore);
   private route = inject(ActivatedRoute);
+  private auth = inject(Auth);
   private confirmationService = inject(ConfirmationService);
 
   agendamentoId = '';
@@ -220,10 +222,12 @@ export class AtendimentoPublicoComponent implements OnInit, OnDestroy {
     this.successMessage = '';
 
     try {
+      const token = await this.auth.currentUser?.getIdToken();
       const response = await fetch(`https://esteticazap-webhook.onrender.com/agenda/${this.agendamentoId}/${acao}`, {
         method: 'POST',
         headers: {
-          accept: 'application/json'
+          accept: 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       });
 
