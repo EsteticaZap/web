@@ -955,13 +955,17 @@
 @media (max-width: 600px) {
   .modal-overlay {
     padding: 0;
+    align-items: stretch;
+    overflow: hidden;
   }
 
   .modal-container {
     width: 100%;
     max-width: 100%;
-    max-height: 95vh;
+    height: 100%;
+    max-height: 100%;
     border-radius: 0;
+    margin: 0;
   }
 
   .modal-header {
@@ -974,12 +978,23 @@
 
   .steps-container {
     padding: 0.75rem 1rem;
+    overflow: hidden;
   }
 
   .steps {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.5rem;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.4rem;
+  }
+
+  .step {
+    flex: 0 0 auto;
+    min-width: 4.5rem;
   }
 
   .step-icon {
@@ -990,6 +1005,7 @@
 
   .step-title {
     font-size: 0.65rem;
+    line-height: 1.1;
   }
 
   .modal-content {
