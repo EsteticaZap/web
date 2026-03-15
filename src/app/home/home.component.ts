@@ -137,7 +137,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private barChart: Chart | null = null;
   private servicesChart: Chart | null = null;
   private attendanceChart: Chart | null = null;
-  isDownloadingExcel = false;
+  isDownloadingCsv = false;
   isDownloadingPdf = false;
 
   /**
@@ -215,8 +215,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
   }
 
-  async downloadExcelReport(): Promise<void> {
-    if (!this.isBrowser || this.isDownloadingExcel) {
+  async downloadCsvReport(): Promise<void> {
+    if (!this.isBrowser || this.isDownloadingCsv) {
       return;
     }
 
@@ -227,20 +227,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
 
     try {
-      this.isDownloadingExcel = true;
+      this.isDownloadingCsv = true;
       const authorization = await this.authService.getAuthorizationHeader();
       const response = await fetch(
-        `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio-excel`,
+        `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio-csv`,
         {
           headers: {
-            accept: 'application/vnd.ms-excel',
+            accept: 'text/csv',
             ...(authorization ? { Authorization: authorization } : {})
           }
         }
       );
 
       if (!response.ok) {
-        throw new Error('Falha ao gerar o relatório em Excel.');
+        throw new Error('Falha ao gerar o relatório em CSV.');
       }
 
       const blob = await response.blob();
@@ -248,15 +248,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const link = document.createElement('a');
       const timestamp = new Date().toISOString().split('T')[0];
       link.href = url;
-      link.download = `relatorio-${timestamp}.xlsx`;
+      link.download = `relatorio-${timestamp}.csv`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Erro ao baixar Excel:', error);
+      console.error('Erro ao baixar CSV:', error);
     } finally {
-      this.isDownloadingExcel = false;
+      this.isDownloadingCsv = false;
     }
   }
 

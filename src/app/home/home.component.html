@@ -13,10 +13,10 @@
       <button
         class="excel-button"
         type="button"
-        [disabled]="isDownloadingExcel"
-        (click)="downloadExcelReport()">
-        <i class="fa fa-file-excel"></i>
-        {{ isDownloadingExcel ? 'Gerando...' : 'Gerar Excel' }}
+        [disabled]="isDownloadingCsv"
+        (click)="downloadCsvReport()">
+        <i class="fa fa-file-csv"></i>
+        {{ isDownloadingCsv ? 'Gerando...' : 'Gerar CSV' }}
       </button>
       <button
         class="pdf-button"
