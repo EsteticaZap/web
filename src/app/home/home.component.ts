@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, Inject, PLATFORM_ID, OnInit, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { ClienteService } from '../services/cliente.service';
@@ -9,6 +10,8 @@ import { Chart, registerables } from 'chart.js';
 import { SelectModule } from 'primeng/select';
 import { DrawerModule } from 'primeng/drawer';
 import { DatePickerModule } from 'primeng/datepicker';
+import { RelatorioService } from '../services/relatorio.service';
+import { firstValueFrom } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -65,9 +68,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private clienteService = inject(ClienteService);
+  private relatorioService = inject(RelatorioService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private dataLoaded = false;
 
   isLoadingData = true;
+  mostrarModalAssinaturaSucesso = false;
 
   userName = 'Usuário';
   nextAppointment: {
@@ -130,6 +137,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private barChart: Chart | null = null;
   private servicesChart: Chart | null = null;
   private attendanceChart: Chart | null = null;
+  isDownloadingExcel = false;
+  isDownloadingPdf = false;
 
   /**
    * Retorna o label de faturamento baseado no período selecionado
@@ -176,6 +185,141 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit(): Promise<void> {
+    await this.processarFlagAssinaturaSucesso();
+  }
+
+  fecharModalAssinaturaSucesso(): void {
+    this.mostrarModalAssinaturaSucesso = false;
+  }
+
+  private async processarFlagAssinaturaSucesso(): Promise<void> {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const params = await firstValueFrom(this.route.queryParamMap);
+    const assinaturaSucesso =
+      params.get('subscription_sucess') === 'true'
+      || params.get('subscription_success') === 'true';
+
+    if (!assinaturaSucesso) {
+      return;
+    }
+
+    this.mostrarModalAssinaturaSucesso = true;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
+  async downloadExcelReport(): Promise<void> {
+    if (!this.isBrowser || this.isDownloadingExcel) {
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      console.error('Usuário não autenticado');
+      return;
+    }
+
+    try {
+      this.isDownloadingExcel = true;
+      const authorization = await this.authService.getAuthorizationHeader();
+      const response = await fetch(
+        `https://esteticazap-webhook.onrender.com/saloes/${currentUser.uid}/relatorio-excel`,
+        {
+          headers: {
+            accept: 'application/vnd.ms-excel',
+            ...(authorization ? { Authorization: authorization } : {})
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Falha ao gerar o relatório em Excel.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `relatorio-${timestamp}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao baixar Excel:', error);
+    } finally {
+      this.isDownloadingExcel = false;
+    }
+  }
+
+  async downloadPdfReport(): Promise<void> {
+    if (!this.isBrowser || this.isDownloadingPdf) {
+      return;
+    }
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      console.error('Usuário não autenticado');
+      return;
+    }
+
+    try {
+      this.isDownloadingPdf = true;
+      const response = await this.relatorioService.baixarRelatorioPdf(currentUser.uid);
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.toLowerCase().includes('application/pdf')) {
+        throw new Error('Falha ao carregar o documento PDF.');
+      }
+
+      const blob = response.body;
+      if (!blob) {
+        throw new Error('Falha ao carregar o documento PDF.');
+      }
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `relatorio-${timestamp}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      let errorMessage = 'Erro ao baixar PDF.';
+
+      if (error instanceof HttpErrorResponse) {
+        const payload = error.error;
+        if (payload instanceof Blob) {
+          const payloadText = await payload.text();
+          try {
+            const parsedPayload = JSON.parse(payloadText) as { error?: string };
+            errorMessage = parsedPayload.error || errorMessage;
+          } catch {
+            errorMessage = payloadText || errorMessage;
+          }
+        } else if (payload && typeof payload === 'object' && 'error' in payload) {
+          errorMessage = (payload as { error?: string }).error || errorMessage;
+        } else if (typeof payload === 'string') {
+          errorMessage = payload || errorMessage;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      console.error('Erro ao baixar PDF:', error);
+      window.alert(errorMessage);
+    } finally {
+      this.isDownloadingPdf = false;
+    }
   }
 
   /**

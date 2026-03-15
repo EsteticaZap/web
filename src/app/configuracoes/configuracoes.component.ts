@@ -18,7 +18,7 @@ import { Servico } from '../onboarding/onboarding.component';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
 import { SelectModule } from 'primeng/select';
-import { formatPhoneMask } from '../utils/phone-utils';
+import { sanitizePhone } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -99,6 +99,7 @@ export class ConfiguracoesComponent implements OnInit {
   isLoading = true;
   isSaving = false;
   isCepLoading = false;
+  private ultimoCepBuscado = '';
   successMessage = '';
   errorMessage = '';
   activeTab = 'info'; // info, horarios, servicos, equipe, avancado
@@ -485,8 +486,9 @@ export class ConfiguracoesComponent implements OnInit {
 
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
-    const formatted = formatPhoneMask(input.value);
-    this.config[field] = formatted;
+    const digits = sanitizePhone(input.value);
+    input.value = digits;
+    this.config[field] = digits;
   }
 
   formatCep(event: Event): void {
@@ -495,8 +497,9 @@ export class ConfiguracoesComponent implements OnInit {
     value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
     this.config.cep = value;
 
-    if (value.replace(/\D/g, '').length === 8) {
-      this.buscarEnderecoPorCep(value.replace(/\D/g, ''));
+    const cepLimpo = value.replace(/\D/g, '');
+    if (cepLimpo.length === 8) {
+      this.buscarEnderecoPorCep(cepLimpo);
     }
   }
 
@@ -799,16 +802,6 @@ export class ConfiguracoesComponent implements OnInit {
         severity: 'warn',
         summary: 'Atenção',
         detail: 'Adicione uma foto do profissional.',
-        life: 3000
-      });
-      return;
-    }
-
-    if (this.novoProfissional.interesses.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Atenção',
-        detail: 'Adicione pelo menos 1 interesse.',
         life: 3000
       });
       return;

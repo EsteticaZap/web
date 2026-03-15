@@ -3,6 +3,8 @@ import {
   Firestore,
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
   query,
   serverTimestamp,
@@ -61,5 +63,13 @@ export class BloqueioService {
       id: doc.id,
       ...doc.data()
     } as BloqueioHorario));
+  }
+
+  /**
+   * Remove um bloqueio de horário
+   */
+  async remover(bloqueioId: string): Promise<void> {
+    const bloqueioRef = doc(this.firestore, 'bloqueios', bloqueioId);
+    await deleteDoc(bloqueioRef);
   }
 }

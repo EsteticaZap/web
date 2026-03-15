@@ -105,6 +105,21 @@ export class AuthService {
     }
   }
 
+  async getAuthorizationHeader(): Promise<string | null> {
+    const user = this.currentUser();
+    if (!user) {
+      return null;
+    }
+
+    try {
+      const token = await user.getIdToken();
+      return `Bearer ${token}`;
+    } catch (error) {
+      console.error('Erro ao obter token de autenticação:', error);
+      return null;
+    }
+  }
+
   /**
    * Salvar dados do usuário no Firestore
    */

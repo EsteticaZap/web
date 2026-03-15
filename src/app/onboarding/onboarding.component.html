@@ -1,5 +1,7 @@
+<p-toast position="top-right"></p-toast>
 <!-- Modal Overlay -->
 <div class="modal-overlay" *ngIf="visible" (click)="onOverlayClick($event)">
+  <p-toast position="top-right"></p-toast>
   <div class="modal-container" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="modal-header">
@@ -29,12 +31,7 @@
     </div>
 
     <!-- Content -->
-    <div class="modal-content">
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="alert alert-error">
-        <i class="fa fa-exclamation-circle"></i>
-        {{ errorMessage }}
-      </div>
+    <div class="modal-content" #modalContent>
 
       <!-- Step 1: Informações do Salão -->
       <div *ngIf="currentStep === 0" class="step-content">
@@ -140,6 +137,7 @@
             type="text" 
             id="endereco" 
             [(ngModel)]="data.endereco"
+            [disabled]="true"
             placeholder="Ex: Rua das Flores" />
         </div>
 
@@ -168,6 +166,7 @@
             type="text" 
             id="bairro" 
             [(ngModel)]="data.bairro"
+            [disabled]="true"
             placeholder="Ex: Centro" />
         </div>
 
@@ -178,6 +177,7 @@
               type="text" 
               id="cidade" 
               [(ngModel)]="data.cidade"
+              [disabled]="true"
               placeholder="Sua cidade" />
           </div>
           <div class="form-group">
@@ -186,6 +186,7 @@
               inputId="estado"
               [options]="estadoOptions"
               [(ngModel)]="data.estado"
+              [disabled]="true"
               optionLabel="label"
               optionValue="value"
               placeholder="Selecione"
@@ -311,83 +312,87 @@
               Adicionar outro serviço
             </button>
           </div>
+        </div>
 
-          <!-- Formulário de Serviço -->
-          <div *ngIf="mostrarFormServico" class="servico-form">
-            <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
+        <!-- Modal de Serviço -->
+        <div *ngIf="mostrarFormServico" class="inline-modal-overlay" (click)="cancelarFormServico()">
+          <div class="inline-modal" (click)="$event.stopPropagation()">
+            <div class="servico-form">
+              <h4>{{ editandoServico ? 'Editar Serviço' : 'Novo Serviço' }}</h4>
 
-            <div class="form-group">
-              <label>Imagem do Serviço (opcional)</label>
-              <div class="photo-upload-servico" (click)="photoServicoInput.click()">
-                <div class="photo-preview-servico" [class.has-photo]="previewUrlServico">
-                  <img *ngIf="previewUrlServico" [src]="previewUrlServico" alt="Imagem do serviço" />
-                  <div *ngIf="!previewUrlServico" class="photo-placeholder-servico">
-                    <i class="fa fa-camera"></i>
-                    <span>Adicionar imagem</span>
+              <div class="form-group">
+                <label>Imagem do Serviço (opcional)</label>
+                <div class="photo-upload-servico" (click)="photoServicoInput.click()">
+                  <div class="photo-preview-servico" [class.has-photo]="previewUrlServico">
+                    <img *ngIf="previewUrlServico" [src]="previewUrlServico" alt="Imagem do serviço" />
+                    <div *ngIf="!previewUrlServico" class="photo-placeholder-servico">
+                      <i class="fa fa-camera"></i>
+                      <span>Adicionar imagem</span>
+                    </div>
                   </div>
+                  <input
+                    #photoServicoInput
+                    type="file"
+                    accept="image/*"
+                    (change)="onFileSelectedServico($event)"
+                    hidden />
                 </div>
-                <input
-                  #photoServicoInput
-                  type="file"
-                  accept="image/*"
-                  (change)="onFileSelectedServico($event)"
-                  hidden />
+                <button *ngIf="previewUrlServico" class="btn-remove-photo-inline" (click)="removePhotoServico(); $event.stopPropagation()">
+                  <i class="fa fa-times"></i> Remover imagem
+                </button>
               </div>
-              <button *ngIf="previewUrlServico" class="btn-remove-photo-inline" (click)="removePhotoServico(); $event.stopPropagation()">
-                <i class="fa fa-times"></i> Remover imagem
-              </button>
-            </div>
-            
-            <div class="form-group">
-              <label for="nomeServico">Nome do Serviço *</label>
-              <input 
-                type="text" 
-                id="nomeServico" 
-                [(ngModel)]="novoServico.nome"
-                placeholder="Ex: Corte de Cabelo, Manicure, etc." />
-            </div>
-
-            <div class="form-row">
+              
               <div class="form-group">
-                <label for="valorServico">Valor (R$) *</label>
+                <label for="nomeServico">Nome do Serviço *</label>
                 <input 
-                  type="number" 
-                  id="valorServico" 
-                  [(ngModel)]="novoServico.valor"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01" />
+                  type="text" 
+                  id="nomeServico" 
+                  [(ngModel)]="novoServico.nome"
+                  placeholder="Ex: Corte de Cabelo, Manicure, etc." />
               </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="valorServico">Valor (R$) *</label>
+                  <input 
+                    type="number" 
+                    id="valorServico" 
+                    [(ngModel)]="novoServico.valor"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01" />
+                </div>
+                <div class="form-group">
+                  <label for="duracaoServico">Duração *</label>
+                  <p-select
+                    inputId="duracaoServico"
+                    [options]="opcoesDuracao"
+                    [(ngModel)]="novoServico.duracao"
+                    optionLabel="label"
+                    optionValue="valor"
+                    styleClass="form-control-select"
+                    placeholder="Selecione">
+                  </p-select>
+                </div>
+              </div>
+
               <div class="form-group">
-                <label for="duracaoServico">Duração *</label>
-                <p-select
-                  inputId="duracaoServico"
-                  [options]="opcoesDuracao"
-                  [(ngModel)]="novoServico.duracao"
-                  optionLabel="label"
-                  optionValue="valor"
-                  styleClass="form-control-select"
-                  placeholder="Selecione">
-                </p-select>
+                <label for="descricaoServico">Descrição (opcional)</label>
+                <textarea 
+                  id="descricaoServico" 
+                  [(ngModel)]="novoServico.descricao"
+                  placeholder="Descreva o serviço..."
+                  rows="2"></textarea>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label for="descricaoServico">Descrição (opcional)</label>
-              <textarea 
-                id="descricaoServico" 
-                [(ngModel)]="novoServico.descricao"
-                placeholder="Descreva o serviço..."
-                rows="2"></textarea>
-            </div>
-
-            <div class="form-actions">
-              <button class="btn btn-secondary" (click)="cancelarFormServico()">
-                Cancelar
-              </button>
-              <button class="btn btn-primary" (click)="salvarServico()">
-                {{ editandoServico ? 'Salvar Alterações' : 'Adicionar Serviço' }}
-              </button>
+              <div class="form-actions">
+                <button class="btn btn-secondary" (click)="cancelarFormServico()">
+                  Cancelar
+                </button>
+                <button class="btn btn-primary" (click)="salvarServico()">
+                  {{ editandoServico ? 'Salvar Alterações' : 'Adicionar Serviço' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -447,85 +452,89 @@
               Adicionar outro profissional
             </button>
           </div>
+        </div>
 
-          <!-- Formulário de Profissional -->
-          <div *ngIf="mostrarFormProfissional" class="profissional-form">
-            <h4>{{ editandoProfissional ? 'Editar Profissional' : 'Novo Profissional' }}</h4>
+        <!-- Modal de Profissional -->
+        <div *ngIf="mostrarFormProfissional" class="inline-modal-overlay" (click)="cancelarFormProfissional()">
+          <div class="inline-modal" (click)="$event.stopPropagation()">
+            <div class="profissional-form">
+              <h4>{{ editandoProfissional ? 'Editar Profissional' : 'Novo Profissional' }}</h4>
 
-            <!-- Foto do Profissional -->
-            <div class="form-group">
-              <label>Foto do Profissional *</label>
-              <div class="photo-upload-profissional" (click)="photoProfissionalInput.click()">
-                <div class="photo-preview-profissional" [class.has-photo]="previewUrlProfissional">
-                  <img *ngIf="previewUrlProfissional" [src]="previewUrlProfissional" alt="Foto do profissional" />
-                  <div *ngIf="!previewUrlProfissional" class="photo-placeholder-profissional">
-                    <i class="fa fa-camera"></i>
-                    <span>Adicionar foto</span>
+              <!-- Foto do Profissional -->
+              <div class="form-group">
+                <label>Foto do Profissional *</label>
+                <div class="photo-upload-profissional" (click)="photoProfissionalInput.click()">
+                  <div class="photo-preview-profissional" [class.has-photo]="previewUrlProfissional">
+                    <img *ngIf="previewUrlProfissional" [src]="previewUrlProfissional" alt="Foto do profissional" />
+                    <div *ngIf="!previewUrlProfissional" class="photo-placeholder-profissional">
+                      <i class="fa fa-camera"></i>
+                      <span>Adicionar foto</span>
+                    </div>
                   </div>
+                  <input
+                    #photoProfissionalInput
+                    type="file"
+                    accept="image/*"
+                    (change)="onFileSelectedProfissional($event)"
+                    hidden />
                 </div>
-                <input
-                  #photoProfissionalInput
-                  type="file"
-                  accept="image/*"
-                  (change)="onFileSelectedProfissional($event)"
-                  hidden />
-              </div>
-              <button *ngIf="previewUrlProfissional" class="btn-remove-photo-prof" (click)="removePhotoProfissional(); $event.stopPropagation()">
-                <i class="fa fa-times"></i> Remover foto
-              </button>
-            </div>
-
-            <div class="form-group">
-              <label for="nomeProfissional">Nome Completo *</label>
-              <input
-                type="text"
-                id="nomeProfissional"
-                [(ngModel)]="novoProfissional.nome"
-                placeholder="Ex: Maria Silva" />
-            </div>
-
-            <div class="form-group">
-              <label for="descricaoProfissional">Descrição (opcional)</label>
-              <textarea
-                id="descricaoProfissional"
-                [(ngModel)]="novoProfissional.descricao"
-                placeholder="Ex: Especialista em colorimetria com 5 anos de experiência"
-                rows="3"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label>Hobbies e Interesses (opcional)</label>
-              <p class="field-help">Adicione interesses para criar conexão com seus clientes</p>
-
-              <div class="interesses-input-group">
-                <input
-                  type="text"
-                  [(ngModel)]="interesseTemp"
-                  placeholder="Ex: Yoga, Café, Viagens..."
-                  (keyup.enter)="adicionarInteresse()" />
-                <button class="btn btn-primary btn-sm" (click)="adicionarInteresse()" type="button">
-                  <i class="fa fa-plus"></i>
-                  Adicionar
+                <button *ngIf="previewUrlProfissional" class="btn-remove-photo-prof" (click)="removePhotoProfissional(); $event.stopPropagation()">
+                  <i class="fa fa-times"></i> Remover foto
                 </button>
               </div>
 
-              <div class="interesses-list" *ngIf="novoProfissional.interesses.length > 0">
-                <span *ngFor="let interesse of novoProfissional.interesses; let i = index" class="interesse-tag">
-                  {{ interesse }}
-                  <button class="btn-remove-interesse" (click)="removerInteresse(i)" type="button">
-                    <i class="fa fa-times"></i>
-                  </button>
-                </span>
+              <div class="form-group">
+                <label for="nomeProfissional">Nome Completo *</label>
+                <input
+                  type="text"
+                  id="nomeProfissional"
+                  [(ngModel)]="novoProfissional.nome"
+                  placeholder="Ex: Maria Silva" />
               </div>
-            </div>
 
-            <div class="form-actions">
-              <button class="btn btn-secondary" (click)="cancelarFormProfissional()">
-                Cancelar
-              </button>
-              <button class="btn btn-primary" (click)="salvarProfissional()">
-                {{ editandoProfissional ? 'Salvar Alterações' : 'Adicionar Profissional' }}
-              </button>
+              <div class="form-group">
+                <label for="descricaoProfissional">Descrição (opcional)</label>
+                <textarea
+                  id="descricaoProfissional"
+                  [(ngModel)]="novoProfissional.descricao"
+                  placeholder="Ex: Especialista em colorimetria com 5 anos de experiência"
+                  rows="3"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Hobbies e Interesses (opcional)</label>
+                <p class="field-help">Adicione interesses para criar conexão com seus clientes</p>
+
+                <div class="interesses-input-group">
+                  <input
+                    type="text"
+                    [(ngModel)]="interesseTemp"
+                    placeholder="Ex: Yoga, Café, Viagens..."
+                    (keyup.enter)="adicionarInteresse()" />
+                  <button class="btn btn-primary btn-sm" (click)="adicionarInteresse()" type="button">
+                    <i class="fa fa-plus"></i>
+                    Adicionar
+                  </button>
+                </div>
+
+                <div class="interesses-list" *ngIf="novoProfissional.interesses.length > 0">
+                  <span *ngFor="let interesse of novoProfissional.interesses; let i = index" class="interesse-tag">
+                    {{ interesse }}
+                    <button class="btn-remove-interesse" (click)="removerInteresse(i)" type="button">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-secondary" (click)="cancelarFormProfissional()">
+                  Cancelar
+                </button>
+                <button class="btn btn-primary" (click)="salvarProfissional()">
+                  {{ editandoProfissional ? 'Salvar Alterações' : 'Adicionar Profissional' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -613,12 +622,23 @@
 
         <div class="config-extras">
           <h4>Configurações de Agendamento</h4>
+          <div class="form-group">
+            <label>Intervalo entre agendamentos</label>
+            <p-select
+              [options]="intervaloOptions"
+              [(ngModel)]="data.intervaloAgendamento"
+              optionLabel="label"
+              optionValue="value"
+              styleClass="form-control-select"
+              placeholder="Selecione">
+            </p-select>
+          </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Intervalo entre agendamentos</label>
+              <label>Antecedência mínima</label>
               <p-select
-                [options]="intervaloOptions"
-                [(ngModel)]="data.intervaloAgendamento"
+                [options]="antecedenciaMinOptions"
+                [(ngModel)]="data.antecedenciaMinima"
                 optionLabel="label"
                 optionValue="value"
                 styleClass="form-control-select"
@@ -626,10 +646,10 @@
               </p-select>
             </div>
             <div class="form-group">
-              <label>Antecedência mínima</label>
+              <label>Antecedência máxima</label>
               <p-select
-                [options]="antecedenciaMinOptions"
-                [(ngModel)]="data.antecedenciaMinima"
+                [options]="antecedenciaMaxOptions"
+                [(ngModel)]="data.antecedenciaMaxima"
                 optionLabel="label"
                 optionValue="value"
                 styleClass="form-control-select"

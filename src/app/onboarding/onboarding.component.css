@@ -13,6 +13,20 @@
   animation: fadeIn 0.3s ease;
 }
 
+:host ::ng-deep .p-toast {
+  width: min(92vw, 360px);
+  z-index: 12000 !important;
+}
+
+@media (max-width: 600px) {
+  :host ::ng-deep .p-toast {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    top: 1rem !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -26,14 +40,18 @@
 .modal-container {
   background: white;
   border-radius: 16px;
-  width: 90%;
-  max-width: 650px;
-  max-height: 90vh;
+  width: 92%;
+  max-width: 760px;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;
+  position: relative;
+  min-height: 0;
+  box-sizing: border-box;
+  max-width: min(760px, 100%);
 }
 
 @keyframes slideUp {
@@ -146,8 +164,9 @@
 .modal-content {
   padding: 1.5rem 2rem;
   overflow-y: auto;
-  flex: 1;
-  max-height: calc(90vh - 280px);
+  overflow-x: hidden;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Alert */
@@ -226,7 +245,7 @@
 
 .photo-preview:hover {
   border-color: #e91e63;
-  background: #f0fff0;
+  background: #fff0f6;
 }
 
 .photo-preview.has-photo {
@@ -299,6 +318,15 @@
   font-family: inherit;
 }
 
+.form-group input[type="text"]:disabled,
+.form-group input[type="tel"]:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background: #f1f1f1;
+  color: #888;
+  cursor: not-allowed;
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
@@ -313,6 +341,13 @@
   border-radius: 8px;
   background: #fff;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:host ::ng-deep .form-control-select.p-disabled {
+  background: #f1f1f1;
+  border-color: #ddd;
+  color: #888;
+  opacity: 1;
 }
 
 :host ::ng-deep .form-control-select .p-select:hover {
@@ -411,7 +446,7 @@
 }
 
 .dia-item.ativo {
-  background: #f0fff0;
+  background: #fff0f6;
   border-color: #e91e63;
 }
 
@@ -661,12 +696,12 @@
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
+  background: linear-gradient(135deg, #f48fb1 0%, #e91e63 100%);
   color: white;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #9c27b0 0%, #247300 100%);
+  background: linear-gradient(135deg, #ec407a 0%, #c2185b 100%);
 }
 
 .btn-success:disabled {
@@ -729,7 +764,7 @@
 
 .servico-item:hover {
   border-color: #e91e63;
-  background: #f0fff0;
+  background: #fff0f6;
 }
 
 .servico-thumb {
@@ -821,7 +856,7 @@
 /* Formulário de Serviço */
 .servico-form {
   padding: 1rem;
-  background: #f0fff0;
+  background: #fff0f6;
   border-radius: 12px;
   border: 1px solid #e91e63;
 }
@@ -918,9 +953,19 @@
 
 /* Responsive */
 @media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
   .modal-container {
-    width: 95%;
-    max-height: 95vh;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    margin: 0;
   }
 
   .modal-header {
@@ -933,6 +978,23 @@
 
   .steps-container {
     padding: 0.75rem 1rem;
+    overflow: hidden;
+  }
+
+  .steps {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.4rem;
+  }
+
+  .step {
+    flex: 0 0 auto;
+    min-width: 4.5rem;
   }
 
   .step-icon {
@@ -943,10 +1005,41 @@
 
   .step-title {
     font-size: 0.65rem;
+    line-height: 1.1;
   }
 
   .modal-content {
     padding: 1rem 1.5rem;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .summary-item .label {
+    width: auto;
+  }
+
+  .servico-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .servico-detalhes {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .servico-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .photo-preview-servico {
+    width: 100%;
+    max-width: 240px;
   }
 
   .modal-footer {
@@ -960,33 +1053,49 @@
   }
 }
 
-/* ========== CORREÇÃO DE LAYOUT PARA FORMULÁRIO DE PROFISSIONAL ========== */
+/* Inline modal dentro do onboarding */
+.inline-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 11000;
+}
 
-/* Limitar altura do formulário de profissional para evitar scroll no modal */
-.profissional-form {
-  max-height: 50vh;
+.inline-modal {
+  width: 100%;
+  max-width: 720px;
+  max-height: 95vh;
   overflow-y: auto;
-  padding-right: 8px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.inline-modal .servico-form,
+.inline-modal .profissional-form {
+  margin: 0;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.inline-modal .form-actions {
+  position: static;
+  padding: 0;
+  margin-top: 1rem;
+  border-top: none;
+}
+
+/* Permitir que o modal inline controle o scroll */
+.profissional-form {
   margin-top: 20px;
-}
-
-/* Estilo da scrollbar do formulário */
-.profissional-form::-webkit-scrollbar {
-  width: 6px;
-}
-
-.profissional-form::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.profissional-form::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.profissional-form::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }
 
 /* Garantir que step-content tenha altura máxima apropriada */

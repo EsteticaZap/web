@@ -1,12 +1,14 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, Inject, PLATFORM_ID, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AuthService } from '../services/auth.service';
 import { Firestore, doc, updateDoc, serverTimestamp, collection, addDoc, getDocs, deleteDoc, query, where } from '@angular/fire/firestore';
 import { Profissional } from '../interfaces/profissional.interface';
 import { ProfissionalService } from '../services/profissional.service';
-import { formatPhoneMask } from '../utils/phone-utils';
+import { sanitizePhone } from '../utils/phone-utils';
 
 interface HorarioTrabalho {
   inicio: string;
@@ -60,26 +62,28 @@ interface OnboardingData {
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, ToastModule],
   templateUrl: './onboarding.component.html',
-  styleUrls: ['./onboarding.component.css']
+  styleUrls: ['./onboarding.component.css'],
+  providers: [MessageService]
 })
 export class OnboardingComponent implements OnInit {
   private readonly MAX_IMAGE_BYTES = 950 * 1024; // Mantém margem para o limite de 1MB do Firestore
   private authService = inject(AuthService);
   private firestore = inject(Firestore);
   private profissionalService = inject(ProfissionalService);
+  private messageService = inject(MessageService);
   private isBrowser: boolean;
 
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() onComplete = new EventEmitter<void>();
+  @ViewChild('modalContent') modalContent?: ElementRef<HTMLDivElement>;
 
   currentStep = 0;
   totalSteps = 6;
   isLoading = false;
   isSaving = false;
-  errorMessage = '';
   isCepLoading = false;
 
   selectedFile: File | null = null;
@@ -219,7 +223,7 @@ export class OnboardingComponent implements OnInit {
     if (this.validateCurrentStep()) {
       if (this.currentStep < this.totalSteps - 1) {
         this.currentStep++;
-        this.errorMessage = '';
+        this.scrollToTop();
       }
     }
   }
@@ -227,82 +231,115 @@ export class OnboardingComponent implements OnInit {
   prevStep(): void {
     if (this.currentStep > 0) {
       this.currentStep--;
-      this.errorMessage = '';
+      this.scrollToTop();
     }
   }
 
   goToStep(index: number): void {
     if (index <= this.currentStep) {
       this.currentStep = index;
-      this.errorMessage = '';
+      this.scrollToTop();
     }
+  }
+
+  private showError(message: string): void {
+    if (!message) return;
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: message,
+      life: 4000
+    });
+  }
+
+  private scrollToTop(): void {
+    if (!this.isBrowser) return;
+    const container = this.modalContent?.nativeElement;
+    if (!container) return;
+    requestAnimationFrame(() => {
+      container.scrollTop = 0;
+    });
   }
 
   validateCurrentStep(): boolean {
     switch (this.currentStep) {
       case 0:
         if (!this.data.nomeSalao.trim()) {
-          this.errorMessage = 'Por favor, informe o nome do seu salão.';
+          this.showError('Por favor, informe o nome do seu salão.');
           return false;
         }
         if (!this.data.telefone.trim()) {
-          this.errorMessage = 'Informe o telefone do salão.';
+          this.showError('Informe o telefone do salão.');
           return false;
         }
         if (!this.data.whatsapp.trim()) {
-          this.errorMessage = 'Informe o WhatsApp do salão.';
+          this.showError('Informe o WhatsApp do salão.');
           return false;
         }
         if (!this.data.descricao.trim()) {
-          this.errorMessage = 'Descreva seu salão para continuar.';
+          this.showError('Descreva seu salão para continuar.');
           return false;
         }
         break;
       case 1:
         const cepNum = this.data.cep.replace(/\D/g, '');
         if (cepNum.length !== 8) {
-          this.errorMessage = 'Informe um CEP válido com 8 dígitos.';
+          this.showError('Informe um CEP válido com 8 dígitos.');
           return false;
         }
         if (!this.data.endereco.trim()) {
-          this.errorMessage = 'Informe o nome da rua/avenida.';
+          this.showError('Informe o nome da rua/avenida.');
           return false;
         }
         if (!this.data.numero.trim()) {
-          this.errorMessage = 'Informe o número do endereço.';
+          this.showError('Informe o número do endereço.');
           return false;
         }
         if (!this.data.cidade.trim()) {
-          this.errorMessage = 'Informe a cidade.';
+          this.showError('Informe a cidade.');
           return false;
         }
         if (!this.data.estado.trim()) {
-          this.errorMessage = 'Informe o estado.';
+          this.showError('Informe o estado.');
           return false;
         }
         break;
       case 2:
         const temDiaAtivo = Object.values(this.data.horariosFuncionamento).some(h => h.ativo);
         if (!temDiaAtivo) {
-          this.errorMessage = 'Selecione pelo menos um dia de funcionamento.';
+          this.showError('Selecione pelo menos um dia de funcionamento.');
           return false;
         }
         break;
       case 3:
         if (this.servicos.length === 0) {
-          this.errorMessage = 'Cadastre pelo menos um serviço.';
+          this.showError('Cadastre pelo menos um serviço.');
           return false;
         }
         break;
       case 4:
         // Validar profissionais
         if (this.profissionais.length === 0) {
-          this.errorMessage = 'Adicione pelo menos um profissional à sua equipe.';
+          this.showError('Adicione pelo menos um profissional à sua equipe.');
           return false;
         }
         break;
     }
-    this.errorMessage = '';
+    return true;
+  }
+
+  private validateAllSteps(): boolean {
+    const originalStep = this.currentStep;
+
+    for (let step = 0; step < this.totalSteps - 1; step++) {
+      this.currentStep = step;
+      if (!this.validateCurrentStep()) {
+        this.scrollToTop();
+        return false;
+      }
+    }
+
+    this.currentStep = originalStep;
     return true;
   }
 
@@ -326,12 +363,12 @@ export class OnboardingComponent implements OnInit {
       const file = input.files[0];
       
       if (!file.type.startsWith('image/')) {
-        this.errorMessage = 'Por favor, selecione apenas arquivos de imagem.';
+        this.showError('Por favor, selecione apenas arquivos de imagem.');
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'A imagem deve ter no máximo 5MB.';
+        this.showError('A imagem deve ter no máximo 5MB.');
         return;
       }
 
@@ -341,15 +378,14 @@ export class OnboardingComponent implements OnInit {
         .then(compressed => {
           if (this.isImageTooLarge(compressed)) {
             this.previewUrl = '';
-            this.errorMessage = 'A imagem precisa ter no máximo 950KB. Escolha um arquivo menor.';
+            this.showError('A imagem precisa ter no máximo 950KB. Escolha um arquivo menor.');
             return;
           }
           this.previewUrl = compressed;
-          this.errorMessage = '';
         })
         .catch(error => {
           console.error('Erro ao processar imagem do salão:', error);
-          this.errorMessage = 'Erro ao processar imagem. Tente novamente com outro arquivo.';
+          this.showError('Erro ao processar imagem. Tente novamente com outro arquivo.');
         });
     }
   }
@@ -366,15 +402,14 @@ export class OnboardingComponent implements OnInit {
   }
 
   async finalizarOnboarding(): Promise<void> {
-    if (!this.validateCurrentStep()) return;
+    if (!this.validateAllSteps()) return;
 
     this.isSaving = true;
-    this.errorMessage = '';
 
     try {
       const currentUser = this.authService.currentUser();
       if (!currentUser) {
-        this.errorMessage = 'Usuário não autenticado.';
+        this.showError('Usuário não autenticado.');
         return;
       }
 
@@ -385,7 +420,7 @@ export class OnboardingComponent implements OnInit {
       }
 
       if (this.data.fotoSalao && this.isImageTooLarge(this.data.fotoSalao)) {
-        this.errorMessage = 'A imagem do salão ainda está grande demais após compressão. Use um arquivo menor (até 950KB).';
+        this.showError('A imagem do salão ainda está grande demais após compressão. Use um arquivo menor (até 950KB).');
         this.isSaving = false;
         return;
       }
@@ -443,7 +478,7 @@ export class OnboardingComponent implements OnInit {
 
     } catch (error: any) {
       console.error('Erro ao salvar configurações:', error);
-      this.errorMessage = 'Erro ao salvar. Tente novamente.';
+      this.showError('Erro ao salvar. Tente novamente.');
     } finally {
       this.isSaving = false;
     }
@@ -451,8 +486,9 @@ export class OnboardingComponent implements OnInit {
 
   formatPhone(event: Event, field: 'telefone' | 'whatsapp'): void {
     const input = event.target as HTMLInputElement;
-    const formatted = formatPhoneMask(input.value);
-    this.data[field] = formatted;
+    const digits = sanitizePhone(input.value);
+    input.value = digits;
+    this.data[field] = digits;
   }
 
   formatCep(event: Event): void {
@@ -525,26 +561,25 @@ export class OnboardingComponent implements OnInit {
     this.novoServico.duracao = Number(this.novoServico.duracao) || 0;
 
     if (!this.novoServico.nome.trim()) {
-      this.errorMessage = 'Informe o nome do serviço.';
+      this.showError('Informe o nome do serviço.');
       return;
     }
 
     if (this.novoServico.valor <= 0) {
-      this.errorMessage = 'Informe um valor válido para o serviço.';
+      this.showError('Informe um valor válido para o serviço.');
       return;
     }
 
     if (this.novoServico.duracao <= 0) {
-      this.errorMessage = 'Informe a duração do serviço.';
+      this.showError('Informe a duração do serviço.');
       return;
     }
 
     if (this.previewUrlServico && this.isImageTooLarge(this.previewUrlServico)) {
-      this.errorMessage = 'A imagem do serviço precisa ter no máximo 950KB após compressão.';
+      this.showError('A imagem do serviço precisa ter no máximo 950KB após compressão.');
       return;
     }
 
-    this.errorMessage = '';
     this.novoServico.nome = this.novoServico.nome.trim();
     this.novoServico.foto = this.previewUrlServico || '';
 
@@ -646,21 +681,20 @@ export class OnboardingComponent implements OnInit {
 
   salvarProfissional(): void {
     if (!this.novoProfissional.nome.trim()) {
-      this.errorMessage = 'Informe o nome do profissional.';
+      this.showError('Informe o nome do profissional.');
       return;
     }
 
     if (!this.previewUrlProfissional) {
-      this.errorMessage = 'Adicione uma foto do profissional.';
+      this.showError('Adicione uma foto do profissional.');
       return;
     }
 
     if (this.isImageTooLarge(this.previewUrlProfissional)) {
-      this.errorMessage = 'A foto do profissional ainda está grande demais após compressão. Use um arquivo menor (até 950KB).';
+      this.showError('A foto do profissional ainda está grande demais após compressão. Use um arquivo menor (até 950KB).');
       return;
     }
 
-    this.errorMessage = '';
 
     // Adicionar a foto em base64
     this.novoProfissional.foto = this.previewUrlProfissional;
@@ -693,12 +727,12 @@ export class OnboardingComponent implements OnInit {
       const file = input.files[0];
 
       if (!file.type.startsWith('image/')) {
-        this.errorMessage = 'Por favor, selecione apenas arquivos de imagem.';
+        this.showError('Por favor, selecione apenas arquivos de imagem.');
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'A imagem deve ter no máximo 5MB.';
+        this.showError('A imagem deve ter no máximo 5MB.');
         return;
       }
 
@@ -710,15 +744,14 @@ export class OnboardingComponent implements OnInit {
 
         if (this.isImageTooLarge(compressedBase64)) {
           this.previewUrlProfissional = '';
-          this.errorMessage = 'A foto do profissional precisa ter no máximo 950KB após compressão.';
+          this.showError('A foto do profissional precisa ter no máximo 950KB após compressão.');
           return;
         }
 
         this.previewUrlProfissional = compressedBase64;
-        this.errorMessage = '';
       } catch (error) {
         console.error('Erro ao processar imagem:', error);
-        this.errorMessage = 'Erro ao processar imagem. Tente novamente.';
+        this.showError('Erro ao processar imagem. Tente novamente.');
       }
     }
   }
@@ -795,33 +828,32 @@ export class OnboardingComponent implements OnInit {
     const interesse = this.interesseTemp.trim();
 
     if (!interesse) {
-      this.errorMessage = 'Digite um interesse antes de adicionar.';
+      this.showError('Digite um interesse antes de adicionar.');
       return;
     }
 
     if (interesse.length < 2) {
-      this.errorMessage = 'Interesse deve ter pelo menos 2 caracteres.';
+      this.showError('Interesse deve ter pelo menos 2 caracteres.');
       return;
     }
 
     if (interesse.length > 50) {
-      this.errorMessage = 'Interesse deve ter no máximo 50 caracteres.';
+      this.showError('Interesse deve ter no máximo 50 caracteres.');
       return;
     }
 
     if (this.novoProfissional.interesses.length >= 10) {
-      this.errorMessage = 'Máximo de 10 interesses permitidos.';
+      this.showError('Máximo de 10 interesses permitidos.');
       return;
     }
 
     if (this.novoProfissional.interesses.includes(interesse)) {
-      this.errorMessage = 'Este interesse já foi adicionado.';
+      this.showError('Este interesse já foi adicionado.');
       return;
     }
 
     this.novoProfissional.interesses.push(interesse);
     this.interesseTemp = '';
-    this.errorMessage = '';
   }
 
   removerInteresse(index: number): void {
@@ -834,12 +866,12 @@ export class OnboardingComponent implements OnInit {
       const file = input.files[0];
 
       if (!file.type.startsWith('image/')) {
-        this.errorMessage = 'Por favor, selecione apenas arquivos de imagem.';
+        this.showError('Por favor, selecione apenas arquivos de imagem.');
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'A imagem deve ter no máximo 5MB.';
+        this.showError('A imagem deve ter no máximo 5MB.');
         return;
       }
 
@@ -850,15 +882,14 @@ export class OnboardingComponent implements OnInit {
 
         if (this.isImageTooLarge(compressedBase64)) {
           this.previewUrlServico = '';
-          this.errorMessage = 'A imagem do serviço precisa ter no máximo 950KB após compressão.';
+          this.showError('A imagem do serviço precisa ter no máximo 950KB após compressão.');
           return;
         }
 
         this.previewUrlServico = compressedBase64;
-        this.errorMessage = '';
       } catch (error) {
         console.error('Erro ao processar imagem do serviço:', error);
-        this.errorMessage = 'Erro ao processar imagem. Tente novamente.';
+        this.showError('Erro ao processar imagem. Tente novamente.');
       }
     }
   }
@@ -898,7 +929,13 @@ export class OnboardingComponent implements OnInit {
 
       const data = await response.json();
       if (data.erro) {
-        this.errorMessage = 'CEP não encontrado. Verifique e tente novamente.';
+        this.limparEndereco();
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'CEP inválido',
+          detail: 'CEP não encontrado. Verifique e tente novamente.',
+          life: 4000
+        });
         return;
       }
 
@@ -906,12 +943,24 @@ export class OnboardingComponent implements OnInit {
       this.data.cidade = data.localidade || '';
       this.data.estado = data.uf || '';
       this.data.bairro = data.bairro || '';
-      this.errorMessage = '';
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      this.errorMessage = 'Não foi possível preencher o endereço automaticamente. Preencha manualmente.';
+      this.limparEndereco();
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Falha ao buscar CEP',
+        detail: 'Não foi possível buscar o endereço. Verifique o CEP e tente novamente.',
+        life: 4000
+      });
     } finally {
       this.isCepLoading = false;
     }
+  }
+
+  private limparEndereco(): void {
+    this.data.endereco = '';
+    this.data.cidade = '';
+    this.data.estado = '';
+    this.data.bairro = '';
   }
 }

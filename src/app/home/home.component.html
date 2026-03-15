@@ -10,6 +10,22 @@
         optionLabel="label"
         optionValue="value">
       </p-select>
+      <button
+        class="excel-button"
+        type="button"
+        [disabled]="isDownloadingExcel"
+        (click)="downloadExcelReport()">
+        <i class="fa fa-file-excel"></i>
+        {{ isDownloadingExcel ? 'Gerando...' : 'Gerar Excel' }}
+      </button>
+      <button
+        class="pdf-button"
+        type="button"
+        [disabled]="isDownloadingPdf"
+        (click)="downloadPdfReport()">
+        <i class="fa fa-file-pdf"></i>
+        {{ isDownloadingPdf ? 'Gerando...' : 'Gerar PDF' }}
+      </button>
       <i class="fa fa-bell notification"></i>
     </div>
   </header>
@@ -124,6 +140,27 @@
 <canvas #paymentsCanvas class="chart-canvas"></canvas>
     </div>
   </section>
+
+
+<div class="assinatura-modal-overlay" *ngIf="mostrarModalAssinaturaSucesso" (click)="fecharModalAssinaturaSucesso()">
+  <div class="assinatura-modal-content" (click)="$event.stopPropagation()">
+    <div class="assinatura-modal-header">
+      <h2>Assinatura realizada com sucesso!</h2>
+      <button class="assinatura-modal-close" type="button" (click)="fecharModalAssinaturaSucesso()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="assinatura-modal-body">
+      <p>
+        <i class="pi pi-check-circle"></i>
+        Sua assinatura foi feita com sucesso. Logo logo seu plano será ativado.
+      </p>
+    </div>
+    <div class="assinatura-modal-footer">
+      <button class="btn-primary" type="button" (click)="fecharModalAssinaturaSucesso()">Entendi</button>
+    </div>
+  </div>
+</div>
 
   <p-drawer
     [(visible)]="isCustomDrawerOpen"

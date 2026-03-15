@@ -1,4 +1,6 @@
 <div class="agenda-page">
+  <p-toast position="top-right"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
   <!-- Header -->
   <header class="agenda-header">
     <div class="header-left">
@@ -128,6 +130,18 @@
                     <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
                     <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
                     <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
+                    <button
+                      *ngIf="appt.status === 'blocked'"
+                      type="button"
+                      class="remove-block-btn"
+                      [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                      [class.is-disabled]="!canRemoveBloqueio(appt)"
+                      pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                      [tooltipDisabled]="canRemoveBloqueio(appt)"
+                      (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                      <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                      {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -324,6 +338,18 @@
                   <div class="appt-client">{{ appt.status === 'blocked' ? 'Horário bloqueado' : appt.client }}</div>
                   <div class="appt-service">{{ appt.service }}</div>
                   <div class="appt-time">{{ appt.startTime }} - {{ appt.endTime }}</div>
+                  <button
+                    *ngIf="appt.status === 'blocked'"
+                    type="button"
+                    class="remove-block-btn remove-block-btn--compact"
+                    [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                    [class.is-disabled]="!canRemoveBloqueio(appt)"
+                    pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                    [tooltipDisabled]="canRemoveBloqueio(appt)"
+                    (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                    <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                    {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                  </button>
                 </div>
               </div>
             </td>
@@ -528,6 +554,18 @@
                         <span class="appt-status" [ngClass]="getStatusClass(appt.status)">{{ getStatusLabel(appt.status) }}</span>
                         <span class="appt-price" *ngIf="appt.status !== 'blocked'">{{ appt.price }}</span>
                         <span class="appt-price blocked" *ngIf="appt.status === 'blocked'">Indisponível</span>
+                        <button
+                          *ngIf="appt.status === 'blocked'"
+                          type="button"
+                          class="remove-block-btn"
+                          [disabled]="!canRemoveBloqueio(appt) || isRemovingBloqueio(appt)"
+                          [class.is-disabled]="!canRemoveBloqueio(appt)"
+                          pTooltip="Só é possível remover bloqueios futuros (ainda não iniciados)."
+                          [tooltipDisabled]="canRemoveBloqueio(appt)"
+                          (click)="confirmarRemocaoBloqueio(appt); $event.stopPropagation()">
+                          <i class="fa" [ngClass]="isRemovingBloqueio(appt) ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+                          {{ isRemovingBloqueio(appt) ? 'Removendo...' : 'Remover bloqueio' }}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -705,7 +743,7 @@
             </div>
           </div>
 
-          <div class="status-actions" *ngIf="isPastAppointment(appt)">
+          <div class="status-actions" *ngIf="canUpdateAppointmentStatus(appt)">
             <h5>Atualizar status</h5>
             <div class="status-buttons">
               <button
@@ -732,6 +770,32 @@
             <div *ngIf="statusUpdateError" class="action-feedback error">
               <i class="fa fa-exclamation-circle"></i>
               {{ statusUpdateError }}
+            </div>
+          </div>
+
+          <div class="status-actions" *ngIf="canCancelAppointment(appt)">
+            <h5>Cancelar agendamento</h5>
+            <p class="status-description">
+              O cancelamento será enviado para o cliente pelo backend.
+            </p>
+            <div class="status-buttons">
+              <button
+                class="btn-status cancel"
+                type="button"
+                [disabled]="isCancellingAppointment"
+                (click)="cancelarAgendamento()">
+                <i class="fa" [ngClass]="{ 'fa-times-circle': !isCancellingAppointment, 'fa-spinner fa-spin': isCancellingAppointment }"></i>
+                <span *ngIf="!isCancellingAppointment">Cancelar agendamento</span>
+                <span *ngIf="isCancellingAppointment">Cancelando...</span>
+              </button>
+            </div>
+            <div *ngIf="cancelAppointmentSuccess" class="action-feedback success">
+              <i class="fa fa-check-circle"></i>
+              {{ cancelAppointmentSuccess }}
+            </div>
+            <div *ngIf="cancelAppointmentError" class="action-feedback error">
+              <i class="fa fa-exclamation-circle"></i>
+              {{ cancelAppointmentError }}
             </div>
           </div>
         </div>

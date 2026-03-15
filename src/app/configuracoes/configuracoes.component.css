@@ -148,6 +148,40 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+.scheduling-section {
+  background: linear-gradient(180deg, #fff, #fff7fb);
+  border: 1px solid #f7d5e4;
+  box-shadow: 0 14px 36px rgba(233, 30, 99, 0.08);
+}
+
+.scheduling-header {
+  margin-bottom: 1.25rem;
+}
+
+.scheduling-header h3 {
+  margin-bottom: 0.35rem;
+}
+
+.scheduling-header p {
+  margin: 0;
+  color: #666;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  max-width: 780px;
+}
+
+.scheduling-row {
+  gap: 1.25rem;
+}
+
+.scheduling-group {
+  padding: 1rem;
+  border: 1px solid #f3d8e4;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.05);
+}
+
 .equipe-section {
   background: linear-gradient(180deg, #fff, #fff9fb);
   border: 1px solid #f6cadd;
@@ -320,10 +354,15 @@
 
 :host ::ng-deep .form-control-select .p-select {
   width: 100%;
+  min-width: 260px;
   border: 1px solid #e0e0e0;
   border-radius: 0.5rem;
   background: #fff;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+:host ::ng-deep .form-control-select-wide .p-select {
+  min-height: 48px;
 }
 
 :host ::ng-deep .form-control-select .p-select:hover {
@@ -358,6 +397,27 @@
 .form-group textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+
+.form-group input:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background: #f3f4f6;
+  border-color: #d9dbe1;
+  color: #8a8f98;
+  cursor: not-allowed;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-disabled {
+  background: #f3f4f6;
+  border-color: #d9dbe1;
+  opacity: 1;
+}
+
+:host ::ng-deep .form-control-select .p-select.p-disabled .p-select-label,
+:host ::ng-deep .form-control-select .p-select.p-disabled .p-select-dropdown {
+  color: #8a8f98;
 }
 
 .form-hint {
@@ -1069,6 +1129,23 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+}
+
+:host ::ng-deep .p-dialog {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+}
+
+:host ::ng-deep .p-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(92vh - 12rem);
+  overflow-y: auto;
+}
+
+:host ::ng-deep .p-dialog-footer {
+  flex-shrink: 0;
 }
 
 .profissional-actions {

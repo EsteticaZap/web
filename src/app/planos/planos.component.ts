@@ -28,6 +28,7 @@ export class PlanosComponent implements OnInit {
   mensagemErro?: string;
   mensagemSucesso?: string;
   erroModalPagamento?: string;
+  mostrarModalAssinaturaSucesso: boolean = false;
   isBrowser = typeof window !== 'undefined';
 
   ngOnInit(): void {
@@ -66,13 +67,26 @@ export class PlanosComponent implements OnInit {
     this.erroModalPagamento = undefined;
   }
 
+  fecharModalAssinaturaSucesso(): void {
+    this.mostrarModalAssinaturaSucesso = false;
+  }
+
   async confirmarPagamento(): Promise<void> {
     this.erroModalPagamento = undefined;
     this.isLoadingPagamento = true;
 
     try {
-      const userEmail = this.authService.currentUser()?.email || undefined;
-      const { sessionId } = await this.stripeCheckoutService.criarSessaoCheckout(userEmail);
+      const currentUser = this.authService.currentUser();
+      const salonId = currentUser?.uid || '';
+      const userEmail = currentUser?.email || undefined;
+      const { sessionId, checkoutUrl } = await this.stripeCheckoutService.criarSessaoCheckout(salonId, userEmail);
+      if (checkoutUrl) {
+        this.stripeCheckoutService.redirecionarParaCheckoutUrl(checkoutUrl);
+        return;
+      }
+      if (!sessionId) {
+        throw new Error('Sessão de checkout não retornada.');
+      }
       await this.stripeCheckoutService.redirecionarParaCheckout(sessionId);
     } catch (error) {
       console.error('Erro ao confirmar pagamento:', error);
@@ -106,8 +120,11 @@ export class PlanosComponent implements OnInit {
     const params = await firstValueFrom(this.route.queryParamMap);
     const sessionId = params.get('session_id');
     const cancelado = params.get('cancelado');
+    const assinaturaSucesso =
+      params.get('subscription_sucess') === 'true'
+      || params.get('subscription_success') === 'true';
 
-    if (!sessionId && !cancelado) {
+    if (!sessionId && !cancelado && !assinaturaSucesso) {
       return;
     }
 
@@ -121,6 +138,12 @@ export class PlanosComponent implements OnInit {
 
     if (cancelado) {
       this.mensagemErro = 'Pagamento cancelado. Nenhuma cobrança foi realizada.';
+      limparParametros();
+      return;
+    }
+
+    if (assinaturaSucesso) {
+      this.mostrarModalAssinaturaSucesso = true;
       limparParametros();
       return;
     }
