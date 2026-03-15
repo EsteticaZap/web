@@ -50,20 +50,35 @@
     <div class="card">
       <div class="icon-wrapper calendar"><i class="fa fa-calendar-alt"></i></div>
       <div class="label">Atendimentos Hoje</div>
-      <div class="value">{{ stats.today }}</div>
-      <div class="change positive">+12%</div>
+      <div class="value">{{ stats.today.value }}</div>
+      <div
+        class="change"
+        [ngClass]="stats.today.trend"
+        *ngIf="stats.today.hasComparison && stats.today.displayText">
+        {{ stats.today.displayText }}
+      </div>
     </div>
     <div class="card">
       <div class="icon-wrapper dollar"><i class="fa fa-dollar-sign"></i></div>
-      <div class="label">Faturamento Semana</div>
-      <div class="value">R$ {{ stats.weekRevenue }}</div>
-      <div class="change positive">+8%</div>
+      <div class="label">{{ faturamentoLabel }}</div>
+      <div class="value">R$ {{ stats.weekRevenue.value | number:'1.2-2' }}</div>
+      <div
+        class="change"
+        [ngClass]="stats.weekRevenue.trend"
+        *ngIf="stats.weekRevenue.hasComparison && stats.weekRevenue.displayText">
+        {{ stats.weekRevenue.displayText }}
+      </div>
     </div>
     <div class="card">
       <div class="icon-wrapper users"><i class="fa fa-users"></i></div>
       <div class="label">Clientes Ativos</div>
-      <div class="value">{{ stats.activeClients }}</div>
-      <div class="change positive">+5</div>
+      <div class="value">{{ stats.activeClients.value }}</div>
+      <div
+        class="change"
+        [ngClass]="stats.activeClients.trend"
+        *ngIf="stats.activeClients.hasComparison && stats.activeClients.displayText">
+        {{ stats.activeClients.displayText }}
+      </div>
     </div>
   </section>
 

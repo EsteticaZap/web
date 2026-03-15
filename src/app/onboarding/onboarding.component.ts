@@ -428,6 +428,16 @@ export class OnboardingComponent implements OnInit {
       // Recarregar dados do usuário para atualizar o cache
       await this.authService.refreshUserData();
 
+      // Enviar mensagem de boas-vindas via WhatsApp
+      const whatsappNumero = this.data.whatsapp.replace(/\D/g, '');
+      if (whatsappNumero) {
+        fetch('https://esteticazap-webhook.onrender.com/whatsapp/bem-vindo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
+          body: JSON.stringify({ to: whatsappNumero })
+        }).catch(err => console.warn('Erro ao enviar mensagem de boas-vindas:', err));
+      }
+
       this.closeModal();
       this.onComplete.emit();
 

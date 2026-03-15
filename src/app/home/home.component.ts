@@ -28,6 +28,20 @@ interface Agendamento {
   createdAt: any;
 }
 
+interface StatComparison {
+  value: number;
+  change: number;
+  trend: 'positive' | 'negative' | 'neutral';
+  displayText: string;
+  hasComparison: boolean;  // true se houver dados suficientes
+}
+
+interface DashboardStats {
+  today: StatComparison;
+  weekRevenue: StatComparison;
+  activeClients: StatComparison;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -63,10 +77,28 @@ export class HomeComponent implements OnInit, AfterViewInit {
     remaining: string;
   } | null = null;
   
-  stats = {
-    today: 0,
-    weekRevenue: 0,
-    activeClients: 0
+  stats: DashboardStats = {
+    today: {
+      value: 0,
+      change: 0,
+      trend: 'neutral',
+      displayText: '',
+      hasComparison: false
+    },
+    weekRevenue: {
+      value: 0,
+      change: 0,
+      trend: 'neutral',
+      displayText: '',
+      hasComparison: false
+    },
+    activeClients: {
+      value: 0,
+      change: 0,
+      trend: 'neutral',
+      displayText: '',
+      hasComparison: false
+    }
   };
   
   appointments: Array<{
@@ -98,6 +130,24 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private barChart: Chart | null = null;
   private servicesChart: Chart | null = null;
   private attendanceChart: Chart | null = null;
+
+  /**
+   * Retorna o label de faturamento baseado no período selecionado
+   */
+  get faturamentoLabel(): string {
+    switch (this.selectedPeriod) {
+      case 'daily':
+        return 'Faturamento Hoje';
+      case 'weekly':
+        return 'Faturamento Semana';
+      case 'monthly':
+        return 'Faturamento Mês';
+      case 'custom':
+        return 'Faturamento Período';
+      default:
+        return 'Faturamento';
+    }
+  }
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -240,30 +290,266 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Carregar estatísticas
+   * Carregar estatísticas com comparações dinâmicas
    */
   async carregarEstatisticas(salonId: string): Promise<void> {
     try {
       const hoje = new Date();
       const dataHoje = hoje.toISOString().split('T')[0];
-      
-      // Agendamentos de hoje
-      const agendamentosHojeRef = collection(this.firestore, 'agendamentos');
-      const qHoje = query(
-        agendamentosHojeRef,
-        where('salonId', '==', salonId),
-        where('data', '==', dataHoje)
-      );
-      const snapshotHoje = await getDocs(qHoje);
-      this.stats.today = snapshotHoje.size;
 
-      // Clientes ativos
-      const clientesAtivos = await this.clienteService.listarClientesPorSalao(salonId);
-      this.stats.activeClients = clientesAtivos.filter(c => c.status === 'ativo').length;
+      // Executar queries em paralelo para melhor performance
+      const [
+        agendamentosHojeSnapshot,
+        resultadoMediaDiaSemana,
+        clientesNovosHoje,
+        clientesAtivosLista
+      ] = await Promise.all([
+        // Agendamentos de hoje
+        (async () => {
+          const agendamentosHojeRef = collection(this.firestore, 'agendamentos');
+          const qHoje = query(
+            agendamentosHojeRef,
+            where('salonId', '==', salonId),
+            where('data', '==', dataHoje),
+            where('status', 'in', ['pendente', 'confirmado'])
+          );
+          return await getDocs(qHoje);
+        })(),
+
+        // Média de agendamentos do mesmo dia da semana
+        this.calcularMediaMesmoDiaSemana(salonId),
+
+        // Clientes novos hoje
+        this.contarClientesNovosHoje(salonId),
+
+        // Lista de clientes ativos
+        this.clienteService.listarClientesPorSalao(salonId)
+      ]);
+
+      const agendamentosHoje = agendamentosHojeSnapshot.size;
+      const clientesAtivos = clientesAtivosLista.filter(c => c.status === 'ativo').length;
+
+      // Atualizar stats com comparações
+      this.stats.today = this.calcularComparacao(
+        agendamentosHoje,
+        resultadoMediaDiaSemana.media,
+        resultadoMediaDiaSemana.temDados
+      );
+
+      this.stats.activeClients = {
+        value: clientesAtivos,
+        change: clientesNovosHoje,
+        trend: clientesNovosHoje > 0 ? 'positive' : 'neutral',
+        displayText: clientesNovosHoje > 0 ? `+${clientesNovosHoje} novos hoje` : '',
+        hasComparison: true  // Sempre mostra, pois é contagem absoluta
+      };
 
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     }
+  }
+
+  /**
+   * Calcula a média de agendamentos do mesmo dia da semana nas últimas 4 semanas
+   * Retorna { media, temDadosSuficientes }
+   */
+  private async calcularMediaMesmoDiaSemana(salonId: string): Promise<{ media: number; temDados: boolean }> {
+    try {
+      const hoje = new Date();
+      const datesParaMesmar: string[] = [];
+
+      // Buscar as últimas 4 ocorrências deste dia da semana (excluindo hoje)
+      for (let i = 1; i <= 4; i++) {
+        const dataAnterior = new Date(hoje);
+        dataAnterior.setDate(dataAnterior.getDate() - (7 * i));
+        datesParaMesmar.push(this.formatDateForQuery(dataAnterior));
+      }
+
+      // Usar query única com 'in' (mais eficiente que 4 queries separadas)
+      const agendamentosRef = collection(this.firestore, 'agendamentos');
+      const q = query(
+        agendamentosRef,
+        where('salonId', '==', salonId),
+        where('data', 'in', datesParaMesmar),
+        where('status', 'in', ['pendente', 'confirmado'])
+      );
+
+      const snapshot = await getDocs(q);
+
+      // Contar por data para verificar se temos dados de todas as 4 semanas
+      const countsPorData = new Map<string, number>();
+      snapshot.docs.forEach(doc => {
+        const agend = doc.data() as Agendamento;
+        countsPorData.set(agend.data, (countsPorData.get(agend.data) || 0) + 1);
+      });
+
+      // Só considera "dados suficientes" se houver pelo menos 3 das 4 datas
+      const datasComAgendamentos = countsPorData.size;
+      const temDadosSuficientes = datasComAgendamentos >= 3;
+
+      if (!temDadosSuficientes) {
+        return { media: 0, temDados: false };
+      }
+
+      const totalAgendamentos = snapshot.size;
+      const media = totalAgendamentos / datesParaMesmar.length;
+
+      return { media, temDados: true };
+    } catch (error) {
+      console.error('Erro ao calcular média do mesmo dia da semana:', error);
+      return { media: 0, temDados: false };
+    }
+  }
+
+  /**
+   * Calcula a média de faturamento das últimas 4 semanas (excluindo a semana atual)
+   * Retorna { media, temDadosSuficientes }
+   */
+  private async calcularMediaFaturamento4SemanasAnteriores(salonId: string): Promise<{ media: number; temDados: boolean }> {
+    try {
+      const hoje = new Date();
+      const faturamentoPorSemana: number[] = [];
+
+      // Calcular as últimas 4 semanas completas (7 dias cada)
+      for (let semana = 1; semana <= 4; semana++) {
+        const fimSemana = new Date(hoje);
+        fimSemana.setDate(fimSemana.getDate() - (7 * semana));
+
+        const inicioSemana = new Date(fimSemana);
+        inicioSemana.setDate(inicioSemana.getDate() - 6);
+
+        const agendamentosRef = collection(this.firestore, 'agendamentos');
+        const q = query(
+          agendamentosRef,
+          where('salonId', '==', salonId),
+          where('data', '>=', this.formatDateForQuery(inicioSemana)),
+          where('data', '<=', this.formatDateForQuery(fimSemana)),
+          where('status', 'in', ['confirmado', 'pendente'])
+        );
+
+        const snapshot = await getDocs(q);
+        let totalSemana = 0;
+        snapshot.docs.forEach(doc => {
+          const agend = doc.data() as Agendamento;
+          totalSemana += agend.valorTotal || 0;
+        });
+
+        faturamentoPorSemana.push(totalSemana);
+      }
+
+      // Só considera "dados suficientes" se houver pelo menos 3 semanas com dados
+      const semanasComDados = faturamentoPorSemana.filter(val => val > 0).length;
+      const temDadosSuficientes = semanasComDados >= 3;
+
+      if (!temDadosSuficientes) {
+        return { media: 0, temDados: false };
+      }
+
+      const somaTotal = faturamentoPorSemana.reduce((acc, val) => acc + val, 0);
+      const media = somaTotal / faturamentoPorSemana.length;
+
+      return { media, temDados: true };
+    } catch (error) {
+      console.error('Erro ao calcular média de faturamento das 4 semanas anteriores:', error);
+      return { media: 0, temDados: false };
+    }
+  }
+
+  /**
+   * Conta quantos clientes novos foram cadastrados hoje
+   */
+  private async contarClientesNovosHoje(salonId: string): Promise<number> {
+    try {
+      const hoje = new Date();
+
+      // Criar timestamps para o início e fim do dia de hoje
+      const inicioDia = new Date(hoje);
+      inicioDia.setHours(0, 0, 0, 0);
+
+      const fimDia = new Date(hoje);
+      fimDia.setHours(23, 59, 59, 999);
+
+      const clientesRef = collection(this.firestore, 'clientes');
+      const q = query(
+        clientesRef,
+        where('salonId', '==', salonId),
+        where('dataCadastro', '>=', inicioDia),
+        where('dataCadastro', '<=', fimDia)
+      );
+
+      const snapshot = await getDocs(q);
+      return snapshot.size;
+    } catch (error) {
+      console.error('Erro ao contar clientes novos hoje:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Calcula a comparação estatística e retorna o objeto StatComparison
+   */
+  private calcularComparacao(
+    valorAtual: number,
+    valorAnterior: number,
+    temDadosSuficientes: boolean,
+    formatoAbsoluto: boolean = false
+  ): StatComparison {
+    // Se não tem dados suficientes, não mostrar comparação
+    if (!temDadosSuficientes) {
+      return {
+        value: valorAtual,
+        change: 0,
+        trend: 'neutral',
+        displayText: '',
+        hasComparison: false
+      };
+    }
+
+    // Evitar divisão por zero
+    if (valorAnterior === 0) {
+      if (valorAtual === 0) {
+        return {
+          value: valorAtual,
+          change: 0,
+          trend: 'neutral',
+          displayText: '0%',
+          hasComparison: true
+        };
+      } else {
+        // Se não havia valor anterior mas agora há
+        return {
+          value: valorAtual,
+          change: 100,
+          trend: 'positive',
+          displayText: '+100%',
+          hasComparison: true
+        };
+      }
+    }
+
+    const diferenca = valorAtual - valorAnterior;
+    const percentual = (diferenca / valorAnterior) * 100;
+
+    // Threshold de 1% para considerar neutro
+    let trend: 'positive' | 'negative' | 'neutral' = 'neutral';
+    if (percentual > 1) trend = 'positive';
+    else if (percentual < -1) trend = 'negative';
+
+    let displayText: string;
+    if (formatoAbsoluto) {
+      displayText = diferenca >= 0 ? `+${Math.round(diferenca)}` : `${Math.round(diferenca)}`;
+    } else {
+      const sinal = percentual >= 0 ? '+' : '';
+      displayText = `${sinal}${Math.round(percentual)}%`;
+    }
+
+    return {
+      value: valorAtual,
+      change: formatoAbsoluto ? diferenca : percentual,
+      trend,
+      displayText,
+      hasComparison: true
+    };
   }
 
   /**
@@ -295,7 +581,26 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
       this.chartLabels = dateRange.labels;
       this.weeklyRevenue = dateRange.dates.map(data => totalsByDate.get(data) || 0);
-      this.stats.weekRevenue = totalPeriodo;
+
+      // Calcular comparação apenas se for período semanal
+      if (this.selectedPeriod === 'weekly') {
+        const resultadoMedia = await this.calcularMediaFaturamento4SemanasAnteriores(salonId);
+        this.stats.weekRevenue = this.calcularComparacao(
+          totalPeriodo,
+          resultadoMedia.media,
+          resultadoMedia.temDados
+        );
+      } else {
+        // Para outros períodos, apenas mostrar o valor sem comparação
+        this.stats.weekRevenue = {
+          value: totalPeriodo,
+          change: 0,
+          trend: 'neutral',
+          displayText: '',
+          hasComparison: false
+        };
+      }
+
       this.updateBarChart();
 
     } catch (error) {
@@ -537,9 +842,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const currentUser = this.authService.currentUser();
     if (!currentUser) return;
 
-    this.carregarFaturamentoPeriodo(currentUser.uid);
-    this.carregarServicosPopulares(currentUser.uid);
-    this.carregarTaxaComparecimento(currentUser.uid);
+    Promise.all([
+      this.carregarFaturamentoPeriodo(currentUser.uid),
+      this.carregarServicosPopulares(currentUser.uid),
+      this.carregarTaxaComparecimento(currentUser.uid),
+      this.carregarEstatisticas(currentUser.uid)
+    ]);
   }
 
   private updateBarChart(): void {

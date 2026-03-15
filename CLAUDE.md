@@ -13,7 +13,8 @@ EstéticaZap is a salon management application built with Angular 19, Firebase, 
 - `ng build` - Build for production (outputs to `dist/`)
 - `ng build --configuration development` - Build for development with source maps
 - `ng test` - Run unit tests with Karma
-- `ng generate component component-name` - Generate new component
+- `npm run serve:ssr:EsteticaZap` - Run SSR server (after building)
+- `npm run agendar:lote` - Bulk appointment creation script for testing (see README.md for parameters)
 
 ### Component Generation
 Use Angular CLI schematics for consistency:
@@ -35,10 +36,12 @@ The application follows a feature-based structure with standalone components (no
 
 **1. Routing & Navigation**
 - Routes are defined in `src/app/app.routes.ts` and split into: `publicRoutes`, `onboardingRoutes`, and `privateRoutes`
+- Private routes use `PrivateLayoutComponent` as wrapper to provide consistent layout (side menu + content area)
 - Three guard types:
   - `authGuard` - Protects private routes, redirects to `/login` if not authenticated
   - `noAuthGuard` - Redirects authenticated users from `/login` to `/home`
   - `onboardingGuard` - Redirects to `/home` where onboarding modal is displayed if needed
+- All guards are functional guards (not class-based) using Angular's modern `CanActivateFn` pattern
 
 **2. Authentication & User Management**
 - Authentication is handled by `AuthService` (`src/app/services/auth.service.ts`)
@@ -63,19 +66,31 @@ The application follows a feature-based structure with standalone components (no
   - `provideFirebaseApp()` - Initialize Firebase
   - `provideAuth()` - Firebase Authentication
   - `provideFirestore()` - Firestore database
-- Environment config in `src/environments/environment.ts` (contains Firebase credentials)
+- Environment config in `src/environments/environment.ts` (contains Firebase credentials and Stripe keys)
 - Collections:
   - `users` - User profiles and settings
   - `clientes` - Salon clients
   - `agendamentos` - Appointments/bookings
+  - `profissionais` - Salon professionals/staff
 
 **5. Server-Side Rendering (SSR)**
 - Application supports SSR with Angular Universal
 - Entry point: `src/main.server.ts`
 - Server routes: `src/app/app.routes.server.ts`
-- SSR server: `src/server.ts`
+- SSR server: `src/server.ts` (Express server with Stripe payment endpoints)
 - Run SSR: `npm run serve:ssr:EsteticaZap` (after building)
-- Components check `isPlatformBrowser(platformId)` before browser-specific operations (see `home.component.ts:78` and `home.component.ts:94`)
+- Components check `isPlatformBrowser(platformId)` before browser-specific operations
+- Express server includes API endpoints:
+  - `POST /api/create-checkout-session` - Create Stripe checkout session
+  - `GET /api/checkout-session/:id` - Retrieve checkout session status
+
+**6. Payment Integration**
+- Stripe integration for subscription payments
+- Configuration in `src/environments/environment.ts` (`stripe.publishableKey`, `stripe.priceId`)
+- Server-side Stripe API calls in `src/server.ts` using `STRIPE_SECRET_KEY` env var
+- `StripeCheckoutService` (`src/app/services/stripe-checkout.service.ts`) handles client-side checkout flow
+- `AssinaturaService` (`src/app/services/assinatura.service.ts`) manages subscription data
+- Azure Functions in `/api` directory for serverless payment endpoints (alternative to Express endpoints)
 
 ### Component Architecture
 
@@ -89,11 +104,17 @@ The application follows a feature-based structure with standalone components (no
 
 **Data Loading Pattern** (see `home.component.ts`):
 ```typescript
-async ngOnInit() {
-  await this.checkOnboarding();
-  if (this.isBrowser) {
-    await this.carregarDados(); // Loads all dashboard data in parallel
-  }
+// Use effect() to react to userData changes and trigger data loading
+constructor(@Inject(PLATFORM_ID) platformId: Object) {
+  this.isBrowser = isPlatformBrowser(platformId);
+
+  effect(() => {
+    const userData = this.authService.userData();
+    if (userData?.onboardingCompleted && this.isBrowser && !this.dataLoaded) {
+      this.dataLoaded = true;
+      this.carregarDados(); // Loads all dashboard data in parallel
+    }
+  });
 }
 ```
 
@@ -112,7 +133,27 @@ async ngOnInit() {
   - `criarCliente(cliente)` - Create new client
   - `registrarAgendamento(clienteId, servicos, data, valor)` - Update client history after booking
   - `listarClientesPorSalao(salonId)` - Get all clients for a salon
+  - `atualizarCliente(clienteId, dados)` - Update client information
+  - `deletarClienteHard(clienteId)` - Permanently delete client
 - Normalizes phone numbers automatically (removes non-digits)
+
+**ProfissionalService** (`src/app/services/profissional.service.ts`):
+- Manages salon professionals/staff in Firestore
+- Key methods:
+  - `listarPorSalao(salonId)` - Get all professionals (active and inactive)
+  - `listarAtivos(salonId)` - Get only active professionals
+  - `buscarPorId(id)` - Get specific professional by ID
+  - `criar(profissional)` - Create new professional
+  - `atualizar(id, dados)` - Update professional information
+  - `desativar(id)` - Soft delete (set `ativo: false`)
+  - `reativar(id)` - Reactivate professional
+- Includes validation for name, description, photo, and interests
+- Results are sorted by `ordem` field
+
+**MigrationService** (`src/app/services/migration.service.ts`):
+- Handles automatic data migrations
+- Called by `AuthService` when user logs in
+- Migrates legacy single-professional data to multi-professional structure
 
 ### UI Framework
 
@@ -139,10 +180,24 @@ async ngOnInit() {
 
 ## Important Patterns & Conventions
 
+### Multi-Tenancy Pattern
+- Application is multi-tenant with `salonId` as the tenant identifier
+- `salonId` comes from the authenticated user's UID (user.uid === salon owner)
+- **CRITICAL**: Always filter Firestore queries by `salonId` to prevent data leakage
+- Public booking uses URL parameter: `/agendar/:salonId`
+- All main collections (`clientes`, `agendamentos`, `profissionais`) must include `salonId` field
+
 ### Firebase Operations
 - Use `serverTimestamp()` for `createdAt` and `updatedAt` fields
 - Always include `salonId` when querying salon-specific data
-- Phone numbers are normalized (digits only) before storage/query
+- Phone numbers are normalized (digits only) before storage/query using `sanitizePhone()` utility
+- Query pattern for salon data:
+```typescript
+const q = query(
+  collection(this.firestore, 'collection-name'),
+  where('salonId', '==', salonId)
+);
+```
 
 ### Component Lifecycle with SSR
 ```typescript
@@ -155,6 +210,15 @@ ngAfterViewInit(): void {
   // Browser-only code (DOM manipulation, Chart.js)
 }
 ```
+
+### Dependency Injection Pattern
+- Modern inject() function is used instead of constructor injection:
+```typescript
+// In service or component
+private firestore = inject(Firestore);
+private authService = inject(AuthService);
+```
+- No constructor injection for Angular services (legacy pattern)
 
 ### Signal-based Reactivity
 ```typescript
@@ -170,6 +234,8 @@ effect(() => {
   // React to user changes
 });
 ```
+- Signals are read with `()`: `this.authService.currentUser()`
+- Signals are updated with `.set()` or `.update()`: `this.currentUser.set(user)`
 
 ### Error Handling
 - Service methods return `{ success: boolean; error?: string }` for operations that can fail
@@ -230,6 +296,22 @@ effect(() => {
 }
 ```
 
+### Profissional Document (`profissionais` collection)
+```typescript
+{
+  id?: string;
+  salonId: string;
+  nome: string;  // 3-100 characters
+  foto: string;  // Photo URL (required)
+  descricao: string;  // 10-500 characters
+  interesses: string[];  // 1-10 interests, each 2-50 characters
+  ativo: boolean;  // Soft delete flag
+  ordem: number;  // Display order
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+```
+
 ## Common Tasks
 
 ### Adding a New Protected Route
@@ -282,3 +364,22 @@ The application is configured for Azure Static Web Apps deployment. The workflow
 - Configures fallback routing to `index.csr.html` for SPA navigation
 - Handles 404s by serving the Angular app (returns 200 with app content)
 - Defines MIME types and caching headers
+
+## Testing & Development Utilities
+
+### Bulk Appointment Creation Script
+Use `npm run agendar:lote` to create multiple test appointments quickly:
+
+```bash
+npm run agendar:lote -- --salon-id <SALON_ID> --data 2025-02-20 --quantidade 10
+```
+
+Optional parameters:
+- `--hora-inicio` (default: `09:00`)
+- `--profissional-id` (uses first active professional if omitted)
+- `--servicos` (comma-separated service IDs; uses first active service if omitted)
+- `--intervalo` (minutes between appointments; uses salon config if omitted)
+- `--cliente-prefixo` (default: `Cliente Teste`)
+- `--telefone-base` (default: `1199990000`, increments for each appointment)
+
+Script location: `scripts/agendar-lote.mjs`
