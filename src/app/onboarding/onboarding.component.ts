@@ -466,9 +466,14 @@ export class OnboardingComponent implements OnInit {
       // Enviar mensagem de boas-vindas via WhatsApp
       const whatsappNumero = this.data.whatsapp.replace(/\D/g, '');
       if (whatsappNumero) {
+        const token = await currentUser.getIdToken();
         fetch('https://esteticazap-webhook.onrender.com/whatsapp/bem-vindo', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ to: whatsappNumero })
         }).catch(err => console.warn('Erro ao enviar mensagem de boas-vindas:', err));
       }
